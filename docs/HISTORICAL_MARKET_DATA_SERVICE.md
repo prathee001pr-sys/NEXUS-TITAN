@@ -7,7 +7,7 @@ NEXUS TITAN's research/backtesting components.
 ## Flow
 1. Caller supplies a validated `CandleQuery`.
 2. Injected `MarketDataSource` fetches candles.
-3. Service freezes the returned sequence as a tuple.
+3. Service checks that the adapter returns a sequence containing only `OHLCVCandle` objects, then freezes it as a tuple. Contract violations raise `MarketDataSourceContractError`.
 4. Data Quality Inspector checks query bounds, symbol/timeframe identity,
    ordering, duplicates and missing intervals.
 5. Invalid batches raise `MarketDataValidationError` with the full report;
