@@ -26,7 +26,10 @@ The SQLite-backed implementation lives in
 | DATA-002 | Data quality inspection | Detect duplicates, ordering errors, missing intervals, query-bound and identity errors without mutating input | Tested | `tests/test_data_quality.py`; CI run #34 |
 | DATA-003 | Configurable market sessions | Weekly sessions, holidays and special sessions; timezone-aware open/close checks | Tested | `tests/test_sessions.py`; CI run #34; holiday feed remains caller-supplied |
 | DATA-004 | Historical data service boundary | Adapter results are type-checked, validated and returned as immutable batches; no broker/order execution | Tested | `tests/test_market_data_service.py`; CI run #34 |
-| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #34, job `Core tests`, conclusion `success` |
+| DATA-005 | CSV historical importer | Strict required headers, timezone-aware ISO timestamps, OHLCV validation and clear malformed-row errors | Built | `src/nexus_titan/data/csv_import.py`; CI pending |
+| DATA-006 | SQLite candle storage | Decimal-safe local persistence, unique candle key, duplicate accounting and ordered half-open retrieval | Built | `src/nexus_titan/data/sqlite_store.py`; CI pending |
+| DATA-007 | Validated CSV-to-store pipeline | Quality checks complete before any rows are persisted; invalid batch leaves store unchanged | Built | `import_csv_to_store`; `tests/test_csv_import.py`; CI pending |
+| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #40, commit `0e1d267`, job `Core tests`, conclusion `success` |
 
 ## Evidence policy\n\nThe CI run confirms that the repository test job completed successfully; it does not\nindependently validate exchange data accuracy, official market calendars, provider\nlicensing, production reliability or trading profitability. Data requirements remain\n**Tested**, not **Verified**, until those external and end-to-end acceptance checks\nhave evidence. The latest recorded CI evidence is run #34; later commits require a\nnew successful run before their changes can be considered tested.\n\n## Scope and safety notes
 
