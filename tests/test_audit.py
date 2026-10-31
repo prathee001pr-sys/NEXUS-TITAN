@@ -41,3 +41,14 @@ def test_persistent_audit_survives_reopen_and_verifies(tmp_path):
     assert second.previous_hash == first.record_hash
     assert reopened.verify()
     reopened.close()
+
+
+def test_mutating_returned_record_does_not_mutate_ledger():
+    ledger = AuditLedger()
+    returned = ledger.append(actor="system", action="boot", outcome="success",
+                             details={"meta": {"attempt": 1}})
+    returned.details["meta"]["attempt"] = 99
+    records = ledger.records()
+    records[0].details["meta"]["attempt"] = 100
+    assert ledger.records()[0].details["meta"]["attempt"] == 1
+    assert ledger.verify()

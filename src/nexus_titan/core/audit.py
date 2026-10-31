@@ -23,6 +23,20 @@ class AuditRecord:
     record_hash: str
 
 
+def _copy_record(record: AuditRecord) -> AuditRecord:
+    """Return a detached copy so callers cannot mutate the ledger's stored row."""
+    return AuditRecord(
+        record_id=record.record_id,
+        timestamp=record.timestamp,
+        actor=record.actor,
+        action=record.action,
+        outcome=record.outcome,
+        details=json.loads(json.dumps(record.details, sort_keys=True, ensure_ascii=False)),
+        previous_hash=record.previous_hash,
+        record_hash=record.record_hash,
+    )
+
+
 def _canonical_record(record_id: str, timestamp: str, actor: str, action: str,
                       outcome: str, details: dict[str, Any], previous_hash: str) -> str:
     return json.dumps(
@@ -82,10 +96,10 @@ class AuditLedger:
             )
             self._connection.commit()
         self._records.append(record)
-        return record
+        return _copy_record(record)
 
     def records(self) -> tuple[AuditRecord, ...]:
-        return tuple(self._records)
+        return tuple(_copy_record(record) for record in self._records)
 
     def verify(self) -> bool:
         previous_hash = GENESIS_HASH
@@ -105,3 +119,4 @@ class AuditLedger:
     def close(self) -> None:
         if self._connection is not None:
             self._connection.close()
+            self._connection = None
