@@ -88,3 +88,34 @@ def test_closed_runtime_rejects_new_work():
     runtime.close()
     with pytest.raises(RuntimeError):
         runtime.authorize(Action.READ)
+
+
+def test_runtime_does_not_close_injected_persistent_services(tmp_path):
+    memory = SQLiteMemoryStore(str(tmp_path / "injected-memory.sqlite3"))
+    audit = AuditLedger(str(tmp_path / "injected-audit.sqlite3"))
+    runtime = CoreRuntime(memory=memory, audit=audit)
+
+    runtime.close()
+
+    # The caller owns injected services and can continue using them.
+    entry = MemoryEntry(
+        content="still open", layer=MemoryLayer.WORKING,
+        source="ownership-test", confidence=1.0,
+    )
+    memory.add(entry)
+    audit.append(actor="test", action="after_runtime_close", outcome="success")
+    assert memory.get(entry.memory_id) == entry
+    assert audit.records()[-1].action == "after_runtime_close"
+    memory.close()
+    audit.close()
+
+
+def test_runtime_closes_its_own_persistent_services(tmp_path):
+    runtime = CoreRuntime(
+        memory=SQLiteMemoryStore(str(tmp_path / "owned-memory.sqlite3"))
+    )
+    owned_memory = runtime.memory
+    runtime.close()
+
+    with pytest.raises(Exception):
+        owned_memory.get("missing")
