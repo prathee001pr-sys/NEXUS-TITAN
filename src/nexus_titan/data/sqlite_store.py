@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -21,7 +22,7 @@ class SQLiteCandleStore:
 
     def __init__(self, path: str | Path) -> None:
         self.path = str(path)
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS candles (
