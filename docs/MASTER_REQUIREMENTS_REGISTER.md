@@ -31,9 +31,23 @@ The SQLite-backed implementation lives in
 | DATA-007 | Validated CSV-to-store pipeline | Quality checks complete before any rows are persisted; invalid batch leaves store unchanged | Tested | `tests/test_csv_import.py`; CI #51 success; later adapter changes pending |
 | DATA-008 | SQLite MarketDataSource adapter | Stored candles can be retrieved through the standard MarketDataService validation boundary | Tested | `SQLiteMarketDataSource`; `tests/test_sqlite_store.py`; CI #62 success |
 | DATA-009 | Historical backtest engine | Next-bar execution, long-only position lifecycle, explicit costs, P&L and risk metrics | Tested | `src/nexus_titan/research/backtest_engine.py`; `tests/test_backtest_engine.py`; CI #62 success |
-| STRAT-001 | Moving Average Crossover reference strategy | Fast/slow SMA uses completed candles only; warm-up and parameter validation; next-open integration test | Built | `src/nexus_titan/research/strategies.py`; `tests/test_moving_average_strategy.py`; CI verification pending |
-| VALID-001 | Chronological out-of-sample evaluation | Strict ordered split with separate holdout; warm-up history retained; only holdout candles can generate fills and metrics | Built | `src/nexus_titan/research/validation.py`; `tests/test_out_of_sample_validation.py`; CI verification pending |
-| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #62, commit `3b4abda`, job `Core tests`, conclusion `success` |
+| STRAT-001 | Moving Average Crossover reference strategy | Fast/slow SMA uses completed candles only; warm-up and parameter validation; next-open integration test | Tested | `src/nexus_titan/research/strategies.py`; `tests/test_moving_average_strategy.py`; combined CI #41252347987 success |
+| VALID-001 | Chronological out-of-sample evaluation | Strict ordered split with separate holdout; warm-up history retained; only holdout candles can generate fills and metrics | Tested | `src/nexus_titan/research/validation.py`; `tests/test_out_of_sample_validation.py`; combined CI #41252347987 success |
+| CI-001 | Continuous integration | Push/PR runs Python tests and reports a successful job | Tested | GitHub Actions integration run #41252347987 at `b1b624be0700673bda50b9e329e81e5d9da63a66`, 266 passed; latest branch head needs fresh CI verification |
+
+| ACE-001 | Governed Agent Creation Engine | Declarative specifications; capability/tool allowlist; non-executable prototypes; named human approval before permanent registration | Tested | `self_improvement/agent_creation.py`; `tests/test_phase6_agent_runtime.py`; CI #41252347987 |
+| ARUN-001 | Controlled Agent Runtime | Approved registry only; allowlisted host tools; JSON payload/tool-call bounds; SQLite tasks, idempotency, audit events, dependencies and fail-closed recovery | Tested | `self_improvement/agent_runtime.py`; `tests/test_phase6_agent_runtime.py`; CI #41252347987 |
+| EVOLVE-005 | Governed specialist-agent team | Twelve deterministic/optional-LLM specialists; research evidence, proposal-only code generation and protected-control vetoes | Tested | `self_improvement/agents.py`; `tests/test_phase6_evolve_services.py`; CI #41252347987 |
+| BTEST-001 | Advanced instrument-aware backtest | Costs, slippage, stops/targets, risk sizing, trade metrics and explicit research-only outputs | Tested | `research/backtest.py`; `tests/test_phase6_advanced_backtest.py`; CI #41252347987; further accounting/market-microstructure verification pending |
+| VALID-002 | Rolling walk-forward and Monte Carlo gates | Chronological multi-fold holdout, minimum evidence gate, block bootstrap and explicit promotion blocker | Tested | `research/v6_validation.py`; `tests/test_phase6_validation.py`; CI #41252347987 |
+| DATA-010 | Canonical market-data validation | Timestamp order/duplicates, OHLC bounds, finite positive prices and non-negative volume are checked | Tested | `data/canonical.py`; `tests/test_phase6_canonical_data.py`; CI #41252347987 |
+| RISK-001 | Portfolio risk and deterministic veto | Whole-lot sizing, exposure caps, daily/consecutive-loss and drawdown lockouts | Tested | `risk/portfolio_risk.py`, `risk/authoritative_risk.py`; `tests/test_phase6_portfolio_risk.py`; CI #41252347987 |
+| COST-001 | Indicative Indian statutory charge calculator | Brokerage, STT, exchange, SEBI, stamp and GST calculations are configurable and disclose limits | Tested | `cost/charges.py`; CI #41252347987; official/broker contract-note reconciliation remains outstanding |
+| VIRT-001 | Durable virtual account and order lifecycle | Explicit starting capital; approval state; fills, partial fills, idempotency, kill switch, paper exits and SQLite restore | Tested | `virtual/order_manager.py`, `virtual/durable_store.py`; `tests/test_phase6_virtual_order_manager.py`; CI #41252347987 |
+| DERIV-001 | Theoretical options analytics | Black-Scholes theoretical Greeks and bounded IV solver return finite, validated outputs | Tested | `derivatives/options_engine.py`; `tests/test_phase6_options_greeks.py`; options chain/backtest/margin remain not implemented |
+| CRYPTO-001 | Isolated crypto virtual account | Explicit capital, quantity-step/min-notional, maker/taker fee and optional VDA TDS, separate from Indian equity account | Tested | `crypto/crypto_engine.py`; `tests/test_phase6_crypto_engine.py`; exchange-specific historical feed remains not implemented |
+| UI-001 | Read-only dashboard backend | Telemetry reflects virtual account and reports missing data providers without inventing prices | Tested | `dashboard/api_service.py`; `tests/test_phase6_dashboard.py`; front-end UI remains outstanding |
+
 
 ## Evidence policy
 
@@ -58,3 +72,8 @@ their status advances beyond **Built**.
   broker tokens, or other secrets in them. OS-level access controls, encryption and backup
   procedures remain future work.
 - Real-money trading is out of scope. No live broker execution is implemented.
+
+
+## Phase 6 integration note
+
+The above Phase 6 statuses reflect the combined 266-test run at commit `b1b624be0700673bda50b9e329e81e5d9da63a66`. They are **Tested**, not **Verified**. The later export/documentation commits require the latest branch CI run to complete. External data licensing, market accuracy, exchange charges, production security, and profitability are not proven by unit tests.
