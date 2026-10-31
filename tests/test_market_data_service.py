@@ -71,3 +71,23 @@ def test_service_accepts_empty_result_as_valid_empty_batch():
     result = MarketDataService(FakeSource([])).fetch_validated(make_query())
     assert result.candles == ()
     assert result.report.is_valid
+
+
+def test_service_rejects_non_sequence_adapter_result():
+    from nexus_titan.data.service import MarketDataSourceContractError
+
+    with pytest.raises(MarketDataSourceContractError, match="sequence"):
+        MarketDataService(FakeSource(None)).fetch_validated(make_query())
+
+
+@pytest.mark.parametrize("bad_result", ["not candles", b"bytes", [object()]])
+def test_service_rejects_invalid_adapter_items(bad_result):
+    from nexus_titan.data.service import MarketDataSourceContractError
+
+    with pytest.raises(MarketDataSourceContractError):
+        MarketDataService(FakeSource(bad_result)).fetch_validated(make_query())
+
+
+def test_service_rejects_source_without_fetch_method():
+    with pytest.raises(TypeError, match="fetch_candles"):
+        MarketDataService(object())
