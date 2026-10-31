@@ -15,7 +15,7 @@ def candles(closes):
         price = Decimal(str(close))
         result.append(OHLCVCandle(
             "NIFTY", "1m", start + timedelta(minutes=index),
-            price, price + 1, price - 1, price, 100, "test",
+            price, price + 1, max(price - 1, Decimal("0.1")), price, 100, "test",
         ))
     return result
 
