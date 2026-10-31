@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from nexus_titan.data.ohlcv import CandleQuery, OHLCVCandle
 from nexus_titan.data.sessions import MarketCalendar
@@ -73,6 +73,26 @@ def inspect_candle_batch(
     outside: list[datetime] = []
     mismatches: list[int] = []
 
+    def next_expected_timestamp(previous_timestamp: datetime) -> datetime | None:
+        if calendar is None:
+            return previous_timestamp + expected
+        local_previous = previous_timestamp.astimezone(calendar.zone)
+        candidate = (previous_timestamp + expected).astimezone(calendar.zone)
+        # If the next interval falls outside a session, advance to the next
+        # configured session open. The bounded search avoids infinite loops
+        # for calendars with no future sessions.
+        for offset in range(0, 367):
+            day = candidate.date() + timedelta(days=offset)
+            sessions = calendar.sessions_for_date(day)
+            for session in sessions:
+                session_open = datetime.combine(day, session.opens, tzinfo=calendar.zone)
+                session_close = datetime.combine(day, session.closes, tzinfo=calendar.zone)
+                if offset == 0 and session_open <= candidate < session_close:
+                    return candidate.astimezone(previous_timestamp.tzinfo)
+                if session_open > local_previous and session_open >= candidate:
+                    return session_open.astimezone(previous_timestamp.tzinfo)
+        return None
+
     previous: tuple[int, OHLCVCandle] | None = None
     for index, item in enumerate(candles):
         if item.symbol != query.symbol or item.timeframe != query.timeframe:
@@ -90,15 +110,8 @@ def inspect_candle_batch(
             elif item.timestamp > previous_item.timestamp:
                 delta = item.timestamp - previous_item.timestamp
                 if delta > expected:
-                    candidate = previous_item.timestamp + expected
-                    same_local_date = (
-                        previous_item.timestamp.astimezone(calendar.zone).date()
-                        == item.timestamp.astimezone(calendar.zone).date()
-                        if calendar is not None else True
-                    )
-                    if same_local_date and (
-                        calendar is None or calendar.is_open(candidate)
-                    ):
+                    candidate = next_expected_timestamp(previous_item.timestamp)
+                    if candidate is not None and item.timestamp > candidate:
                         gaps.append((candidate, item.timestamp))
         previous = (index, item)
 
