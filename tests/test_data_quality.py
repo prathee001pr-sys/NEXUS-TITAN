@@ -82,7 +82,7 @@ def test_calendar_aware_inspection_skips_overnight_gap():
     from nexus_titan.data.sessions import nse_equity_derivatives_baseline
 
     calendar = nse_equity_derivatives_baseline()
-    first = make_candle(29)
+    first = OHLCVCandle("NIFTY", "1m", datetime(2026, 1, 1, 9, 59, tzinfo=timezone.utc), 100, 102, 99, 101, 10, "test")
     next_day = OHLCVCandle(
         symbol="NIFTY", timeframe="1m",
         timestamp=datetime(2026, 1, 2, 3, 45, tzinfo=timezone.utc),
@@ -130,7 +130,7 @@ def test_calendar_aware_inspection_detects_gap_after_next_session_opens():
 
     calendar = nse_equity_derivatives_baseline()
     first = OHLCVCandle(
-        "NIFTY", "1m", datetime(2026, 1, 1, 9, 29, tzinfo=timezone.utc),
+        "NIFTY", "1m", datetime(2026, 1, 1, 9, 59, tzinfo=timezone.utc),
         100, 102, 99, 101, 10, "test",
     )
     # Next session opens at 03:45 UTC (09:15 IST); 03:46 is missing.
