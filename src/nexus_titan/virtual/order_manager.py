@@ -457,6 +457,8 @@ class VirtualAccount:
         order = self.orders.get(order_id)
         if not order:
             raise ValueError("Unknown order.")
+        if idempotency_key and idempotency_key in self.processed_fill_idempotency_keys:
+            return order
         if order.state not in (OrderState.ACCEPTED, OrderState.PARTIALLY_FILLED):
             raise ValueError(f"Order cannot be filled in state {order.state.value}.")
         if (isinstance(fill_price, bool) or not isinstance(fill_price, (int, float))
