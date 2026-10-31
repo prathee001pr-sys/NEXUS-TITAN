@@ -1,4 +1,13 @@
-"""Virtual/paper trading primitives. No broker connectivity is provided."""
+"""Controlled virtual account and durable paper execution."""
 from .durable_store import DurableAccountStore
+from .order_manager import (
+    ApprovalRecord, CapitalAdjustment, FillRecord, OrderSide, OrderState,
+    OrderType, ReconciliationReport, TradingMode, VirtualAccount, VirtualOrder,
+    VirtualPosition,
+)
 
-__all__ = ["DurableAccountStore"]
+__all__ = [
+    "ApprovalRecord", "CapitalAdjustment", "DurableAccountStore", "FillRecord",
+    "OrderSide", "OrderState", "OrderType", "ReconciliationReport",
+    "TradingMode", "VirtualAccount", "VirtualOrder", "VirtualPosition",
+]
