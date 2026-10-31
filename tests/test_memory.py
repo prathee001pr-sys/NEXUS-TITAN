@@ -1,10 +1,19 @@
 from datetime import datetime
+
 import pytest
+
 from nexus_titan.core.memory import MemoryEntry, MemoryLayer, MemoryStore
 
 
 def make_entry(layer=MemoryLayer.WORKING, **kwargs):
-    return MemoryEntry("Test memory", layer, "unit-test", 0.9, **kwargs)
+    values = {
+        "content": "Test memory",
+        "layer": layer,
+        "source": "unit-test",
+        "confidence": 0.9,
+    }
+    values.update(kwargs)
+    return MemoryEntry(**values)
 
 
 def test_memory_entry_records_metadata():
@@ -33,9 +42,9 @@ def test_invalid_confidence_is_rejected(confidence):
 
 def test_empty_content_source_and_naive_timestamp_are_rejected():
     with pytest.raises(ValueError):
-        MemoryEntry("", MemoryLayer.WORKING, "test", 0.5)
+        make_entry(content="")
     with pytest.raises(ValueError):
-        MemoryEntry("content", MemoryLayer.WORKING, " ", 0.5)
+        make_entry(source=" ")
     with pytest.raises(ValueError):
         make_entry(created_at=datetime(2026, 1, 1))
 
