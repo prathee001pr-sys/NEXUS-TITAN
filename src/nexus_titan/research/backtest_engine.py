@@ -104,9 +104,23 @@ class BacktestEngine:
         stamp = turnover * self.costs.stamp_buy_rate if side == "buy" else Decimal("0")
         return brokerage + exchange + gst + stt + stamp
 
-    def run(self, candles: Sequence[OHLCVCandle], strategy: Strategy) -> BacktestResult:
+    def run(
+        self,
+        candles: Sequence[OHLCVCandle],
+        strategy: Strategy,
+        *,
+        start_index: int = 0,
+    ) -> BacktestResult:
+        """Run from a signal candle index; earlier candles are history only."""
         if len(candles) < 2:
             raise ValueError("at least two candles are required")
+        if (
+            not isinstance(start_index, int)
+            or isinstance(start_index, bool)
+            or start_index < 0
+            or start_index >= len(candles) - 1
+        ):
+            raise ValueError("start_index must be an integer from 0 to len(candles) - 2")
         symbol, timeframe = candles[0].symbol, candles[0].timeframe
         previous = None
         for candle in candles:
@@ -124,7 +138,7 @@ class BacktestEngine:
         equity_peak = capital
         max_drawdown = Decimal("0")
 
-        for index in range(len(candles) - 1):
+        for index in range(start_index, len(candles) - 1):
             history = candles[: index + 1]
             signal = strategy.on_candle(history)
             if not isinstance(signal, Signal):
