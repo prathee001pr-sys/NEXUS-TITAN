@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 
 from nexus_titan.data.ohlcv import CandleQuery, OHLCVCandle
 from nexus_titan.data.sessions import MarketCalendar
@@ -56,14 +56,11 @@ def inspect_candle_batch(
 ) -> DataQualityReport:
     """Inspect order, duplicates, gaps and query identity/bounds.
 
-    Gap detection assumes continuous fixed-duration intervals. Exchange session
-    calendars, holidays and trading breaks must be applied by a later calendar-
-    aware layer; this function intentionally does not guess market sessions.
-
-    When a calendar is supplied, gaps are reported only when the expected next
-    candle timestamp is inside a configured trading session. Cross-date gaps
-    are skipped in this first integration to avoid treating overnight closures
-    as missing data; a later session-aware iterator can inspect next-day opens.
+    Without a calendar, gap detection assumes continuous fixed-duration
+    intervals. With a calendar, an expected timestamp outside a session is
+    advanced to the next configured session open, including across dates,
+    weekends and explicitly configured holidays. Calendar accuracy depends on
+    caller-supplied schedules; no official exchange holiday feed is embedded.
     """
     expected = timeframe_duration(query.timeframe)
     duplicates: list[datetime] = []
