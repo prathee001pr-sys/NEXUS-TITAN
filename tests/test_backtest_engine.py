@@ -98,3 +98,38 @@ def test_rejects_insufficient_capital_and_invalid_signal():
 def test_validates_cost_model():
     with pytest.raises(ValueError):
         ExecutionCostModel(stt_sell_rate=Decimal("-0.1"))
+
+
+def test_reports_trade_metrics_and_drawdown():
+    class TwoTrades:
+        def on_candle(self, history):
+            # Buy at bar 1 open, exit bar 2 open, buy bar 3 open,
+            # then force-close at final close.
+            return Signal(1 if len(history) in (1, 3) else 0)
+
+    result = BacktestEngine(initial_capital=1000).run(
+        bars([100, 110, 90, 80, 70]), TwoTrades()
+    )
+    assert len(result.trades) == 2
+    assert result.trades[0].net_pnl == Decimal("-20")
+    assert result.trades[1].net_pnl == Decimal("-10")
+    assert result.expectancy == Decimal("-15")
+    assert result.profit_factor == 0
+    assert result.max_drawdown > 0
+
+
+def test_sqlite_history_can_be_backtested_end_to_end(tmp_path):
+    from nexus_titan.data.ohlcv import CandleQuery
+    from nexus_titan.data.service import MarketDataService
+    from nexus_titan.data.sqlite_store import SQLiteCandleStore, SQLiteMarketDataSource
+
+    source_bars = bars([100, 101, 110])
+    store = SQLiteCandleStore(tmp_path / "backtest.db")
+    store.store(source_bars)
+    query = CandleQuery(
+        "NIFTY", "1m", source_bars[0].timestamp,
+        source_bars[-1].timestamp + timedelta(minutes=1),
+    )
+    validated = MarketDataService(SQLiteMarketDataSource(store)).fetch_validated(query)
+    result = BacktestEngine(initial_capital=50000).run(validated.candles, BuyThenHold())
+    assert result.net_pnl == Decimal("9")
