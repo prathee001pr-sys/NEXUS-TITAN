@@ -1,5 +1,5 @@
 """Composition root for the lightweight NEXUS TITAN core."""
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from typing import Any
 
 from nexus_titan.core.audit import AuditLedger
@@ -13,8 +13,8 @@ from nexus_titan.core.permissions import Action, Decision, decide
 class CoreRuntime:
     """Wire core services without importing trading or broker implementations.
 
-    Defaults are in-memory and suitable for tests/development. Applications
-    may inject durable stores and a configured audit ledger at construction.
+    Defaults are owned by this runtime and closed with it. Injected services
+    remain caller-owned and are never closed by the runtime.
     """
 
     def __init__(
@@ -26,11 +26,13 @@ class CoreRuntime:
         audit: AuditLedger | None = None,
         modules: ModuleRegistry | None = None,
     ) -> None:
-        self.settings = settings or Settings()
-        self.events = events or EventBus()
-        self.memory = memory or MemoryStore()
-        self.audit = audit or AuditLedger()
-        self.modules = modules or ModuleRegistry()
+        self.settings = settings if settings is not None else Settings()
+        self.events = events if events is not None else EventBus()
+        self.memory = memory if memory is not None else MemoryStore()
+        self.audit = audit if audit is not None else AuditLedger()
+        self.modules = modules if modules is not None else ModuleRegistry()
+        self._owns_memory = memory is None
+        self._owns_audit = audit is None
         self._closed = False
 
     def authorize(self, action: Action) -> Decision:
@@ -107,13 +109,15 @@ class CoreRuntime:
             raise RuntimeError("core runtime is closed")
 
     def close(self) -> None:
-        """Close owned persistent services; injected services remain caller-owned."""
+        """Close only persistent services created and owned by this runtime."""
         if self._closed:
             return
         self._closed = True
-        close = getattr(self.audit, "close", None)
-        if callable(close):
-            close()
-        close = getattr(self.memory, "close", None)
-        if callable(close):
-            close()
+        if self._owns_audit:
+            close = getattr(self.audit, "close", None)
+            if callable(close):
+                close()
+        if self._owns_memory:
+            close = getattr(self.memory, "close", None)
+            if callable(close):
+                close()
