@@ -58,3 +58,27 @@ def test_import_pipeline_validates_before_persisting(tmp_path):
     )
     assert len(candles) == 1
     assert result.inserted == 1
+
+
+def test_import_pipeline_rejects_quality_failure_without_partial_storage(tmp_path):
+    from datetime import datetime, timezone
+
+    from nexus_titan.data.ohlcv import CandleQuery
+    from nexus_titan.data.csv_import import import_csv_to_store
+    from nexus_titan.data.service import MarketDataValidationError
+    from nexus_titan.data.sqlite_store import SQLiteCandleStore
+
+    store = SQLiteCandleStore(tmp_path / "quality.db")
+    query = CandleQuery(
+        "NIFTY", "1m",
+        datetime(2026, 1, 1, 3, 45, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, 3, 49, tzinfo=timezone.utc),
+    )
+    rows = (
+        HEADER
+        + "NIFTY,1m,2026-01-01T09:15:00+05:30,100,102,99,101,10\n"
+        + "NIFTY,1m,2026-01-01T09:18:00+05:30,100,102,99,101,10\n"
+    )
+    with pytest.raises(MarketDataValidationError):
+        import_csv_to_store(StringIO(rows), source="unit-test", query=query, store=store)
+    assert store.fetch(query) == ()
