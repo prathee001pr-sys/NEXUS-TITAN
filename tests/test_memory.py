@@ -2,16 +2,14 @@ from datetime import datetime
 
 import pytest
 
-from nexus_titan.core.memory import MemoryEntry, MemoryLayer, MemoryStore
+from nexus_titan.core.memory import (
+    MemoryEntry, MemoryLayer, MemoryStore, SQLiteMemoryStore
+)
 
 
 def make_entry(layer=MemoryLayer.WORKING, **kwargs):
-    values = {
-        "content": "Test memory",
-        "layer": layer,
-        "source": "unit-test",
-        "confidence": 0.9,
-    }
+    values = {"content": "Test memory", "layer": layer,
+              "source": "unit-test", "confidence": 0.9}
     values.update(kwargs)
     return MemoryEntry(**values)
 
@@ -54,3 +52,24 @@ def test_duplicate_memory_id_is_rejected():
     store.add(entry)
     with pytest.raises(ValueError):
         store.add(entry)
+
+
+def test_sqlite_memory_survives_reopen(tmp_path):
+    path = str(tmp_path / "memory.sqlite3")
+    entry = make_entry(MemoryLayer.EPISODIC)
+    store = SQLiteMemoryStore(path)
+    store.add(entry)
+    store.close()
+    reopened = SQLiteMemoryStore(path)
+    assert reopened.get(entry.memory_id) == entry
+    assert reopened.count(layer=MemoryLayer.EPISODIC) == 1
+    reopened.close()
+
+
+def test_sqlite_memory_rejects_duplicate_id(tmp_path):
+    store = SQLiteMemoryStore(str(tmp_path / "memory.sqlite3"))
+    entry = make_entry()
+    store.add(entry)
+    with pytest.raises(ValueError):
+        store.add(entry)
+    store.close()
