@@ -182,3 +182,26 @@ def test_calendar_aware_inspection_skips_holiday_before_next_session():
         datetime(2026, 1, 6, 3, 45, tzinfo=timezone.utc),
         datetime(2026, 1, 6, 3, 47, tzinfo=timezone.utc),
     ),)
+
+
+def test_calendar_aware_inspection_uses_special_session_hours():
+    from datetime import date, time
+    from nexus_titan.data.sessions import TradingSession, nse_equity_derivatives_baseline
+
+    special_day = date(2026, 1, 1)
+    calendar = nse_equity_derivatives_baseline(
+        special_sessions={special_day: (TradingSession(time(10), time(11)),)}
+    )
+    first = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 1, 4, 30, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    later = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 1, 4, 32, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    report = inspect_candle_batch([first, later], query(), calendar=calendar)
+    assert report.missing_intervals == ((
+        datetime(2026, 1, 1, 4, 31, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, 4, 32, tzinfo=timezone.utc),
+    ),)
