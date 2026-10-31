@@ -26,14 +26,14 @@ The SQLite-backed implementation lives in
 | DATA-002 | Data quality inspection | Detect duplicates, ordering errors, missing intervals, query-bound and identity errors without mutating input | Tested | `tests/test_data_quality.py`; CI run #34 |
 | DATA-003 | Configurable market sessions | Weekly sessions, holidays and special sessions; timezone-aware open/close checks | Tested | `tests/test_sessions.py`; CI run #34; holiday feed remains caller-supplied |
 | DATA-004 | Historical data service boundary | Adapter results are type-checked, validated and returned as immutable batches; no broker/order execution | Tested | `tests/test_market_data_service.py`; CI run #34 |
-| DATA-005 | CSV historical importer | Strict required headers, timezone-aware ISO timestamps, OHLCV validation and clear malformed-row errors | Built | `src/nexus_titan/data/csv_import.py`; CI pending |
-| DATA-006 | SQLite candle storage | Decimal-safe local persistence, unique candle key, duplicate accounting and ordered half-open retrieval | Built | `src/nexus_titan/data/sqlite_store.py`; CI pending |
+| DATA-005 | CSV historical importer | Strict required headers, timezone-aware ISO timestamps, OHLCV validation and clear malformed-row errors | Tested | `src/nexus_titan/data/csv_import.py`; `tests/test_csv_import.py`; CI #62 success |
+| DATA-006 | SQLite candle storage | Decimal-safe local persistence, unique candle key, duplicate accounting and ordered half-open retrieval | Tested | `src/nexus_titan/data/sqlite_store.py`; `tests/test_sqlite_store.py`; CI #62 success |
 | DATA-007 | Validated CSV-to-store pipeline | Quality checks complete before any rows are persisted; invalid batch leaves store unchanged | Tested | `tests/test_csv_import.py`; CI #51 success; later adapter changes pending |
-| DATA-008 | SQLite MarketDataSource adapter | Stored candles can be retrieved through the standard MarketDataService validation boundary | Built | `SQLiteMarketDataSource`; `tests/test_sqlite_store.py`; CI pending |
-| DATA-009 | Historical backtest engine | Next-bar execution, long-only position lifecycle, explicit costs, P&L and risk metrics | Built | `src/nexus_titan/research/backtest_engine.py`; `tests/test_backtest_engine.py`; CI pending |
+| DATA-008 | SQLite MarketDataSource adapter | Stored candles can be retrieved through the standard MarketDataService validation boundary | Tested | `SQLiteMarketDataSource`; `tests/test_sqlite_store.py`; CI #62 success |
+| DATA-009 | Historical backtest engine | Next-bar execution, long-only position lifecycle, explicit costs, P&L and risk metrics | Tested | `src/nexus_titan/research/backtest_engine.py`; `tests/test_backtest_engine.py`; CI #62 success |
 | STRAT-001 | Moving Average Crossover reference strategy | Fast/slow SMA uses completed candles only; warm-up and parameter validation; next-open integration test | Built | `src/nexus_titan/research/strategies.py`; `tests/test_moving_average_strategy.py`; CI verification pending |
 | VALID-001 | Chronological out-of-sample evaluation | Strict ordered split with separate holdout; warm-up history retained; only holdout candles can generate fills and metrics | Built | `src/nexus_titan/research/validation.py`; `tests/test_out_of_sample_validation.py`; CI verification pending |
-| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #55, commit `0b4a27c`, job `Core tests`, conclusion `success` |
+| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #62, commit `3b4abda`, job `Core tests`, conclusion `success` |
 
 ## Evidence policy
 
