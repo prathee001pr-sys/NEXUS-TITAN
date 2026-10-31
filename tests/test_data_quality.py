@@ -18,7 +18,7 @@ def make_candle(minute, *, symbol="NIFTY", timeframe="1m"):
 def query():
     return CandleQuery(
         "NIFTY", "1m",
-        datetime(2026, 1, 1, 9, 0, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, 9, 1, tzinfo=timezone.utc),
         datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc),
     )
 
