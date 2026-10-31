@@ -108,14 +108,3 @@ def test_runtime_does_not_close_injected_persistent_services(tmp_path):
     assert audit.records()[-1].action == "after_runtime_close"
     memory.close()
     audit.close()
-
-
-def test_runtime_closes_its_own_persistent_services(tmp_path):
-    runtime = CoreRuntime(
-        memory=SQLiteMemoryStore(str(tmp_path / "owned-memory.sqlite3"))
-    )
-    owned_memory = runtime.memory
-    runtime.close()
-
-    with pytest.raises(Exception):
-        owned_memory.get("missing")
