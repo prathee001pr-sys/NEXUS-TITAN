@@ -32,6 +32,7 @@ The SQLite-backed implementation lives in
 | DATA-008 | SQLite MarketDataSource adapter | Stored candles can be retrieved through the standard MarketDataService validation boundary | Built | `SQLiteMarketDataSource`; `tests/test_sqlite_store.py`; CI pending |
 | DATA-009 | Historical backtest engine | Next-bar execution, long-only position lifecycle, explicit costs, P&L and risk metrics | Built | `src/nexus_titan/research/backtest_engine.py`; `tests/test_backtest_engine.py`; CI pending |
 | STRAT-001 | Moving Average Crossover reference strategy | Fast/slow SMA uses completed candles only; warm-up and parameter validation; next-open integration test | Built | `src/nexus_titan/research/strategies.py`; `tests/test_moving_average_strategy.py`; CI verification pending |
+| VALID-001 | Chronological out-of-sample evaluation | Strict ordered split with separate holdout; warm-up history retained; only holdout candles can generate fills and metrics | Built | `src/nexus_titan/research/validation.py`; `tests/test_out_of_sample_validation.py`; CI verification pending |
 | CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #55, commit `0b4a27c`, job `Core tests`, conclusion `success` |
 
 ## Evidence policy
@@ -43,8 +44,9 @@ licensing, production reliability or trading profitability. Data requirements re
 have evidence.
 
 CI run #62 passed for commit `3b4abda2fdd3e7a4a62dca8b66a1a407407aff94`.
-The moving-average strategy and its tests were committed after that run; their
-automated CI result must be checked before their status advances beyond **Built**.
+The Moving Average Crossover strategy and chronological out-of-sample evaluation
+were committed after that run; their automated CI result must be checked before
+their status advances beyond **Built**.
 
 ## Scope and safety notes
 
