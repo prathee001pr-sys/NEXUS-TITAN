@@ -15,7 +15,9 @@ is not persisted.
 point conversion. The unique key is (symbol, timeframe, timestamp). Repeated
 keys are ignored and counted as duplicates; first stored values are retained.
 Fetches are filtered by symbol/timeframe and the half-open UTC query range,
-and returned oldest-first.
+and returned oldest-first. `SQLiteMarketDataSource` adapts the store to the
+existing `MarketDataSource` protocol so retrieval can pass through
+`MarketDataService` validation before research/backtesting consumes it.
 
 ## Safe use and limitations
 - This is local historical storage only; it has no network or broker access.
