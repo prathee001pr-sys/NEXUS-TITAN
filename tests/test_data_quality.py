@@ -85,7 +85,7 @@ def test_calendar_aware_inspection_skips_overnight_gap():
     first = make_candle(29)
     next_day = OHLCVCandle(
         symbol="NIFTY", timeframe="1m",
-        timestamp=datetime(2026, 1, 2, 9, 15, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 1, 2, 3, 45, tzinfo=timezone.utc),
         open=100, high=102, low=99, close=101, volume=10, source="test",
     )
     report = inspect_candle_batch([first, next_day], query(), calendar=calendar)
@@ -123,3 +123,23 @@ def test_calendar_aware_inspection_skips_gap_on_holiday():
     later = make_candle(18)
     report = inspect_candle_batch([first, later], query(), calendar=calendar)
     assert report.missing_intervals == ()
+
+
+def test_calendar_aware_inspection_detects_gap_after_next_session_opens():
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    calendar = nse_equity_derivatives_baseline()
+    first = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 1, 9, 29, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    # Next session opens at 03:45 UTC (09:15 IST); 03:46 is missing.
+    later = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 2, 3, 47, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    report = inspect_candle_batch([first, later], query(), calendar=calendar)
+    assert report.missing_intervals == ((
+        datetime(2026, 1, 2, 3, 45, tzinfo=timezone.utc),
+        datetime(2026, 1, 2, 3, 47, tzinfo=timezone.utc),
+    ),)
