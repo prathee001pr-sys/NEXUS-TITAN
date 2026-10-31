@@ -32,3 +32,29 @@ def test_rejects_malformed_csv(content):
 def test_rejects_duplicate_header_names():
     with pytest.raises(CSVImportError, match="duplicate"):
         load_ohlcv_csv(StringIO("symbol,symbol\n"), source="unit-test")
+
+
+def test_import_pipeline_validates_before_persisting(tmp_path):
+    from datetime import datetime, timezone
+
+    from nexus_titan.data.ohlcv import CandleQuery
+    from nexus_titan.data.csv_import import import_csv_to_store
+    from nexus_titan.data.service import MarketDataValidationError
+    from nexus_titan.data.sqlite_store import SQLiteCandleStore
+
+    store = SQLiteCandleStore(tmp_path / "pipeline.db")
+    query = CandleQuery(
+        "NIFTY", "1m",
+        datetime(2026, 1, 1, 3, 45, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, 3, 47, tzinfo=timezone.utc),
+    )
+    bad = HEADER + ROW.replace(",100,102,99,101,10", ",100,99,101,101,10")
+    with pytest.raises(CSVImportError):
+        import_csv_to_store(StringIO(bad), source="unit-test", query=query, store=store)
+    assert store.fetch(query) == ()
+
+    candles, result = import_csv_to_store(
+        StringIO(HEADER + ROW), source="unit-test", query=query, store=store
+    )
+    assert len(candles) == 1
+    assert result.inserted == 1
