@@ -5,7 +5,10 @@ The importer requires these columns: `symbol,timeframe,timestamp,open,high,low,c
 Timestamps must be ISO-8601 with an explicit timezone offset (for example
 `2026-01-01T09:15:00+05:30` or UTC `Z`). The caller supplies a source label;
 the CSV cannot override provenance. Every row is validated through
-`OHLCVCandle`; malformed rows reject the import with a line number.
+`OHLCVCandle`; malformed rows reject the import with a line number. The
+`import_csv_to_store` pipeline then runs batch quality checks against a
+`CandleQuery` (and optional calendar) before writing anything; a failed batch
+is not persisted.
 
 ## Local storage
 `SQLiteCandleStore` stores decimal values as text to avoid binary floating
