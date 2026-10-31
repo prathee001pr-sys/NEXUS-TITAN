@@ -6,7 +6,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import TextIO
 
-from nexus_titan.data.ohlcv import OHLCVCandle
+from nexus_titan.data.ohlcv import CandleQuery, OHLCVCandle
+from nexus_titan.data.quality import inspect_candle_batch
+from nexus_titan.data.service import MarketDataValidationError
+from nexus_titan.data.sessions import MarketCalendar
+from nexus_titan.data.sqlite_store import SQLiteCandleStore, StoreResult
 
 
 _REQUIRED_COLUMNS = (
@@ -67,3 +71,20 @@ def load_ohlcv_csv(
     finally:
         if owns_file:
             handle.close()
+
+
+def import_csv_to_store(
+    file: str | Path | TextIO,
+    *,
+    source: str,
+    query: CandleQuery,
+    store: SQLiteCandleStore,
+    calendar: MarketCalendar | None = None,
+) -> tuple[tuple[OHLCVCandle, ...], StoreResult]:
+    """Parse, validate and persist a CSV batch; invalid batches are never stored."""
+    candles = load_ohlcv_csv(file, source=source)
+    report = inspect_candle_batch(candles, query, calendar=calendar)
+    if not report.is_valid:
+        raise MarketDataValidationError(report)
+    result = store.store(candles)
+    return candles, result
