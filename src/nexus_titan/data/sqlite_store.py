@@ -95,3 +95,15 @@ class SQLiteCandleStore:
             )
             for row in rows
         )
+
+
+class SQLiteMarketDataSource:
+    """MarketDataSource adapter that retrieves candles from a local SQLite store."""
+
+    def __init__(self, store: SQLiteCandleStore) -> None:
+        if not isinstance(store, SQLiteCandleStore):
+            raise TypeError("store must be a SQLiteCandleStore")
+        self._store = store
+
+    def fetch_candles(self, query: CandleQuery) -> tuple[OHLCVCandle, ...]:
+        return self._store.fetch(query)
