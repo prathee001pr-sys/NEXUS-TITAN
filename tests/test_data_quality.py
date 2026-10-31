@@ -143,3 +143,42 @@ def test_calendar_aware_inspection_detects_gap_after_next_session_opens():
         datetime(2026, 1, 2, 3, 45, tzinfo=timezone.utc),
         datetime(2026, 1, 2, 3, 47, tzinfo=timezone.utc),
     ),)
+
+
+def test_calendar_aware_inspection_handles_weekend_closure():
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    calendar = nse_equity_derivatives_baseline()
+    friday_close = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 2, 9, 59, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    monday_later = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 5, 3, 47, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    report = inspect_candle_batch([friday_close, monday_later], query(), calendar=calendar)
+    assert report.missing_intervals == ((
+        datetime(2026, 1, 5, 3, 45, tzinfo=timezone.utc),
+        datetime(2026, 1, 5, 3, 47, tzinfo=timezone.utc),
+    ),)
+
+
+def test_calendar_aware_inspection_skips_holiday_before_next_session():
+    from datetime import date
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    calendar = nse_equity_derivatives_baseline(holidays=frozenset({date(2026, 1, 5)}))
+    friday_close = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 2, 9, 59, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    tuesday_later = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 6, 3, 47, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    report = inspect_candle_batch([friday_close, tuesday_later], query(), calendar=calendar)
+    assert report.missing_intervals == ((
+        datetime(2026, 1, 6, 3, 45, tzinfo=timezone.utc),
+        datetime(2026, 1, 6, 3, 47, tzinfo=timezone.utc),
+    ),)
