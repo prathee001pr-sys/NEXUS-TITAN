@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from datetime import datetime
 from typing import Protocol, Sequence
 
 from nexus_titan.data.ohlcv import OHLCVCandle
@@ -51,8 +52,8 @@ class ExecutionCostModel:
 
 @dataclass(frozen=True, slots=True)
 class BacktestTrade:
-    entry_time: object
-    exit_time: object
+    entry_time: datetime
+    exit_time: datetime
     quantity: int
     entry_price: Decimal
     exit_price: Decimal
@@ -136,7 +137,7 @@ class BacktestEngine:
                 required = fill * self.quantity + buy_cost
                 if required > capital:
                     raise ValueError("insufficient capital for requested position and costs")
-                capital -= buy_cost
+                capital -= required
                 position = (fill_bar.timestamp, fill, buy_cost)
             elif signal.target_position == 0 and position is not None:
                 entry_time, entry_price, entry_cost = position
