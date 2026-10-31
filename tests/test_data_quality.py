@@ -75,3 +75,51 @@ def test_supported_timeframe_durations(value, seconds):
 def test_rejects_unsupported_timeframes(value):
     with pytest.raises(ValueError):
         timeframe_duration(value)
+
+
+def test_calendar_aware_inspection_skips_overnight_gap():
+    from datetime import date
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    calendar = nse_equity_derivatives_baseline()
+    first = make_candle(29)
+    next_day = OHLCVCandle(
+        symbol="NIFTY", timeframe="1m",
+        timestamp=datetime(2026, 1, 2, 9, 15, tzinfo=timezone.utc),
+        open=100, high=102, low=99, close=101, volume=10, source="test",
+    )
+    report = inspect_candle_batch([first, next_day], query(), calendar=calendar)
+    assert report.missing_intervals == ()
+
+
+def test_calendar_aware_inspection_detects_gap_inside_session():
+    from datetime import time
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    calendar = nse_equity_derivatives_baseline()
+    # UTC 03:45 and 03:48 correspond to 09:15 and 09:18 IST.
+    first = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 1, 3, 45, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    later = OHLCVCandle(
+        "NIFTY", "1m", datetime(2026, 1, 1, 3, 48, tzinfo=timezone.utc),
+        100, 102, 99, 101, 10, "test",
+    )
+    report = inspect_candle_batch([first, later], query(), calendar=calendar)
+    assert report.missing_intervals == ((
+        datetime(2026, 1, 1, 3, 46, tzinfo=timezone.utc),
+        datetime(2026, 1, 1, 3, 48, tzinfo=timezone.utc),
+    ),)
+
+
+def test_calendar_aware_inspection_skips_gap_on_holiday():
+    from datetime import date
+    from nexus_titan.data.sessions import nse_equity_derivatives_baseline
+
+    holiday = date(2026, 1, 1)
+    calendar = nse_equity_derivatives_baseline(holidays=frozenset({holiday}))
+    first = make_candle(15)
+    later = make_candle(18)
+    report = inspect_candle_batch([first, later], query(), calendar=calendar)
+    assert report.missing_intervals == ()
