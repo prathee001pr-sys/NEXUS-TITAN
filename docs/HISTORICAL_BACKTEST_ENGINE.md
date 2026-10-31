@@ -16,7 +16,9 @@ verified broker/exchange schedules before interpreting results.
 
 ## Metrics
 Reports final capital, net P&L, return, completed trades, win rate, profit
-factor, expectancy and maximum drawdown based on closed-trade equity. Profit
+factor, expectancy and maximum drawdown based on closed-trade equity. Cash
+accounting reserves the entry notional and deducts entry costs at purchase,
+then credits exit proceeds net of exit costs. Profit
 factor is null with no trades and infinity when there are wins but no losses.
 
 ## Limitations
