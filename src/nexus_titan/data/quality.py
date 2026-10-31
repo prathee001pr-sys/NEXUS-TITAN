@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from nexus_titan.data.ohlcv import CandleQuery, OHLCVCandle
+from nexus_titan.data.sessions import MarketCalendar
 
 
 _TIMEFRAME = re.compile(r"^(\d+)(m|h|d)$")
@@ -50,12 +51,19 @@ class DataQualityReport:
 def inspect_candle_batch(
     candles: tuple[OHLCVCandle, ...] | list[OHLCVCandle],
     query: CandleQuery,
+    *,
+    calendar: MarketCalendar | None = None,
 ) -> DataQualityReport:
     """Inspect order, duplicates, gaps and query identity/bounds.
 
     Gap detection assumes continuous fixed-duration intervals. Exchange session
     calendars, holidays and trading breaks must be applied by a later calendar-
     aware layer; this function intentionally does not guess market sessions.
+
+    When a calendar is supplied, gaps are reported only when the expected next
+    candle timestamp is inside a configured trading session. Cross-date gaps
+    are skipped in this first integration to avoid treating overnight closures
+    as missing data; a later session-aware iterator can inspect next-day opens.
     """
     expected = timeframe_duration(query.timeframe)
     duplicates: list[datetime] = []
@@ -82,7 +90,16 @@ def inspect_candle_batch(
             elif item.timestamp > previous_item.timestamp:
                 delta = item.timestamp - previous_item.timestamp
                 if delta > expected:
-                    gaps.append((previous_item.timestamp + expected, item.timestamp))
+                    candidate = previous_item.timestamp + expected
+                    same_local_date = (
+                        previous_item.timestamp.astimezone(calendar.zone).date()
+                        == item.timestamp.astimezone(calendar.zone).date()
+                        if calendar is not None else True
+                    )
+                    if same_local_date and (
+                        calendar is None or calendar.is_open(candidate)
+                    ):
+                        gaps.append((candidate, item.timestamp))
         previous = (index, item)
 
     return DataQualityReport(
