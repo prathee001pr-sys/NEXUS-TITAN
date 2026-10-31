@@ -1,12 +1,16 @@
 """Validated, provider-independent historical candle retrieval."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from nexus_titan.data.ohlcv import CandleQuery, MarketDataSource, OHLCVCandle
 from nexus_titan.data.quality import DataQualityReport, inspect_candle_batch
 from nexus_titan.data.sessions import MarketCalendar
+
+
+class MarketDataSourceContractError(TypeError):
+    """Raised when an adapter violates the MarketDataSource return contract."""
 
 
 class MarketDataValidationError(ValueError):
@@ -49,12 +53,23 @@ class MarketDataService:
         *,
         calendar: MarketCalendar | None = None,
     ) -> None:
+        if not callable(getattr(source, "fetch_candles", None)):
+            raise TypeError("source must implement fetch_candles(query)")
         self._source = source
         self._calendar = calendar
 
     def fetch_validated(self, query: CandleQuery) -> ValidatedCandleBatch:
-        received: Sequence[OHLCVCandle] = self._source.fetch_candles(query)
+        received = self._source.fetch_candles(query)
+        if not isinstance(received, Sequence) or isinstance(received, (str, bytes, bytearray)):
+            raise MarketDataSourceContractError(
+                "fetch_candles must return a sequence of OHLCVCandle objects"
+            )
         candles = tuple(received)
+        invalid = tuple(index for index, item in enumerate(candles) if not isinstance(item, OHLCVCandle))
+        if invalid:
+            raise MarketDataSourceContractError(
+                f"fetch_candles returned non-OHLCVCandle items at indices: {invalid}"
+            )
         report = inspect_candle_batch(candles, query, calendar=self._calendar)
         if not report.is_valid:
             raise MarketDataValidationError(report)
