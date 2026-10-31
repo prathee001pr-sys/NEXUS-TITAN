@@ -53,3 +53,14 @@ def test_rejects_invalid_store_inputs(tmp_path):
     store = SQLiteCandleStore(tmp_path / "market.db")
     with pytest.raises(TypeError):
         store.store([object()])
+
+
+def test_sqlite_source_works_with_validating_market_data_service(tmp_path):
+    from nexus_titan.data.service import MarketDataService
+    from nexus_titan.data.sqlite_store import SQLiteMarketDataSource
+
+    store = SQLiteCandleStore(tmp_path / "adapter.db")
+    store.store([candle(15), candle(16), candle(17)])
+    result = MarketDataService(SQLiteMarketDataSource(store)).fetch_validated(query())
+    assert [item.timestamp.minute for item in result.candles] == [15, 16, 17]
+    assert result.report.is_valid
