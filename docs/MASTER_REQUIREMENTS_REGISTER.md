@@ -31,9 +31,22 @@ The SQLite-backed implementation lives in
 | DATA-007 | Validated CSV-to-store pipeline | Quality checks complete before any rows are persisted; invalid batch leaves store unchanged | Tested | `tests/test_csv_import.py`; CI #51 success; later adapter changes pending |
 | DATA-008 | SQLite MarketDataSource adapter | Stored candles can be retrieved through the standard MarketDataService validation boundary | Built | `SQLiteMarketDataSource`; `tests/test_sqlite_store.py`; CI pending |
 | DATA-009 | Historical backtest engine | Next-bar execution, long-only position lifecycle, explicit costs, P&L and risk metrics | Built | `src/nexus_titan/research/backtest_engine.py`; `tests/test_backtest_engine.py`; CI pending |
+| STRAT-001 | Moving Average Crossover reference strategy | Fast/slow SMA uses completed candles only; warm-up and parameter validation; next-open integration test | Built | `src/nexus_titan/research/strategies.py`; `tests/test_moving_average_strategy.py`; CI verification pending |
 | CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #55, commit `0b4a27c`, job `Core tests`, conclusion `success` |
 
-## Evidence policy\n\nThe CI run confirms that the repository test job completed successfully; it does not\nindependently validate exchange data accuracy, official market calendars, provider\nlicensing, production reliability or trading profitability. Data requirements remain\n**Tested**, not **Verified**, until those external and end-to-end acceptance checks\nhave evidence. The latest recorded CI evidence is run #34; later commits require a\nnew successful run before their changes can be considered tested.\n\n## Scope and safety notes
+## Evidence policy
+
+The CI run confirms that the repository test job completed successfully; it does not
+independently validate exchange data accuracy, official market calendars, provider
+licensing, production reliability or trading profitability. Data requirements remain
+**Tested**, not **Verified**, until those external and end-to-end acceptance checks
+have evidence.
+
+CI run #62 passed for commit `3b4abda2fdd3e7a4a62dca8b66a1a407407aff94`.
+The moving-average strategy and its tests were committed after that run; their
+automated CI result must be checked before their status advances beyond **Built**.
+
+## Scope and safety notes
 
 - "Tested" means automated tests passed; it does not mean production approval.
 - "Verified" is reserved for evidence that validates the full requirement, not just that code exists.
