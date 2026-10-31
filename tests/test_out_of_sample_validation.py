@@ -16,7 +16,7 @@ def bars(prices):
         value = Decimal(str(price))
         result.append(OHLCVCandle(
             "NIFTY", "1m", start + timedelta(minutes=index),
-            value, value + 1, value - 1, value, 100, "test",
+            value, value + 1, max(value - 1, Decimal("0.1")), value, 100, "test",
         ))
     return result
 
