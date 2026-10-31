@@ -22,9 +22,13 @@ The SQLite-backed implementation lives in
 | EVOLVE-003 | Protected controls | EVOLVE cannot target risk controls, permissions or live trading | Tested | CI run #6 |
 | EVOLVE-004 | Isolated artifact workspace | Per-experiment folders; path traversal blocked; artifacts are not executable | Designed | Implementation introduced in this change; awaiting CI |
 | GOV-001 | Requirements register | SQLite-backed lifecycle; transitions require evidence; records survive restart | Designed | Implementation introduced in this change; awaiting CI |
-| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #6, commit `1b3b77f` |
+| DATA-001 | OHLCV data contract | Immutable, timezone-normalized candles; valid decimal OHLCV values and query bounds | Tested | `tests/test_ohlcv.py`; CI run #34 |
+| DATA-002 | Data quality inspection | Detect duplicates, ordering errors, missing intervals, query-bound and identity errors without mutating input | Tested | `tests/test_data_quality.py`; CI run #34 |
+| DATA-003 | Configurable market sessions | Weekly sessions, holidays and special sessions; timezone-aware open/close checks | Tested | `tests/test_sessions.py`; CI run #34; holiday feed remains caller-supplied |
+| DATA-004 | Historical data service boundary | Adapter results are type-checked, validated and returned as immutable batches; no broker/order execution | Tested | `tests/test_market_data_service.py`; CI run #34 |
+| CI-001 | Continuous integration | Push to main runs Python tests and reports a successful job | Verified | GitHub Actions run #34, job `Core tests`, conclusion `success` |
 
-## Scope and safety notes
+## Evidence policy\n\nThe CI run confirms that the repository test job completed successfully; it does not\nindependently validate exchange data accuracy, official market calendars, provider\nlicensing, production reliability or trading profitability. Data requirements remain\n**Tested**, not **Verified**, until those external and end-to-end acceptance checks\nhave evidence. The latest recorded CI evidence is run #34; later commits require a\nnew successful run before their changes can be considered tested.\n\n## Scope and safety notes
 
 - "Tested" means automated tests passed; it does not mean production approval.
 - "Verified" is reserved for evidence that validates the full requirement, not just that code exists.
