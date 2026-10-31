@@ -42,10 +42,15 @@ def test_signal_for_existing_history_is_not_changed_by_later_candles():
     strategy = MovingAverageCrossover(fast_period=2, slow_period=3)
     history = candles([5, 4, 3, 4, 8])
     original_signal = strategy.on_candle(history)
-    extended_history = history + candles([100])
+    future_time = history[-1].timestamp + timedelta(minutes=1)
+    future_bars = [
+        OHLCVCandle("NIFTY", "1m", future_time, 2, 3, 1, 2, 100, "test"),
+        OHLCVCandle("NIFTY", "1m", future_time + timedelta(minutes=1), 2, 3, 1, 2, 100, "test"),
+    ]
+    extended_history = history + future_bars
     assert original_signal.target_position == 1
     assert strategy.on_candle(history).target_position == original_signal.target_position
-    assert strategy.on_candle(extended_history).target_position == 1
+    assert strategy.on_candle(extended_history).target_position == 0
 
 
 def test_engine_executes_strategy_signal_on_next_candle_open():
