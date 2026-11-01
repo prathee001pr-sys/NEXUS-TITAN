@@ -1,14 +1,22 @@
-"""Modular Phase 6 strategy catalogue, kept separate from the V2 baseline strategy."""
+"""Modular trading strategy implementations for NEXUS-TITAN research."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable, Protocol
 
-from nexus_titan.research.indicators import bollinger_bands, ema, macd, rsi, sma
+from nexus_titan.research.indicators import (
+    bollinger_bands,
+    ema,
+    macd,
+    rsi,
+    sma,
+)
 
 
 class Strategy(Protocol):
+    """Protocol for all NEXUS-TITAN research strategies."""
+
     name: str
 
     def get_signal(self, index: int, candles: list[dict[str, float]]) -> int:
@@ -18,6 +26,8 @@ class Strategy(Protocol):
 
 @dataclass(frozen=True)
 class SMACrossoverStrategy:
+    """Simple Moving Average Crossover Strategy."""
+
     fast_period: int = 5
     slow_period: int = 20
     name: str = "SMA Crossover"
@@ -28,12 +38,17 @@ class SMACrossoverStrategy:
         closes = [c["close"] for c in candles[: index + 1]]
         fast = sma(closes, self.fast_period)
         slow = sma(closes, self.slow_period)
+
         curr_fast, prev_fast = fast[-1], fast[-2]
         curr_slow, prev_slow = slow[-1], slow[-2]
+
         if None in (curr_fast, prev_fast, curr_slow, prev_slow):
             return 0
+
+        # Bullish Crossover: Fast crosses above Slow
         if prev_fast <= prev_slow and curr_fast > curr_slow:
             return 1
+        # Bearish Crossover: Fast crosses below Slow
         if prev_fast >= prev_slow and curr_fast < curr_slow:
             return -1
         return 0
@@ -41,6 +56,8 @@ class SMACrossoverStrategy:
 
 @dataclass(frozen=True)
 class EMACrossoverStrategy:
+    """Exponential Moving Average Crossover Strategy."""
+
     fast_period: int = 9
     slow_period: int = 21
     name: str = "EMA Crossover"
@@ -51,10 +68,13 @@ class EMACrossoverStrategy:
         closes = [c["close"] for c in candles[: index + 1]]
         fast = ema(closes, self.fast_period)
         slow = ema(closes, self.slow_period)
+
         curr_fast, prev_fast = fast[-1], fast[-2]
         curr_slow, prev_slow = slow[-1], slow[-2]
+
         if None in (curr_fast, prev_fast, curr_slow, prev_slow):
             return 0
+
         if prev_fast <= prev_slow and curr_fast > curr_slow:
             return 1
         if prev_fast >= prev_slow and curr_fast < curr_slow:
@@ -64,6 +84,8 @@ class EMACrossoverStrategy:
 
 @dataclass(frozen=True)
 class RSIMeanReversionStrategy:
+    """RSI Mean-Reversion Strategy: Buy when crossing above oversold, exit when above overbought."""
+
     period: int = 14
     oversold: float = 30.0
     overbought: float = 70.0
@@ -73,19 +95,27 @@ class RSIMeanReversionStrategy:
         if index <= self.period:
             return 0
         closes = [c["close"] for c in candles[: index + 1]]
-        values = rsi(closes, self.period)
-        current, previous = values[-1], values[-2]
-        if current is None or previous is None:
+        rsi_values = rsi(closes, self.period)
+
+        curr_rsi = rsi_values[-1]
+        prev_rsi = rsi_values[-2]
+
+        if curr_rsi is None or prev_rsi is None:
             return 0
-        if previous <= self.oversold and current > self.oversold:
+
+        # Crossed back above oversold -> Buy signal
+        if prev_rsi <= self.oversold and curr_rsi > self.oversold:
             return 1
-        if previous < self.overbought and current >= self.overbought:
+        # Crossed above overbought -> Sell / Take profit signal
+        if prev_rsi < self.overbought and curr_rsi >= self.overbought:
             return -1
         return 0
 
 
 @dataclass(frozen=True)
 class RSIMomentumStrategy:
+    """RSI Midline Momentum Strategy: Buy when crossing above 50, exit when falling below 50."""
+
     period: int = 14
     midline: float = 50.0
     name: str = "RSI Momentum"
@@ -94,19 +124,27 @@ class RSIMomentumStrategy:
         if index <= self.period:
             return 0
         closes = [c["close"] for c in candles[: index + 1]]
-        values = rsi(closes, self.period)
-        current, previous = values[-1], values[-2]
-        if current is None or previous is None:
+        rsi_values = rsi(closes, self.period)
+
+        curr_rsi = rsi_values[-1]
+        prev_rsi = rsi_values[-2]
+
+        if curr_rsi is None or prev_rsi is None:
             return 0
-        if previous <= self.midline and current > self.midline:
+
+        # Bullish momentum cross: RSI crosses above 50
+        if prev_rsi <= self.midline and curr_rsi > self.midline:
             return 1
-        if previous >= self.midline and current < self.midline:
+        # Bearish momentum cross: RSI falls below 50
+        if prev_rsi >= self.midline and curr_rsi < self.midline:
             return -1
         return 0
 
 
 @dataclass(frozen=True)
 class MACDTrendStrategy:
+    """MACD Line vs Signal Line crossover strategy."""
+
     fast_period: int = 12
     slow_period: int = 26
     signal_period: int = 9
@@ -116,22 +154,29 @@ class MACDTrendStrategy:
         if index < self.slow_period + self.signal_period:
             return 0
         closes = [c["close"] for c in candles[: index + 1]]
-        macd_line, signal_line, _ = macd(
+        macd_line, sig_line, _ = macd(
             closes, self.fast_period, self.slow_period, self.signal_period
         )
-        current_macd, previous_macd = macd_line[-1], macd_line[-2]
-        current_signal, previous_signal = signal_line[-1], signal_line[-2]
-        if None in (current_macd, previous_macd, current_signal, previous_signal):
+
+        curr_m, prev_m = macd_line[-1], macd_line[-2]
+        curr_s, prev_s = sig_line[-1], sig_line[-2]
+
+        if None in (curr_m, prev_m, curr_s, prev_s):
             return 0
-        if previous_macd <= previous_signal and current_macd > current_signal:
+
+        # MACD crosses above Signal line -> Buy
+        if prev_m <= prev_s and curr_m > curr_s:
             return 1
-        if previous_macd >= previous_signal and current_macd < current_signal:
+        # MACD crosses below Signal line -> Sell
+        if prev_m >= prev_s and curr_m < curr_s:
             return -1
         return 0
 
 
 @dataclass(frozen=True)
 class BollingerBreakoutStrategy:
+    """Bollinger Bands Breakout Strategy."""
+
     period: int = 20
     num_std: float = 2.0
     name: str = "Bollinger Breakout"
@@ -140,14 +185,21 @@ class BollingerBreakoutStrategy:
         if index < self.period:
             return 0
         closes = [c["close"] for c in candles[: index + 1]]
-        upper, middle, _ = bollinger_bands(closes, self.period, self.num_std)
-        current_close, previous_close = closes[-1], closes[-2]
-        current_upper, current_middle = upper[-1], middle[-1]
-        if current_upper is None or current_middle is None:
+        upper, middle, lower = bollinger_bands(closes, self.period, self.num_std)
+
+        curr_close = closes[-1]
+        prev_close = closes[-2]
+        curr_upper = upper[-1]
+        curr_middle = middle[-1]
+
+        if None in (curr_upper, curr_middle):
             return 0
-        if previous_close <= upper[-2] and current_close > current_upper:
+
+        # Close breaks above upper band -> Long breakout
+        if prev_close <= upper[-2] and curr_close > curr_upper:
             return 1
-        if current_close < current_middle:
+        # Close falls below middle band (20 SMA) -> Exit
+        if curr_close < curr_middle:
             return -1
         return 0
 
