@@ -18,7 +18,7 @@ The V2 integration branch is the stronger overall project foundation because it 
 | V2 integrated CI | Full V2 integration-branch test suite | **280 passed, 5 subtests passed** |
 
 V2 GitHub Actions evidence:
-https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256696389
+https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256952073
 
 The compatibility run was performed in the working test environment against the branch snapshot. The original ZIP's 30 test modules have not yet been copied into the V2 repository's CI test tree, so that exact 246-test compatibility run is not yet automatically repeated on every V2 push.
 
