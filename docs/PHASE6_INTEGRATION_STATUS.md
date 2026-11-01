@@ -25,22 +25,25 @@ The uploaded ZIP's independent baseline suite previously reported **246 passed**
 | Paper/virtual execution | SQLite durable account snapshots, paper order lifecycle, manual-approval callback, partial fills, idempotent fills, limit/stop orders, price-triggered exits, kill switch, emergency square-off, and reconciliation |
 | Storage/trading/dashboard | SQLite and JSON trade ledgers, CSV signal-to-risk decision flow, virtual decision ledger adapter, and a read-only dashboard backend |
 
-The V2 originals `research/backtest_engine.py`, `research/strategies.py`, and `research/validation.py` were not overwritten. V6 versions use separate names (`backtest.py`, `v6_strategies.py`, `v6_validation.py`) to preserve the existing baseline while integration continues.
+The V2 originals `research/backtest_engine.py`, `research/strategies.py`, and `research/validation.py` were not replaced. V6 strategy/validation implementations also remain available as `v6_strategies.py` and `v6_validation.py`; compatibility exports expose their public classes/functions through the original V2 import paths without removing `MovingAverageCrossover`, `split_chronologically` or `evaluate_out_of_sample`.
 
 ## Test evidence
 
 New focused integration tests cover ACE/runtime, advanced backtest, canonical data, portfolio risk, indicators, walk-forward/Monte Carlo/promotion gates, virtual paper account, durable recovery, options Greeks, crypto virtual-account behavior, AI risk veto, EVOLVE service boundaries, dashboard backend, risk compatibility, and trade ledgers.
 
-- ZIP-alone suite: 246 passed (separate source tree).
-- V2 integration branch: **275 passed, 5 subtests passed** in GitHub Actions run [#41255972614](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182).
-- `tests/test_phase6_cli.py` verifies the five CLI `--help` entry points, runs the historical backtest on the illustrative CSV, and runs the EVOLVE cycle locally with LLM/network disabled.
-- Five runner scripts, an illustrative OHLCV fixture, `.env.example`, ZIP source map, and original ACE/runtime/scheduler reference documents were added.
+- ZIP-alone suite: **246 passed** in its original standalone source tree.
+- V2 integration branch CI: **280 passed, 5 subtests passed** in [run #41256696389](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256696389).
+- The original ZIP's **30 test modules / 246 tests** were also run unchanged against the integrated branch's `src/` tree: **246 passed**. This compatibility run was performed locally against the exact branch snapshot; those original test files are not yet vendored into V2 CI.
+- `tests/test_phase6_cli.py` verifies five CLI `--help` entry points, runs the local synthetic OHLCV backtest and runs EVOLVE with LLM/network disabled.
+- `tests/test_phase6_zip_compatibility.py` covers derivative lot fills, manual approval snapshot integrity, daily-loss blocking and dashboard compatibility.
+- ZIP inventory comparison: all **48/48** ZIP Python source paths are represented; **8** remain byte-identical, **40** are adapted, and **21** additional V2 source modules are retained.
+- Five runner scripts, illustrative synthetic OHLCV fixtures, `.env.example`, ZIP source map, and original ACE/runtime/scheduler reference documents are included.
 
 Tests are necessary but do not prove trading profitability, exchange-data accuracy, correct statutory taxation in every broker contract note, or production readiness.
 
 ## Not complete / remaining work
 
-1. **Source/API parity audit:** all 48 ZIP Python module paths are represented in the branch, but many files were adapted to V2 interfaces rather than copied byte-for-byte. The source map records the main collisions and locations; a deeper API/behavior audit is still required for every adapted module.
+1. **Source/API parity audit:** all 48 ZIP Python module paths are represented. The original 246-test suite passes against the integration source, but that does not prove every public API, optional field or edge case is identical. Eight source files are byte-identical; forty are adapted. A deeper API/behavior review of every adapted module remains open.
 2. **Runtime/financial acceptance:** the current tests are automated regression/unit tests. Independently calculated end-to-end accounting fixtures, instrument-specific cost reconciliation, intrabar stop/target edge cases and exchange microstructure simulation still need a separate acceptance pass.
 3. **Advanced backtest verification:** test futures margin/cash accounting, costs by instrument and side, stop/target gap behavior, risk sizing, drawdown/equity metrics, and benchmark/annualization against independently calculated fixtures. No claim of exchange-grade simulation is made.
 4. **Indian derivatives:** dynamic official contract master, verified expiry/lot/freeze/tick metadata, options-chain history, bid/ask liquidity, exchange SPAN/ELM margins, physical settlement/exercise/assignment, spreads, partial fills and intrabar option pricing remain unimplemented or incomplete.
