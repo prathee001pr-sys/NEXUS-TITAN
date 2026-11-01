@@ -45,6 +45,6 @@ integrated `src/` tree and passed. This is not a blind archive extraction.
 
 - ZIP standalone suite: **246 passed**.
 - Original ZIP's tests, unchanged, against the integrated V2 source: **246 passed**.
-- V2 branch CI: **280 passed, 5 subtests passed** (run #41256696389).
+- V2 branch CI: **280 passed, 5 subtests passed** (run #41256952073).
 - Key regression coverage now includes manual approval snapshot integrity, derivative lot-size fills, daily-loss lockout, dashboard capability telemetry and legacy backtest method compatibility.
 - This is not a byte-for-byte merge. Exhaustive API parity, independent instrument accounting and production-data validation remain open.
