@@ -8,7 +8,7 @@ Draft pull request: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/pull/1
 
 The ZIP-derived Phase 6 capabilities have been integrated additively into the V2 integration branch. The original V2 core, CSV/SQLite storage, baseline backtest engine, moving-average strategy, and chronological OOS validator remain in place. All 48 Python source paths from the ZIP have a counterpart in the integration branch; the two colliding strategy/validation modules are mapped to `v6_strategies.py` and `v6_validation.py`. This is an additive, compatibility-oriented integration, not a blind byte-for-byte overwrite.
 
-**Latest confirmed combined CI evidence:** GitHub Actions run [#41256696389](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256696389) completed successfully with **280 tests passed and 5 subtests passed** at code commit `233f4ba0e5f184f7e29842037db352dda0eaae01`. The run includes CLI smoke checks, local synthetic-data backtesting, a deterministic EVOLVE cycle with LLM/network disabled, and compatibility regressions.
+**Latest confirmed combined CI evidence:** GitHub Actions run [#41256952073](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256952073) completed successfully with **280 tests passed and 5 subtests passed** at code commit `634e634ff54c94fd42b2833a24cb1f6a675ad102`. The run includes CLI smoke checks, local synthetic-data backtesting, a deterministic EVOLVE cycle with LLM/network disabled, and compatibility regressions.
 
 The uploaded ZIP's independent baseline suite reported **246 passed**. In addition, those same 30 original ZIP test modules were executed unchanged against the integrated V2 source tree and also passed **246/246**. This compatibility run is separate from the V2 CI suite.
 
@@ -32,7 +32,7 @@ The V2 originals `research/backtest_engine.py`, `research/strategies.py`, and `r
 New focused integration tests cover ACE/runtime, advanced backtest, canonical data, portfolio risk, indicators, walk-forward/Monte Carlo/promotion gates, virtual paper account, durable recovery, options Greeks, crypto virtual-account behavior, AI risk veto, EVOLVE service boundaries, dashboard backend, risk compatibility, and trade ledgers.
 
 - ZIP-alone suite: **246 passed** in its original standalone source tree.
-- V2 integration branch CI: **280 passed, 5 subtests passed** in [run #41256696389](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256696389).
+- V2 integration branch CI: **280 passed, 5 subtests passed** in [run #41256952073](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256952073).
 - The original ZIP's **30 test modules / 246 tests** were also run unchanged against the integrated branch's `src/` tree: **246 passed**. This compatibility run was performed locally against the exact branch snapshot; those original test files are not yet vendored into V2 CI.
 - `tests/test_phase6_cli.py` verifies five CLI `--help` entry points, runs the local synthetic OHLCV backtest and runs EVOLVE with LLM/network disabled.
 - `tests/test_phase6_zip_compatibility.py` covers derivative lot fills, manual approval snapshot integrity, daily-loss blocking and dashboard compatibility.
