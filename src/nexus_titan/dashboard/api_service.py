@@ -49,9 +49,11 @@ class DashboardBackendService:
             ("Technical indicators", "Research"),
             ("Multi-strategy engine", "Research"),
             ("Advanced backtest", "Research"),
-            ("Walk-forward and Monte Carlo", "Validation"),
+            ("Rolling walk-forward validation", "Validation"),
+            ("Monte Carlo stress testing", "Validation"),
             ("Post-mortem attribution", "Validation"),
-            ("Portfolio risk and Indian charges", "Risk"),
+            ("Portfolio risk sizing and circuit breakers", "Risk"),
+            ("Indian statutory charge estimates", "Costs"),
             ("Options theoretical Greeks", "Derivatives"),
             ("Crypto virtual account", "Crypto"),
             ("Durable virtual account", "Execution"),
@@ -80,6 +82,16 @@ class DashboardBackendService:
             "modules": modules,
             "self_improvement": self.evolve_engine.get_status(),
             "self_improvement_agents": coordinator.status(),
+            "self_improvement_capabilities": [
+                {"name": "Provenance-backed learning memory", "status": "AVAILABLE"},
+                {"name": "Allow-listed research ingestion", "status": "AVAILABLE", "network_enabled": False},
+                {"name": "Three-fold strategy experiment runner", "status": "AVAILABLE"},
+                {"name": "Market regime evidence registry", "status": "AVAILABLE", "mode": "recommendation_only"},
+                {"name": "Versioned skill registry", "status": "AVAILABLE"},
+                {"name": "Code-change proposal review", "status": "AVAILABLE", "mode": "manual_merge_only"},
+                {"name": "12 specialist-agent runtime", "status": "AVAILABLE", "mode": "deterministic_local_supervised"},
+                {"name": "Agent creation proposals", "status": "AVAILABLE", "mode": "human_review_before_registration"},
+            ],
             "account": asdict(reconcile),
             "open_positions": [asdict(p) for p in self.account.positions.values()],
             "recent_orders": [o.to_dict() for o in list(self.account.orders.values())[-10:]],
@@ -131,3 +143,8 @@ class DashboardBackendService:
             "post_mortem": asdict(post),
             "warning": "Results are not proof of profitability; verify dataset provenance and tradability.",
         }
+
+
+    def run_live_backtest_suite(self, strategy_key: str = "bollinger") -> dict[str, Any]:
+        """Backward-compatible name for the historical-only backtest suite."""
+        return self.run_backtest_suite(strategy_key)
