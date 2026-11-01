@@ -13,7 +13,7 @@ preserved.
 - ZIP-alone suite: **246 passed** in its extracted source tree.
 - That ZIP-alone result is not the V2 integration test result.
 - The V2 integration branch's latest code run at the time of this record passed
-  **275 tests and 5 subtests** in GitHub Actions run #41255869182.
+  **280 tests and 5 subtests** in GitHub Actions run #41256696389.
 - CI evidence: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182
 
 ## Integrated in `integration/phase6-zip-baseline`
@@ -37,6 +37,8 @@ preserved.
   reference documentation.
 
 ## Compatibility and source mapping
+
+Inventory check: 48/48 ZIP Python source paths are represented in the branch. Eight files are byte-identical, forty are adapted to V2 interfaces/safety boundaries, and twenty-one additional V2 Python modules remain. Original strategy/validation entry points now expose compatibility exports while the V2-specific strategy and OOS APIs remain available.
 
 All 48 Python source paths from the ZIP have a counterpart in the integration
 branch. Where ZIP paths collided with existing V2 baselines, the ZIP catalogue
