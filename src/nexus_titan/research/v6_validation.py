@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Literal
 
@@ -12,6 +12,7 @@ from nexus_titan.research.backtest import BacktestResult, InstrumentType, run_ba
 
 
 class PromotionStage(str, Enum):
+    """Strategy lifecycle governance states required by Blueprint Section 7.6 & NT-P1-11."""
     DRAFT = "DRAFT"
     BACKTEST_VALIDATED = "BACKTEST_VALIDATED"
     OOS_VALIDATED = "OOS_VALIDATED"
@@ -42,7 +43,7 @@ class WalkForwardReport:
     aggregate_oos_return_pct: float
     compounded_oos_return_pct: float
     total_oos_trades: int
-    confidence_verdict: str
+    confidence_verdict: str  # ROBUST_CANDIDATE, MIXED, OVERFITTED, INSUFFICIENT_EVIDENCE
     status_summary: str
 
     @property
@@ -68,9 +69,9 @@ class WalkForwardReport:
 
 @dataclass(frozen=True)
 class MonteCarloReport:
-    """Monte Carlo report with deterministic seed and risk-of-ruin estimate."""
+    """Monte Carlo simulation supporting both standard reshuffle and regime-preserving block bootstrap."""
     iterations: int
-    method: str
+    method: str  # "block_bootstrap" or "trade_shuffle"
     block_size: int
     original_max_drawdown_pct: float
     median_max_drawdown_pct: float
@@ -81,6 +82,7 @@ class MonteCarloReport:
 
 @dataclass(frozen=True)
 class StrategyPromotionDecision:
+    """Governance decision evaluating whether a strategy can advance to the next stage (NT-P1-11)."""
     strategy_name: str
     current_stage: PromotionStage
     recommended_stage: PromotionStage
@@ -105,59 +107,88 @@ def rolling_walk_forward_validation(
     target_pct: float | None = None,
     instrument_lot_size: int = 1,
 ) -> tuple[list[BacktestResult], WalkForwardReport]:
-    """Perform rolling chronological train/test validation with warm-up history."""
+    """Perform multi-fold rolling chronological train/test validation with warm-up history (NT-P1-02, NT-P1-03, NT-P1-04)."""
     n = len(candles)
     if n < 30:
         raise ValueError("At least 30 candles are required for rolling walk-forward validation.")
+
     folds: list[WalkForwardFoldResult] = []
     oos_results: list[BacktestResult] = []
-    fold_splits = [(0.50, 0.70), (0.70, 0.85), (0.85, 1.00)] if num_folds == 3 else [(0.70, 1.00)]
+
+    fold_splits = [
+        (0.50, 0.70),
+        (0.70, 0.85),
+        (0.85, 1.00),
+    ] if num_folds == 3 else [(0.70, 1.00)]
+
     compounded_multiplier = 1.0
 
     for idx, (train_end_pct, test_end_pct) in enumerate(fold_splits, start=1):
         train_end = int(n * train_end_pct)
         test_end = int(n * test_end_pct)
+
         train_data = candles[:train_end]
+
+        # Carry indicator warm-up history from prior bars into OOS without trading on warm-up bars (NT-P1-04)
         warmup_start = max(0, train_end - warmup_lookback)
         actual_warmup_bars = train_end - warmup_start
         test_data_with_warmup = candles[warmup_start:test_end]
 
         train_sig = signal_factory(train_data)
         train_res = run_backtest(
-            train_data, starting_capital=starting_capital,
-            fee_per_side=fee_per_side, slippage_per_side=slippage_per_side,
-            signal=train_sig, stop_loss_pct=stop_loss_pct, target_pct=target_pct,
+            train_data,
+            starting_capital=starting_capital,
+            fee_per_side=fee_per_side,
+            slippage_per_side=slippage_per_side,
+            signal=train_sig,
+            stop_loss_pct=stop_loss_pct,
+            target_pct=target_pct,
             use_indian_statutory_costs=use_indian_statutory_costs,
-            instrument_type=instrument_type, sizing_mode=sizing_mode,
+            instrument_type=instrument_type,
+            sizing_mode=sizing_mode,
             risk_per_trade_pct=risk_per_trade_pct,
             instrument_lot_size=instrument_lot_size,
         )
+
         test_sig = signal_factory(test_data_with_warmup)
         test_res = run_backtest(
-            test_data_with_warmup, starting_capital=starting_capital,
-            fee_per_side=fee_per_side, slippage_per_side=slippage_per_side,
-            signal=test_sig, warmup_bars=actual_warmup_bars,
-            stop_loss_pct=stop_loss_pct, target_pct=target_pct,
+            test_data_with_warmup,
+            starting_capital=starting_capital,
+            fee_per_side=fee_per_side,
+            slippage_per_side=slippage_per_side,
+            signal=test_sig,
+            warmup_bars=actual_warmup_bars,
+            stop_loss_pct=stop_loss_pct,
+            target_pct=target_pct,
             use_indian_statutory_costs=use_indian_statutory_costs,
-            instrument_type=instrument_type, sizing_mode=sizing_mode,
+            instrument_type=instrument_type,
+            sizing_mode=sizing_mode,
             risk_per_trade_pct=risk_per_trade_pct,
             instrument_lot_size=instrument_lot_size,
         )
         oos_results.append(test_res)
+
         compounded_multiplier *= (1.0 + test_res.return_percent / 100.0)
-        folds.append(WalkForwardFoldResult(
-            fold_number=idx, train_bars=len(train_data),
-            test_bars=test_end - train_end, warmup_bars_used=actual_warmup_bars,
-            in_sample_return_pct=round(train_res.return_percent, 2),
-            out_of_sample_return_pct=round(test_res.return_percent, 2),
-            out_of_sample_trades=test_res.total_trades,
-            out_of_sample_sharpe=test_res.sharpe_ratio,
-            is_profitable_oos=test_res.return_percent > 0,
-        ))
+
+        folds.append(
+            WalkForwardFoldResult(
+                fold_number=idx,
+                train_bars=len(train_data),
+                test_bars=test_end - train_end,
+                warmup_bars_used=actual_warmup_bars,
+                in_sample_return_pct=round(train_res.return_percent, 2),
+                out_of_sample_return_pct=round(test_res.return_percent, 2),
+                out_of_sample_trades=test_res.total_trades,
+                out_of_sample_sharpe=test_res.sharpe_ratio,
+                is_profitable_oos=test_res.return_percent > 0,
+            )
+        )
 
     total_oos_trades = sum(f.out_of_sample_trades for f in folds)
     avg_oos_return = sum(f.out_of_sample_return_pct for f in folds) / len(folds)
     compounded_return = (compounded_multiplier - 1.0) * 100.0
+
+    # Strict Sample-Size & Multi-Fold Stability Gate (NT-P1-03: Never call small samples ROBUST)
     if total_oos_trades < min_trades_gate:
         verdict = "INSUFFICIENT_EVIDENCE"
         summary = (
@@ -175,12 +206,15 @@ def rolling_walk_forward_validation(
         summary = "Strategy showed mixed out-of-sample regime stability across folds."
 
     report = WalkForwardReport(
-        total_folds=len(folds), folds=folds,
+        total_folds=len(folds),
+        folds=folds,
         aggregate_oos_return_pct=round(avg_oos_return, 2),
         compounded_oos_return_pct=round(compounded_return, 2),
         total_oos_trades=total_oos_trades,
-        confidence_verdict=verdict, status_summary=summary,
+        confidence_verdict=verdict,
+        status_summary=summary,
     )
+
     return oos_results, report
 
 
@@ -195,32 +229,46 @@ def walk_forward_validation(
     use_indian_statutory_costs: bool = False,
     instrument_type: InstrumentType = "EQUITY_DELIVERY",
 ) -> tuple[BacktestResult, BacktestResult, WalkForwardReport]:
-    """Single chronological train/test split with minimum sample-size gate."""
+    """Single chronological train/test split with strict minimum sample-size gate (NT-P1-03)."""
     split_idx = int(len(candles) * train_ratio)
     train_data = candles[:split_idx]
     test_data = candles[split_idx:]
+
     train_sig = signal_factory(train_data)
     train_res = run_backtest(
-        train_data, starting_capital=starting_capital,
-        fee_per_side=fee_per_side, slippage_per_side=slippage_per_side,
-        signal=train_sig, use_indian_statutory_costs=use_indian_statutory_costs,
+        train_data,
+        starting_capital=starting_capital,
+        fee_per_side=fee_per_side,
+        slippage_per_side=slippage_per_side,
+        signal=train_sig,
+        use_indian_statutory_costs=use_indian_statutory_costs,
         instrument_type=instrument_type,
     )
+
     test_sig = signal_factory(test_data)
     test_res = run_backtest(
-        test_data, starting_capital=starting_capital,
-        fee_per_side=fee_per_side, slippage_per_side=slippage_per_side,
-        signal=test_sig, use_indian_statutory_costs=use_indian_statutory_costs,
+        test_data,
+        starting_capital=starting_capital,
+        fee_per_side=fee_per_side,
+        slippage_per_side=slippage_per_side,
+        signal=test_sig,
+        use_indian_statutory_costs=use_indian_statutory_costs,
         instrument_type=instrument_type,
     )
+
     fold = WalkForwardFoldResult(
-        fold_number=1, train_bars=len(train_data), test_bars=len(test_data),
-        warmup_bars_used=0, in_sample_return_pct=round(train_res.return_percent, 2),
+        fold_number=1,
+        train_bars=len(train_data),
+        test_bars=len(test_data),
+        warmup_bars_used=0,
+        in_sample_return_pct=round(train_res.return_percent, 2),
         out_of_sample_return_pct=round(test_res.return_percent, 2),
         out_of_sample_trades=test_res.total_trades,
         out_of_sample_sharpe=test_res.sharpe_ratio,
         is_profitable_oos=test_res.return_percent > 0,
     )
+
+    # NT-P1-03: Single split MUST NOT label 1 trade or < min_trades_gate as ROBUST!
     if test_res.total_trades < min_trades_gate:
         verdict = "INSUFFICIENT_EVIDENCE"
         summary = f"Insufficient OOS trades ({test_res.total_trades} < {min_trades_gate}). Cannot certify robust."
@@ -230,13 +278,17 @@ def walk_forward_validation(
     else:
         verdict = "OVERFITTED"
         summary = "Negative out-of-sample return."
+
     report = WalkForwardReport(
-        total_folds=1, folds=[fold],
+        total_folds=1,
+        folds=[fold],
         aggregate_oos_return_pct=round(test_res.return_percent, 2),
         compounded_oos_return_pct=round(test_res.return_percent, 2),
         total_oos_trades=test_res.total_trades,
-        confidence_verdict=verdict, status_summary=summary,
+        confidence_verdict=verdict,
+        status_summary=summary,
     )
+
     return train_res, test_res, report
 
 
@@ -248,63 +300,81 @@ def run_monte_carlo_simulation(
     method: str = "block_bootstrap",
     block_size: int = 3,
 ) -> MonteCarloReport:
-    """Monte Carlo simulation with block bootstrap and ruin drawdown fix."""
+    """Monte Carlo simulation with regime-preserving block bootstrap (NT-P1-07) and ruin drawdown fix (P1.5)."""
     if not trade_pnls:
         return MonteCarloReport(
-            iterations=iterations, method=method, block_size=block_size,
-            original_max_drawdown_pct=0.0, median_max_drawdown_pct=0.0,
-            percentile_95_max_drawdown_pct=0.0, worst_case_drawdown_pct=0.0,
+            iterations=iterations,
+            method=method,
+            block_size=block_size,
+            original_max_drawdown_pct=0.0,
+            median_max_drawdown_pct=0.0,
+            percentile_95_max_drawdown_pct=0.0,
+            worst_case_drawdown_pct=0.0,
             ruin_probability_pct=0.0,
         )
+
     rng = random.Random(seed)
     simulated_drawdowns: list[float] = []
     ruin_count = 0
     n = len(trade_pnls)
+
     cash = starting_capital
     peak = cash
-    original_max_drawdown = 0.0
-    for pnl in trade_pnls:
-        cash += pnl
+    orig_max_dd = 0.0
+    for p in trade_pnls:
+        cash += p
         peak = max(peak, cash)
         if peak > 0:
-            original_max_drawdown = max(original_max_drawdown, (peak - cash) / peak * 100.0)
+            dd = (peak - cash) / peak * 100.0
+            orig_max_dd = max(orig_max_dd, dd)
 
     for _ in range(iterations):
         if method == "block_bootstrap" and n >= block_size:
-            sampled: list[float] = []
-            while len(sampled) < n:
+            # Sample contiguous blocks with replacement to preserve clustered loss regimes
+            sampled_path: list[float] = []
+            while len(sampled_path) < n:
                 start_idx = rng.randint(0, n - block_size)
-                sampled.extend(trade_pnls[start_idx:start_idx + block_size])
-            sampled = sampled[:n]
+                sampled_path.extend(trade_pnls[start_idx : start_idx + block_size])
+            sampled_path = sampled_path[:n]
         else:
-            sampled = list(trade_pnls)
-            rng.shuffle(sampled)
-        simulated_cash = starting_capital
-        simulated_peak = simulated_cash
-        simulated_max_drawdown = 0.0
-        for pnl in sampled:
-            simulated_cash += pnl
-            simulated_peak = max(simulated_peak, simulated_cash)
-            if simulated_peak > 0:
-                drawdown = (simulated_peak - max(0.0, simulated_cash)) / simulated_peak * 100.0
-                simulated_max_drawdown = max(simulated_max_drawdown, drawdown)
-            if simulated_cash <= starting_capital * 0.5:
+            sampled_path = list(trade_pnls)
+            rng.shuffle(sampled_path)
+
+        sim_cash = starting_capital
+        sim_peak = sim_cash
+        sim_max_dd = 0.0
+
+        for pnl in sampled_path:
+            sim_cash += pnl
+
+            # Update peak and drawdown BEFORE terminating at ruin
+            sim_peak = max(sim_peak, sim_cash)
+            if sim_peak > 0:
+                dd = (sim_peak - max(0.0, sim_cash)) / sim_peak * 100.0
+                sim_max_dd = max(sim_max_dd, dd)
+
+            if sim_cash <= starting_capital * 0.5:
                 ruin_count += 1
                 break
-        simulated_drawdowns.append(simulated_max_drawdown)
+
+        simulated_drawdowns.append(sim_max_dd)
 
     simulated_drawdowns.sort()
     median_dd = simulated_drawdowns[len(simulated_drawdowns) // 2]
-    percentile_95_dd = simulated_drawdowns[int(len(simulated_drawdowns) * 0.95)]
+    idx_95 = int(len(simulated_drawdowns) * 0.95)
+    p95_dd = simulated_drawdowns[idx_95]
     worst_dd = simulated_drawdowns[-1]
-    ruin_probability = (ruin_count / iterations) * 100.0
+    ruin_prob = (ruin_count / iterations) * 100.0
+
     return MonteCarloReport(
-        iterations=iterations, method=method, block_size=block_size,
-        original_max_drawdown_pct=round(original_max_drawdown, 2),
+        iterations=iterations,
+        method=method,
+        block_size=block_size,
+        original_max_drawdown_pct=round(orig_max_dd, 2),
         median_max_drawdown_pct=round(median_dd, 2),
-        percentile_95_max_drawdown_pct=round(percentile_95_dd, 2),
+        percentile_95_max_drawdown_pct=round(p95_dd, 2),
         worst_case_drawdown_pct=round(worst_dd, 2),
-        ruin_probability_pct=round(ruin_probability, 2),
+        ruin_probability_pct=round(ruin_prob, 2),
     )
 
 
@@ -317,29 +387,41 @@ def evaluate_strategy_promotion(
     min_oos_trades: int = 30,
     max_allowed_dd_pct: float = 15.0,
 ) -> StrategyPromotionDecision:
-    """Enforce dataset, expectancy, OOS sample, walk-forward and Monte Carlo promotion gates."""
+    """Enforce strict promotion gates: Research -> OOS -> Stress -> Paper -> Approval (NT-P1-11)."""
     reasons: list[str] = []
+
     if not is_verified_dataset:
         reasons.append("Dataset provenance/license is unverified (smoke-test sample only).")
+
     if backtest_res.expectancy <= 0:
         reasons.append(f"Non-positive net expectancy (Rs {backtest_res.expectancy:.2f}).")
+
     if wf_report.total_oos_trades < min_oos_trades:
         reasons.append(
-            f"Insufficient OOS trades ({wf_report.total_oos_trades} < minimum {min_oos_trades} required)."
+            f"Insufficient OOS trades ({wf_report.total_oos_trades} < {min_oos_trades} required)."
         )
+
     if wf_report.confidence_verdict != "ROBUST_CANDIDATE":
         reasons.append(f"Walk-forward verdict is '{wf_report.confidence_verdict}', not 'ROBUST_CANDIDATE'.")
+
     if mc_report.percentile_95_max_drawdown_pct > max_allowed_dd_pct or mc_report.ruin_probability_pct > 0.0:
         reasons.append(
             f"Monte Carlo stress test failed (95th DD: {mc_report.percentile_95_max_drawdown_pct:.2f}%, Ruin: {mc_report.ruin_probability_pct:.2f}%)."
         )
+
     if reasons:
         return StrategyPromotionDecision(
-            strategy_name=strategy_name, current_stage=PromotionStage.BACKTEST_VALIDATED,
-            recommended_stage=PromotionStage.DRAFT, promoted=False, reasons=tuple(reasons),
+            strategy_name=strategy_name,
+            current_stage=PromotionStage.BACKTEST_VALIDATED,
+            recommended_stage=PromotionStage.DRAFT,
+            promoted=False,
+            reasons=tuple(reasons),
         )
+
     return StrategyPromotionDecision(
-        strategy_name=strategy_name, current_stage=PromotionStage.STRESS_VALIDATED,
-        recommended_stage=PromotionStage.PAPER_SHADOW_VALIDATED, promoted=True,
+        strategy_name=strategy_name,
+        current_stage=PromotionStage.STRESS_VALIDATED,
+        recommended_stage=PromotionStage.PAPER_SHADOW_VALIDATED,
+        promoted=True,
         reasons=("All historical, rolling OOS, and Monte Carlo stress gates passed. Eligible for shadow trading.",),
     )
