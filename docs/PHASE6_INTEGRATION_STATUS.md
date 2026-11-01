@@ -8,7 +8,7 @@ Draft pull request: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/pull/1
 
 The ZIP-derived Phase 6 capabilities have been integrated additively into the V2 integration branch. The original V2 core, CSV/SQLite storage, baseline backtest engine, moving-average strategy, and chronological OOS validator remain in place. All 48 Python source paths from the ZIP have a counterpart in the integration branch; the two colliding strategy/validation modules are mapped to `v6_strategies.py` and `v6_validation.py`. This is an additive, compatibility-oriented integration, not a blind byte-for-byte overwrite.
 
-**Latest confirmed combined CI evidence:** GitHub Actions run #41255869182 completed successfully with **275 tests passed and 5 subtests passed** at code commit `8ed6c200676ae2a58f3448a10b69164b37ba27b3`. The test run includes CLI smoke checks, a real local sample backtest command, and a deterministic local EVOLVE cycle with LLM/network disabled.
+**Latest confirmed combined CI evidence:** GitHub Actions run #41255972614 completed successfully with **275 tests passed and 5 subtests passed** at latest branch commit `cb7acebdfce5ae568c91089331b21569dce450ba`. The test run includes CLI smoke checks, a real local sample backtest command, and a deterministic local EVOLVE cycle with LLM/network disabled.
 
 The uploaded ZIP's independent baseline suite previously reported **246 passed**. That result belongs to the ZIP by itself and must not be confused with V2 combined CI.
 
@@ -32,7 +32,7 @@ The V2 originals `research/backtest_engine.py`, `research/strategies.py`, and `r
 New focused integration tests cover ACE/runtime, advanced backtest, canonical data, portfolio risk, indicators, walk-forward/Monte Carlo/promotion gates, virtual paper account, durable recovery, options Greeks, crypto virtual-account behavior, AI risk veto, EVOLVE service boundaries, dashboard backend, risk compatibility, and trade ledgers.
 
 - ZIP-alone suite: 246 passed (separate source tree).
-- V2 integration branch: **275 passed, 5 subtests passed** in GitHub Actions run [#41255869182](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182).
+- V2 integration branch: **275 passed, 5 subtests passed** in GitHub Actions run [#41255972614](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182).
 - `tests/test_phase6_cli.py` verifies the five CLI `--help` entry points, runs the historical backtest on the illustrative CSV, and runs the EVOLVE cycle locally with LLM/network disabled.
 - Five runner scripts, an illustrative OHLCV fixture, `.env.example`, ZIP source map, and original ACE/runtime/scheduler reference documents were added.
 
