@@ -101,10 +101,12 @@ class VirtualOrderManagerTests(unittest.TestCase):
         self.assertEqual(rejected.state, OrderState.REJECTED)
 
     def test_buy_requires_entry_and_protective_stop_when_risk_enabled(self):
-        account = VirtualAccount(starting_capital=50000)
+        account = VirtualAccount(starting_capital=5_000_000)
         with self.assertRaises(ValueError):
             account.submit_order("NIFTY", "BUY", 25)
-        order = account.submit_order("NIFTY", "BUY", 25, entry_price=22000, stop_price=21900)
+        order = account.submit_order(
+            "NIFTY", "BUY", 25, entry_price=22000, stop_price=21900, lot_size=25
+        )
         self.assertEqual(order.state, OrderState.ACCEPTED)
 
     def test_manual_approval_requires_authenticated_callback(self):
