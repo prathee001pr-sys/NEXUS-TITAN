@@ -1,14 +1,14 @@
 # NEXUS TITAN V2 — V6 Phase 6 ZIP Integration Status
 
-Last updated: 2026-10-31 UTC
+Last updated: 2026-11-01 UTC
 Integration branch: `integration/phase6-zip-baseline`
 Draft pull request: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/pull/1
 
 ## Executive status
 
-The ZIP-derived Phase 6 capabilities have been integrated additively into the V2 integration branch. The original V2 core, CSV/SQLite storage, baseline backtest engine, moving-average strategy, and chronological OOS validator remain in place.
+The ZIP-derived Phase 6 capabilities have been integrated additively into the V2 integration branch. The original V2 core, CSV/SQLite storage, baseline backtest engine, moving-average strategy, and chronological OOS validator remain in place. All 48 Python source paths from the ZIP have a counterpart in the integration branch; the two colliding strategy/validation modules are mapped to `v6_strategies.py` and `v6_validation.py`. This is an additive, compatibility-oriented integration, not a blind byte-for-byte overwrite.
 
-**Latest confirmed combined CI evidence:** GitHub Actions run #41252347987 completed successfully with **266 tests passed** at commit `b1b624be0700673bda50b9e329e81e5d9da63a66`. A later storage package-export-only commit (`9fd7a9e7503fd7ca66e1408ed9f0f2248b41b20b`) triggered another CI run; that run must complete before the latest branch head can be called verified.
+**Latest confirmed combined CI evidence:** GitHub Actions run #41255869182 completed successfully with **275 tests passed and 5 subtests passed** at code commit `8ed6c200676ae2a58f3448a10b69164b37ba27b3`. The test run includes CLI smoke checks, a real local sample backtest command, and a deterministic local EVOLVE cycle with LLM/network disabled.
 
 The uploaded ZIP's independent baseline suite previously reported **246 passed**. That result belongs to the ZIP by itself and must not be confused with V2 combined CI.
 
@@ -32,15 +32,16 @@ The V2 originals `research/backtest_engine.py`, `research/strategies.py`, and `r
 New focused integration tests cover ACE/runtime, advanced backtest, canonical data, portfolio risk, indicators, walk-forward/Monte Carlo/promotion gates, virtual paper account, durable recovery, options Greeks, crypto virtual-account behavior, AI risk veto, EVOLVE service boundaries, dashboard backend, risk compatibility, and trade ledgers.
 
 - ZIP-alone suite: 246 passed (separate source tree).
-- V2 integration branch: 266 passed at commit `b1b624be0700673bda50b9e329e81e5d9da63a66`.
-- Latest branch head `9fd7a9e7503fd7ca66e1408ed9f0f2248b41b20b`: CI rerun pending at the time of this document update.
+- V2 integration branch: **275 passed, 5 subtests passed** in GitHub Actions run [#41255869182](https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182).
+- `tests/test_phase6_cli.py` verifies the five CLI `--help` entry points, runs the historical backtest on the illustrative CSV, and runs the EVOLVE cycle locally with LLM/network disabled.
+- Five runner scripts, an illustrative OHLCV fixture, `.env.example`, ZIP source map, and original ACE/runtime/scheduler reference documents were added.
 
 Tests are necessary but do not prove trading profitability, exchange-data accuracy, correct statutory taxation in every broker contract note, or production readiness.
 
 ## Not complete / remaining work
 
-1. **Source parity audit:** ZIP files were integrated selectively and additively, with some modules adapted/reimplemented. A file-by-file API/behavior parity audit against the original ZIP and tests is still required. This is not a byte-for-byte ZIP extraction.
-2. **Remaining V6 integration:** compare and, where useful, integrate any remaining archive modules and scripts; review storage and dashboard API contracts; bring ZIP test coverage across with explicit adaptations instead of assuming the original suite is compatible with V2.
+1. **Source/API parity audit:** all 48 ZIP Python module paths are represented in the branch, but many files were adapted to V2 interfaces rather than copied byte-for-byte. The source map records the main collisions and locations; a deeper API/behavior audit is still required for every adapted module.
+2. **Runtime/financial acceptance:** the current tests are automated regression/unit tests. Independently calculated end-to-end accounting fixtures, instrument-specific cost reconciliation, intrabar stop/target edge cases and exchange microstructure simulation still need a separate acceptance pass.
 3. **Advanced backtest verification:** test futures margin/cash accounting, costs by instrument and side, stop/target gap behavior, risk sizing, drawdown/equity metrics, and benchmark/annualization against independently calculated fixtures. No claim of exchange-grade simulation is made.
 4. **Indian derivatives:** dynamic official contract master, verified expiry/lot/freeze/tick metadata, options-chain history, bid/ask liquidity, exchange SPAN/ELM margins, physical settlement/exercise/assignment, spreads, partial fills and intrabar option pricing remain unimplemented or incomplete.
 5. **Crypto history/integration:** licensed exchange historical data, exchange-specific precision/min-notional/fees, funding, borrow/withdrawal costs and independent historical backtesting remain.
@@ -48,9 +49,9 @@ Tests are necessary but do not prove trading profitability, exchange-data accura
 7. **Paper execution fidelity:** market depth, bid/ask spread, realistic queue position, liquidity/partial-fill model, latency/slippage calibration, corporate actions and exchange halts need validation and expansion.
 8. **Authentication/security:** manual approval is represented by a configured callback/named reviewer; production identity, MFA, per-user ACLs, secret management, encrypted-at-rest databases, backups, key rotation and independent threat modelling remain.
 9. **Agent Runtime operations:** current implementation is local SQLite/in-process and does not provide distributed workers, sandbox isolation, durable cross-host coordination, or production observability. Tool adapters require deliberate review and registration.
-10. **EVOLVE operations:** scheduled research is a callable one-shot worker, not yet wired to a scheduler/deployment; external fetches require explicit host allowlists; LLM provider requires operator-managed secrets and source verification. Generated code remains review-only and is not executed/applied.
+10. **EVOLVE operations:** the scheduled-research CLI and one-shot worker are present, but they are not yet wired to an operator's Replit Scheduled Deployment/cron. External fetches require explicit host allowlists; LLM provider access requires operator-managed secrets and source verification. Generated code remains review-only and is not executed/applied.
 11. **Dashboard/UI:** the backend returns read-only telemetry; the finished premium front end, authentication, responsive/mobile UI, charts and operator workflows remain.
-12. **Data and deployment QA:** packaging/dependency lock, clean-install reproducibility, load/performance testing, backup/restore drill, disaster recovery, security review and complete end-to-end acceptance testing remain.
+12. **Data and deployment QA:** the sample CSV is illustrative only. Licensed 15-year one-minute market data, verified point-in-time contracts, dependency-lock/clean-install reproducibility, load/performance testing, backup/restore drill, disaster recovery, security review and complete end-to-end acceptance testing remain.
 13. **Live trading:** deliberately disabled and out of scope for this merge. No broker adapter or live-order pathway may be enabled without a separate design, compliance review and explicit human approval.
 
 ## Safety invariants retained
@@ -64,4 +65,4 @@ Tests are necessary but do not prove trading profitability, exchange-data accura
 
 ## Merge state
 
-This work is in an **open draft pull request** against `main`. The pull request is not merged. Keep it draft until the latest CI succeeds, the ZIP parity audit and remaining critical tests are complete, and the project owner has reviewed the diff.
+This work is in an **open draft pull request** against `main`. The pull request is not merged. Combined CI is green, but the source/API parity review and external-data, accounting, security and operational acceptance items remain. Keep it draft until those critical checks are reviewed by the project owner.
