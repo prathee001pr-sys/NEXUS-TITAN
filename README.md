@@ -11,6 +11,7 @@ Phase 6 integration is being reviewed in the draft pull request:
 
 See:
 - [Phase 6 integration status](docs/PHASE6_INTEGRATION_STATUS.md)
+- [ZIP compatibility test report](docs/PHASE6_ZIP_COMPATIBILITY_TEST_REPORT.md)
 - [ZIP source map and collision policy](docs/PHASE6_ZIP_SOURCE_MAP.md)
 - [Master requirements register](docs/MASTER_REQUIREMENTS_REGISTER.md)
 - [Original V2 data/backtest design notes](docs/HISTORICAL_BACKTEST_ENGINE.md)
@@ -82,6 +83,8 @@ python scripts/run_evolve_scheduler.py --allow-hosts docs.python.org --list
 - Indian statutory cost rates are indicative and need broker/exchange contract-note
   reconciliation before being used for any financial decision.
 - Passing unit tests does not prove profitability, data provenance or production readiness.
+
+The sample files `data/market_sample.csv` and `data/nifty_daily_sample.csv` are synthetic smoke-test fixtures, not real NSE history. Do not use them for trading conclusions.
 
 The integration PR remains draft until source/API parity, risk/accounting edge cases,
 security, data licensing and end-to-end acceptance checks are reviewed.
