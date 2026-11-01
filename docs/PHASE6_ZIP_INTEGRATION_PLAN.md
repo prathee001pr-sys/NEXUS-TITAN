@@ -12,9 +12,9 @@ preserved.
 
 - ZIP-alone suite: **246 passed** in its extracted source tree.
 - That ZIP-alone result is not the V2 integration test result.
-- The V2 integration branch's latest code run at the time of this record passed
-  **280 tests and 5 subtests** in GitHub Actions run #41256696389.
-- CI evidence: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41255869182
+- The V2 integration branch's latest code run passed **280 tests and 5 subtests** in GitHub Actions run #41256696389.
+- The original ZIP's 30 test modules were also run unchanged against the integrated V2 source: **246 passed**.
+- CI evidence: https://github.com/prathee001pr-sys/NEXUS-TITAN-V2/actions/runs/41256696389
 
 ## Integrated in `integration/phase6-zip-baseline`
 
