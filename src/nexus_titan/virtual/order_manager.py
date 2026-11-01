@@ -418,9 +418,26 @@ class VirtualAccount:
         indicative = entry_price if entry_price is not None else (limit_price if type_enum == OrderType.LIMIT else None)
         if side_enum == OrderSide.BUY and self.require_pretrade_risk_check and not is_emergency:
             if indicative is None or stop_price is None:
-                raise ValueError("Pre-trade risk requires entry_price and protective stop_price.")
+                raise ValueError("Pre-trade risk gate requires indicative entry_price and protective stop_price before a BUY order can be accepted.")
             if stop_price >= indicative or (target_price is not None and target_price <= indicative):
                 raise ValueError("BUY protective stop must be below entry and target above entry.")
+            risk_result = self.risk_engine.size_and_validate(
+                capital=self.current_capital,
+                entry_price=float(indicative),
+                stop_price=float(stop_price),
+                symbol=symbol,
+                lot_size=lot_size,
+                current_exposure=self.current_exposure,
+                current_open_positions=len(self.positions),
+                realized_daily_loss_pct=self._daily_loss_pct(),
+                consecutive_losses=self._consecutive_losses(),
+                current_drawdown_pct=self.current_drawdown_pct,
+            )
+            if not risk_result.approved or quantity > risk_result.quantity:
+                raise ValueError(
+                    f"Authoritative risk gate rejected order: {risk_result.reason} "
+                    f"Requested quantity {quantity}; maximum permitted {risk_result.quantity}."
+                )
         oid = f"ORD-{uuid4().hex[:8].upper()}"
         order = VirtualOrder(oid, symbol.strip().upper(), side_enum, type_enum, quantity,
                              instrument_type, lot_size, limit_price=limit_price,
@@ -461,12 +478,22 @@ class VirtualAccount:
             return order
         if order.state not in (OrderState.ACCEPTED, OrderState.PARTIALLY_FILLED):
             raise ValueError(f"Order cannot be filled in state {order.state.value}.")
+        if order.approval is not None and order.compute_snapshot_hash() != order.approval.order_snapshot_hash:
+            order.state = OrderState.REJECTED
+            order.reject_reason = "Order modified after manual approval; approval invalidated."
+            order.updated_at = _now()
+            self._sync_durable_store()
+            raise ValueError("Approval integrity violation: order was modified after approval.")
         if (isinstance(fill_price, bool) or not isinstance(fill_price, (int, float))
                 or not math.isfinite(fill_price) or fill_price <= 0):
             raise ValueError("Fill price must be finite and positive.")
         qty = order.remaining_qty if fill_qty is None else fill_qty
         if isinstance(qty, bool) or not isinstance(qty, int) or qty < 1 or qty > order.remaining_qty:
             raise ValueError("Fill quantity must be positive and cannot overfill the order.")
+        if qty % order.lot_size != 0:
+            raise ValueError(
+                f"Fill quantity ({qty}) must be a multiple of instrument lot_size ({order.lot_size})."
+            )
         if idempotency_key:
             if idempotency_key in self.processed_fill_idempotency_keys:
                 return order
