@@ -397,10 +397,29 @@ class VirtualAccount:
         self._sync_durable_store()
         return item
 
-    def set_trading_mode(self, mode: TradingMode | str) -> None:
+    def set_trading_mode(
+        self, mode: TradingMode | str, *, actor: str | None = None,
+    ) -> None:
+        """Changing MANUAL_APPROVAL to AUTO_PAPER is permission escalation.
+
+        A connected, authenticated callback is mandatory for escalation.
+        Switching into MANUAL_APPROVAL is always conservative. No transition
+        grants real brokerage access. This is application policy, not OS
+        isolation or a global independent identity verification service.
+        """
         selected = TradingMode(mode)
         if selected == TradingMode.LIVE_DISABLED:
             raise ValueError("Live trading is strictly disabled in this environment.")
+        if selected == self.trading_mode:
+            return
+        if self.kill_switched and selected == TradingMode.AUTO_PAPER:
+            raise PermissionError("Emergency kill switch prohibits paper mode escalation")
+        if self.trading_mode == TradingMode.MANUAL_APPROVAL and selected == TradingMode.AUTO_PAPER:
+            resource = "MODE:MANUAL_APPROVAL->AUTO_PAPER"
+            if (not isinstance(actor, str) or not actor.strip()
+                    or self.approval_authorizer is None
+                    or self.approval_authorizer(actor.strip(), resource) is not True):
+                raise PermissionError("Authenticated approval required to enable AUTO_PAPER from MANUAL_APPROVAL")
         self.trading_mode = selected
         self._sync_durable_store()
 
