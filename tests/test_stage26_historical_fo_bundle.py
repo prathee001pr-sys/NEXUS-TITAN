@@ -289,3 +289,97 @@ def test_empty_and_faked_large_history_block(tmp_path):
         _run(tmp_path,replace(d,snapshots=()))
     with pytest.raises(HistoricalBundleError,match="bounded limit"):
         _run(tmp_path,replace(d,snapshots=d.snapshots*1000))
+
+
+def _manifest_json(declaration, contract):
+    from dataclasses import asdict
+    return {
+        "dataset_id": declaration.dataset_id,
+        "underlying": declaration.underlying,
+        "provider_reference": declaration.provider_reference,
+        "licence_reference": declaration.licence_reference,
+        "calendar_reference": declaration.calendar_reference,
+        "contract_reference": declaration.contract_reference,
+        "declared_start": declaration.declared_start.isoformat(),
+        "declared_end": declaration.declared_end.isoformat(),
+        "dataset_class_claim": declaration.dataset_class_claim,
+        "source_review_reference": declaration.source_review_reference,
+        "declared_holidays": [],
+        "snapshots":[
+            {"filename":a.filename,"observed_at":a.observed_at.isoformat(),"sha256":a.sha256}
+            for a in declaration.snapshots
+        ],
+        "contract":{
+            "symbol":contract.symbol,"underlying":contract.underlying,
+            "exchange":contract.exchange,"segment":contract.segment,
+            "lot_size":contract.lot_size,"tick_size":contract.tick_size,
+            "freeze_quantity":contract.freeze_quantity,
+            "effective_from":contract.effective_from.isoformat(),
+            "effective_to":contract.effective_to.isoformat(),
+            "expiry_date":contract.expiry_date.isoformat(),
+            "strike_step":contract.strike_step,
+            "max_lots_per_trade":contract.max_lots_per_trade,
+            "source_reference":contract.source_reference,
+            "source_verified":contract.source_verified,
+        },
+    }
+
+
+def _cli(tmp_path, declaration, *, json_override=None):
+    import json
+    import subprocess
+    import sys
+    repo=Path(__file__).resolve().parents[1]
+    manifest_path=tmp_path/"contract-manifest.json"
+    manifest_path.write_text(
+        json.dumps(_manifest_json(declaration,_contract(declaration.underlying)))
+        if json_override is None else json_override,encoding="utf-8"
+    )
+    proc=subprocess.run(
+        [sys.executable,str(repo/"scripts"/"run_stage26_fo_bundle_preflight.py"),
+         "--root",str(tmp_path),"--declaration",str(manifest_path)],
+        cwd=repo,capture_output=True,text=True,timeout=30,check=False,
+    )
+    return proc
+
+
+def test_real_cli_with_synthetic_snapshots_succeeds_without_claiming_licence(tmp_path):
+    import json
+    d=_fixture(tmp_path)
+    proc=_cli(tmp_path,d)
+    assert proc.returncode==0,proc.stdout+"\n"+proc.stderr
+    result=json.loads(proc.stdout)
+    assert result["snapshot_count"]==3
+    assert result["expected_slots"]==3
+    assert result["strategy_promotion_allowed"] is False
+    assert result["self_declared_licence_or_vendor_authenticated"] is False
+    assert result["broker_orders_sent"] == 0
+
+
+def test_real_cli_blocks_corrupted_manifest_hash(tmp_path):
+    import json
+    d=_fixture(tmp_path)
+    payload=_manifest_json(d,_contract())
+    payload["snapshots"][0]["sha256"]="0"*64
+    proc=_cli(tmp_path,d,json_override=json.dumps(payload))
+    assert proc.returncode==2
+    assert "checksum mismatch" in proc.stderr
+    assert proc.stdout==""
+
+
+def test_real_cli_rejects_duplicate_json_fields_instead_of_last_key_winning(tmp_path):
+    d=_fixture(tmp_path)
+    proc=_cli(tmp_path,d,json_override='{"dataset_id":"x","dataset_id":"overridden"}')
+    assert proc.returncode==2
+    assert "Duplicate manifest JSON field" in proc.stderr
+    assert proc.stdout==""
+
+
+def test_real_cli_rejects_declaration_with_fake_licence_claim(tmp_path):
+    import json
+    d=_fixture(tmp_path)
+    payload=_manifest_json(d,_contract())
+    payload["contract"]["source_verified"]=False
+    proc=_cli(tmp_path,d,json_override=json.dumps(payload))
+    assert proc.returncode==2
+    assert "contract identity" in proc.stderr
