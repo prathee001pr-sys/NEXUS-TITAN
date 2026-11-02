@@ -187,6 +187,10 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
             cash_expected += net
             realized[key] = realized.get(key, 0) + pnl
             exit_count += 1
+        elif kind == "ENABLE_GUARDED_PAPER":
+            if (event.get("no_live_routing") is not True
+                    or not ledger._guarded_mode(con)):
+                raise ResearchLedgerError("Guarded-paper migration audit inconsistent")
         elif kind not in ("INITIAL", "RESERVE_BUY", "CANCEL"):
             raise ResearchLedgerError("Unknown research cash-affecting event; FIFO attribution blocked")
 
