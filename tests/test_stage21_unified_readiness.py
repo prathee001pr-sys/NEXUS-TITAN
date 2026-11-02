@@ -64,10 +64,10 @@ def _setup(tmp_path, count=20):
     return ledger, recovery, _records(ledger, count)
 
 
-def _run(ledger, recovery, records, **kwargs):
+def _run(ledger, default_recovery, records, **kwargs):
     args = dict(
         ledger=ledger, daily_records=records,
-        calendar=nse_equity_derivatives_baseline(), recovery=recovery,
+        calendar=nse_equity_derivatives_baseline(), recovery=default_recovery,
         evidence_submissions=[], claimed_closed_trades=0, as_of=AS_OF,
     )
     args.update(kwargs)
