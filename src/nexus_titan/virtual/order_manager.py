@@ -108,6 +108,7 @@ class VirtualOrder:
     updated_at: str = field(default_factory=_now)
     reject_reason: str | None = None
     is_emergency: bool = False
+    risk_policy_fingerprint: str | None = None
 
     @property
     def remaining_qty(self) -> int:
@@ -117,6 +118,10 @@ class VirtualOrder:
         raw = (f"{self.symbol}:{self.side.value}:{self.order_type.value}:{self.quantity}:"
                f"{self.instrument_type}:{self.lot_size}:{self.limit_price}:{self.stop_price}:"
                f"{self.target_price}:{self.is_emergency}")
+        # Preserve legacy snapshot hashes if no guarded risk fingerprint
+        # exists, so existing persisted manual approvals remain compatible.
+        if self.risk_policy_fingerprint is not None:
+            raw += ":" + self.risk_policy_fingerprint
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict:
@@ -138,6 +143,7 @@ class VirtualOrder:
             approval=ApprovalRecord(**data["approval"]) if data.get("approval") else None,
             created_at=data.get("created_at", ""), updated_at=data.get("updated_at", ""),
             reject_reason=data.get("reject_reason"), is_emergency=data.get("is_emergency", False),
+            risk_policy_fingerprint=data.get("risk_policy_fingerprint"),
         )
 
 
@@ -463,6 +469,42 @@ class VirtualAccount:
         self._sync_durable_store()
         return item
 
+    def _risk_policy_fingerprint(self) -> str:
+        """Deterministic *local* policy snapshot, not an external signature.
+
+        Live exposure/cash P&L are intentionally excluded because a partial
+        paper BUY fill legitimately changes them; this checks POLICY drift.
+        Capital top-ups/withdrawals and risk-engine policy drift ARE covered.
+        """
+        import json
+        config=self.risk_engine.config
+        applied=self.risk_engine._portfolio_mgr.config
+        policy=dict(
+            schema=1,
+            account_id=self.account_id,
+            trading_mode=self.trading_mode.value,
+            risk_enabled=self.require_pretrade_risk_check,
+            capital=self.current_capital,
+            risk_per_trade_pct=self.risk_per_trade_pct,
+            max_portfolio_exposure_pct=self.max_portfolio_exposure_pct,
+            initial_margin_pct=self.initial_margin_pct,
+            configured_engine=asdict(config),
+            effective_engine=asdict(applied),
+        )
+        encoded=json.dumps(policy,sort_keys=True,separators=(",",":"),allow_nan=False)
+        return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+    def _assert_buy_policy_evidence(self, order: VirtualOrder) -> None:
+        """Pending gateway-only BUYs must match issuance risk configuration."""
+        if (self.gateway_only_mode and order.side is OrderSide.BUY
+                and not order.is_emergency):
+            fingerprint=order.risk_policy_fingerprint
+            if (not isinstance(fingerprint,str) or len(fingerprint)!=64
+                    or fingerprint!=self._risk_policy_fingerprint()):
+                raise PermissionError(
+                    "Gateway-only BUY risk policy drift; cancel/reissue under current limits"
+                )
+
     def _assert_strict_paper_policy(self) -> None:
         """Check persisted policy before any paper order state mutation."""
         self._assert_current_revision()
@@ -680,6 +722,8 @@ class VirtualAccount:
         order = VirtualOrder(oid, symbol.strip().upper(), side_enum, type_enum, quantity,
                              instrument_type, lot_size, limit_price=limit_price,
                              stop_price=stop_price, target_price=target_price, is_emergency=is_emergency)
+        if self.gateway_only_mode and side_enum is OrderSide.BUY:
+            order.risk_policy_fingerprint=self._risk_policy_fingerprint()
         if self.kill_switched and not is_emergency:
             return self._reject(order, "Trading is locked by the emergency kill switch.")
         if self.trading_mode == TradingMode.MANUAL_APPROVAL and not is_emergency:
@@ -718,6 +762,8 @@ class VirtualAccount:
     def approve_order(self, order_id: str, actor: str = "HUMAN_OPERATOR") -> VirtualOrder:
         self._assert_strict_paper_policy()
         order = self.orders.get(order_id)
+        if order is not None:
+            self._assert_buy_policy_evidence(order)
         if not order or order.state != OrderState.PENDING_APPROVAL:
             raise ValueError("Order is missing or is not pending approval.")
         if self.kill_switched:
@@ -738,6 +784,8 @@ class VirtualAccount:
                      idempotency_key: str | None = None) -> VirtualOrder:
         self._assert_strict_paper_policy()
         order = self.orders.get(order_id)
+        if order is not None:
+            self._assert_buy_policy_evidence(order)
         if not order:
             raise ValueError("Unknown order.")
         if (isinstance(fill_price, bool) or not isinstance(fill_price, (int, float))
