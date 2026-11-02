@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any
 
 
+class StaleAccountSnapshotError(RuntimeError):
+    """A different handle has already committed a newer account snapshot."""
+
+
 class DurableAccountStore:
     """ACID SQLite persistence engine for virtual account state and recovery."""
 
@@ -43,6 +47,7 @@ class DurableAccountStore:
                     initial_margin_pct REAL NOT NULL DEFAULT 20.0,
                     require_pretrade_risk_check INTEGER NOT NULL DEFAULT 1,
                     strict_paper_mode INTEGER NOT NULL DEFAULT 0,
+                    revision INTEGER NOT NULL DEFAULT 0,
                     trading_mode TEXT NOT NULL, kill_switched INTEGER NOT NULL,
                     kill_metadata_json TEXT NOT NULL
                 );
@@ -69,6 +74,7 @@ class DurableAccountStore:
                 "initial_margin_pct": "REAL NOT NULL DEFAULT 20.0",
                 "require_pretrade_risk_check": "INTEGER NOT NULL DEFAULT 1",
                 "strict_paper_mode": "INTEGER NOT NULL DEFAULT 0",
+                "revision": "INTEGER NOT NULL DEFAULT 0",
             }
             for column, definition in migrations.items():
                 if column not in columns:
@@ -84,7 +90,8 @@ class DurableAccountStore:
         orders_dict: dict[str, Any], positions_dict: dict[str, Any],
         idem_keys: set[str], capital_history: list[Any],
         strict_paper_mode: bool = False,
-    ) -> None:
+        expected_revision: int | None = None,
+    ) -> int:
         """Atomically persist the entire virtual-account snapshot.
 
         A durable strict-policy account cannot be silently downgraded by a
@@ -92,6 +99,11 @@ class DurableAccountStore:
         """
         if not isinstance(strict_paper_mode, bool):
             raise ValueError("strict_paper_mode must be boolean")
+        if expected_revision is not None and (
+            isinstance(expected_revision, bool) or not isinstance(expected_revision, int)
+            or expected_revision < 0
+        ):
+            raise ValueError("expected_revision must be a nonnegative integer or None")
         if strict_paper_mode and (
             trading_mode != "MANUAL_APPROVAL" or require_pretrade_risk_check is not True
         ):
@@ -99,22 +111,30 @@ class DurableAccountStore:
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE;")
             old = conn.execute(
-                "SELECT strict_paper_mode FROM account_state WHERE account_id=?", (account_id,)
+                "SELECT strict_paper_mode,revision FROM account_state WHERE account_id=?",
+                (account_id,),
             ).fetchone()
+            previous = old["revision"] if old is not None else None
+            if previous != expected_revision:
+                raise StaleAccountSnapshotError(
+                    "Stale account snapshot revision; reopen a fresh account handle before retrying"
+                )
             if old is not None and old["strict_paper_mode"] == 1 and not strict_paper_mode:
                 raise PermissionError("Durable strict paper mode cannot be downgraded")
+            revision = (previous or 0) + 1
             conn.execute("""
                 INSERT OR REPLACE INTO account_state (
                     account_id, initial_capital, added_capital, withdrawn_capital,
                     cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                     risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
-                    require_pretrade_risk_check, strict_paper_mode, trading_mode, kill_switched, kill_metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    require_pretrade_risk_check, strict_paper_mode, revision,
+                    trading_mode, kill_switched, kill_metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """, (account_id, initial_capital, added_capital, withdrawn_capital,
                   cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                   risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
                   1 if require_pretrade_risk_check else 0,
-                  1 if strict_paper_mode else 0, trading_mode,
+                  1 if strict_paper_mode else 0, revision, trading_mode,
                   1 if kill_switched else 0, json.dumps(kill_metadata)))
             conn.execute("DELETE FROM orders WHERE account_id = ?;", (account_id,))
             for oid, data in orders_dict.items():
@@ -128,6 +148,15 @@ class DurableAccountStore:
             for event in capital_history:
                 conn.execute("INSERT INTO capital_events (account_id, event_json) VALUES (?, ?);",
                              (account_id, json.dumps(event)))
+            return revision
+
+    def revision(self, account_id: str) -> int | None:
+        """Current durable generation; no multi-table snapshots are exported."""
+        with self._connect() as con:
+            row = con.execute(
+                "SELECT revision FROM account_state WHERE account_id=?", (account_id,)
+            ).fetchone()
+            return None if row is None else int(row["revision"])
 
     def strict_mode(self, account_id: str) -> bool:
         """Read persisted strict policy; this is not an external authority."""
