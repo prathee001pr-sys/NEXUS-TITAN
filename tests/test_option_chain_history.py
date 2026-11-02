@@ -44,7 +44,10 @@ def _snapshot(timestamp, *, strikes=(100,), provider="test/provider",
         OptionChainQuote(
             timestamp=qtime, symbol="NIFTYOPT", underlying="NIFTY",
             expiry_date="2026-11-12", strike=float(strike), option_type=side,
-            bid=5.0, ask=5.5, ltp=5.25, volume=100, open_interest=1000,
+            bid=5.0 + max(0.0, (100.0 - strike) if side == "CE" else (strike - 100.0)),
+            ask=5.5 + max(0.0, (100.0 - strike) if side == "CE" else (strike - 100.0)),
+            ltp=5.25 + max(0.0, (100.0 - strike) if side == "CE" else (strike - 100.0)),
+            volume=100, open_interest=1000,
             underlying_spot=100.0, lot_size=25,
         ) for strike in strikes for side in ("CE", "PE")
     )
