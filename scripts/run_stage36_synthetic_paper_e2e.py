@@ -110,11 +110,24 @@ def run_synthetic_audit() -> dict:
         except PaperIntentDenied:
             post_kill_denied=True
         direct_reserve_denied=False
+        from datetime import date,datetime
+        from nexus_titan.data.instrument_master import PointInTimeContractSpec
+        synthetic_contract=PointInTimeContractSpec(
+            symbol="NIFTYOPT",underlying="NIFTY",exchange="NSE",segment="OPTIONS",
+            lot_size=25,tick_size=0.05,freeze_quantity=1000,max_lots_per_trade=10,
+            strike_step=50.0,expiry_date=date(2026,11,5),
+            effective_from=date(2026,11,1),effective_to=date(2026,11,5),
+            source_reference="synthetic/no-vendor-authentication",source_verified=True,
+        )
         try:
-            reopened.reserve_buy(order_id="UNAUTHORIZED",contract=None,strike=100,
-                option_type="CE",lots=1,as_of=None,max_unit_premium=6)
-        except (ResearchLedgerError,TypeError,ValueError):
-            direct_reserve_denied=True
+            reopened.reserve_buy(
+                order_id="UNAUTHORIZED",contract=synthetic_contract,
+                strike=100,option_type="CE",lots=1,
+                as_of=datetime.fromisoformat("2026-11-02T09:16:00+05:30"),
+                max_unit_premium=6,fee_buffer=25,
+            )
+        except ResearchLedgerError as exc:
+            direct_reserve_denied="atomic risk admission" in str(exc)
         checks={
             "default_paper_permission_denied":rejected_permission,
             "initial_flat_preflight":start.flat_research_gate_passed,
