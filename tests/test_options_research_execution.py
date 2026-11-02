@@ -143,10 +143,9 @@ def test_depth_cannot_be_from_future_or_be_stale():
 
 
 def test_depth_quote_timestamp_mismatch_fails():
-    # Configure longer age to exercise depth-vs-quote timestamp check.
+    # Individually fresh timestamps can still be mutually unsynchronized.
     with pytest.raises(OptionResearchExecutionError, match="unsynchronized"):
-        _run(depth=_depth(at=BASE - timedelta(seconds=3)),
-             microstructure=MicrostructureConfig(max_quote_age_ms=1500.0))
+        _run(depth=_depth(), max_depth_quote_skew_ms=500.0)
 
 
 def test_limit_not_marketable_keeps_order_unfilled():
@@ -250,3 +249,9 @@ def test_price_of_unfilled_request_never_becomes_phantom_pnl():
     unfilled = _run(depth=_depth(ask=0))
     assert unfilled.execution_shortfall_vs_mid == 0
     assert unfilled.total_estimated_friction == 0
+
+
+@pytest.mark.parametrize("limit", [float("nan"), float("inf"), -1, True])
+def test_invalid_quote_depth_clock_tolerance_is_rejected(limit):
+    with pytest.raises(OptionResearchExecutionError, match="synchronization limit"):
+        _run(max_depth_quote_skew_ms=limit)
