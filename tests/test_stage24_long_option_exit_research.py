@@ -290,3 +290,32 @@ def test_unfilled_exit_does_not_count_as_closed_trade(tmp_path):
     initial=report_research_long_portfolio(ledger)
     simulate_and_settle_long_exit(**_exit_args(buy,bid_depth=0))
     assert report_research_long_portfolio(ledger).completed_exit_count == initial.completed_exit_count
+
+
+def test_backdated_exit_before_buy_is_blocked_without_fake_pnl(tmp_path):
+    ledger,buy=_buy(tmp_path)
+    state=ledger.status()
+    earlier=OBS-timedelta(seconds=30)
+    with pytest.raises(ResearchLedgerError,match="chronological order"):
+        simulate_and_settle_long_exit(**_exit_args(buy,when=earlier,lots=1))
+    assert ledger.status()==state
+    assert report_research_long_portfolio(ledger).cumulative_realized_net_pnl==0
+
+
+def test_recovery_snapshot_after_full_exit_retains_fifo_pnl(tmp_path):
+    from nexus_titan.shadow.research_recovery_validation import (
+        run_research_shadow_recovery_drill,
+    )
+    ledger,buy=_buy(tmp_path)
+    simulate_and_settle_long_exit(**_exit_args(buy))
+    original=report_research_long_portfolio(ledger)
+    backup=run_research_shadow_recovery_drill(
+        ledger,backup_path=tmp_path/"after-exit-backup.sqlite3"
+    )
+    assert backup.passed
+    restored=DurableResearchShadowLedger(
+        tmp_path/"after-exit-backup.sqlite3",
+        account_id="TEST-GUARDED",starting_capital=50000,
+    )
+    assert report_research_long_portfolio(restored)==original
+    assert restored.status()==ledger.status()
