@@ -278,3 +278,84 @@ def test_restart_after_guarded_settlement_does_not_grant_live_permissions(tmp_pa
     assert restarted.status().live_orders_transmitted==0
     assert result.research_statement.live_orders_transmitted==0
     assert result.research_statement.approved_for_strategy_promotion is False
+
+
+def test_complete_guarded_risk_to_recovery_and_blocked_readiness(tmp_path):
+    from datetime import time
+    from zoneinfo import ZoneInfo
+
+    from nexus_titan.shadow.research_recovery_validation import (
+        DailyResearchShadowRecord, run_research_shadow_recovery_drill,
+    )
+    from nexus_titan.shadow.unified_readiness import prepare_unified_shadow_readiness
+
+    ledger,inputs=_setup(tmp_path)
+    opening=ledger.status()
+    outcome=guarded_options_research_buy(**inputs)
+    latest=ledger.status()
+    assert outcome.research_statement.filled_quantity==50
+    assert latest.cash_balance<opening.cash_balance
+    assert latest.reserved_cash==0
+
+    restored=DurableResearchShadowLedger(
+        tmp_path/"guarded.sqlite3",account_id="TEST-GUARDED",starting_capital=50000
+    )
+    assert restored.status()==latest
+    drill=run_research_shadow_recovery_drill(
+        restored,backup_path=tmp_path/"guarded-backup.sqlite3"
+    )
+    assert drill.passed
+    day_close=DailyResearchShadowRecord(
+        session_date=OBS.date(),
+        observed_at=datetime.combine(OBS.date(),time(15,31),
+                                     tzinfo=ZoneInfo("Asia/Kolkata")),
+        status=latest,
+        expected_cash_change=round(latest.cash_balance-opening.cash_balance,2),
+        evidence_reference="synthetic/one-day-no-real-feed",
+    )
+    readiness=prepare_unified_shadow_readiness(
+        ledger=restored,
+        daily_records=[day_close],
+        calendar=nse_equity_derivatives_baseline(),
+        recovery=drill,evidence_submissions=[],
+        claimed_closed_trades=0,as_of=datetime.combine(
+            OBS.date(),time(16,0),tzinfo=ZoneInfo("Asia/Kolkata")
+        ),
+    )
+    assert readiness.release_decision=="BLOCKED_STRUCTURAL_VALIDATION"
+    assert not readiness.review_candidate
+    assert not readiness.live_trading_enabled
+    assert not readiness.automatic_strategy_promotion
+    assert not readiness.external_authenticity_verified
+
+
+def test_authoritative_engine_veto_cannot_be_overruled_by_other_checks(tmp_path,monkeypatch):
+    from nexus_titan.risk.authoritative_risk import AuthoritativeRiskEngine
+    from nexus_titan.risk.portfolio_risk import PreTradeRiskResult
+    ledger,inputs=_setup(tmp_path)
+    old=ledger.status()
+    monkeypatch.setattr(
+        AuthoritativeRiskEngine,"size_and_validate",
+        lambda self,**kwargs: PreTradeRiskResult(False,0,0.0,0.0,0.0,"forced authoritative veto"),
+    )
+    with pytest.raises(GuardedPaperResearchError,match="Authoritative risk veto"):
+        guarded_options_research_buy(**inputs)
+    _unchanged(ledger,old)
+
+
+def test_exact_contract_engine_veto_cannot_be_overruled(tmp_path,monkeypatch):
+    from nexus_titan.risk.authoritative_risk import AuthoritativeRiskEngine
+    from nexus_titan.risk.portfolio_risk import PortfolioRiskManager, PreTradeRiskResult
+    ledger,inputs=_setup(tmp_path)
+    old=ledger.status()
+    monkeypatch.setattr(
+        AuthoritativeRiskEngine,"size_and_validate",
+        lambda self,**kwargs: PreTradeRiskResult(True,500,250.0,6.0,5.0,"synthetic authority allow"),
+    )
+    monkeypatch.setattr(
+        PortfolioRiskManager,"evaluate_order",
+        lambda self,**kwargs: PreTradeRiskResult(False,0,0.0,0.0,0.0,"forced exact-contract veto"),
+    )
+    with pytest.raises(GuardedPaperResearchError,match="Exact-contract risk veto"):
+        guarded_options_research_buy(**inputs)
+    _unchanged(ledger,old)
