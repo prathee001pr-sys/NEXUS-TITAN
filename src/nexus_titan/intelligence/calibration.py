@@ -160,7 +160,7 @@ class ProbabilityCalibrator:
                 f"Need at least {self.min_samples} resolved OOS observations; received {n}."
             )
         limitations.append(
-            "Calibration is only as valid as the caller\'s predeclared outcome definition, "
+            "Calibration is only as valid as the caller's predeclared outcome definition, "
             "sampling process, and walk-forward separation."
         )
         limitations.append(
