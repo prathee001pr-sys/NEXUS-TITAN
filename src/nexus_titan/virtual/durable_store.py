@@ -42,6 +42,7 @@ class DurableAccountStore:
                     max_portfolio_exposure_pct REAL NOT NULL DEFAULT 50.0,
                     initial_margin_pct REAL NOT NULL DEFAULT 20.0,
                     require_pretrade_risk_check INTEGER NOT NULL DEFAULT 1,
+                    strict_paper_mode INTEGER NOT NULL DEFAULT 0,
                     trading_mode TEXT NOT NULL, kill_switched INTEGER NOT NULL,
                     kill_metadata_json TEXT NOT NULL
                 );
@@ -67,6 +68,7 @@ class DurableAccountStore:
                 "max_portfolio_exposure_pct": "REAL NOT NULL DEFAULT 50.0",
                 "initial_margin_pct": "REAL NOT NULL DEFAULT 20.0",
                 "require_pretrade_risk_check": "INTEGER NOT NULL DEFAULT 1",
+                "strict_paper_mode": "INTEGER NOT NULL DEFAULT 0",
             }
             for column, definition in migrations.items():
                 if column not in columns:
@@ -78,37 +80,63 @@ class DurableAccountStore:
         realized_pnl: float, total_fees: float, peak_equity: float,
         risk_per_trade_pct: float, max_portfolio_exposure_pct: float,
         initial_margin_pct: float, require_pretrade_risk_check: bool,
-        trading_mode: str, kill_switched: bool, kill_metadata: dict[str, Any],
-        orders_dict: dict[str, Any], positions_dict: dict[str, Any],
-        idem_keys: set[str], capital_history: list[Any],
+        strict_paper_mode: bool = False,
+        trading_mode: str = "MANUAL_APPROVAL", kill_switched: bool = False, kill_metadata: dict[str, Any],
+        orders_dict: dict[str, Any] | None = None, positions_dict: dict[str, Any] | None = None,
+        idem_keys: set[str] | None = None, capital_history: list[Any] | None = None,
     ) -> None:
-        """Atomically persist the entire virtual-account snapshot."""
+        """Atomically persist the entire virtual-account snapshot.
+
+        A durable strict-policy account cannot be silently downgraded by a
+        normal snapshot update, even when the caller toggles a Python flag.
+        """
+        if not isinstance(strict_paper_mode, bool):
+            raise ValueError("strict_paper_mode must be boolean")
+        if strict_paper_mode and (
+            trading_mode != "MANUAL_APPROVAL" or require_pretrade_risk_check is not True
+        ):
+            raise PermissionError("Strict paper account requires MANUAL_APPROVAL and risk checks")
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE;")
+            old = conn.execute(
+                "SELECT strict_paper_mode FROM account_state WHERE account_id=?", (account_id,)
+            ).fetchone()
+            if old is not None and old["strict_paper_mode"] == 1 and not strict_paper_mode:
+                raise PermissionError("Durable strict paper mode cannot be downgraded")
             conn.execute("""
                 INSERT OR REPLACE INTO account_state (
                     account_id, initial_capital, added_capital, withdrawn_capital,
                     cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                     risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
-                    require_pretrade_risk_check, trading_mode, kill_switched, kill_metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    require_pretrade_risk_check, strict_paper_mode, trading_mode, kill_switched, kill_metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """, (account_id, initial_capital, added_capital, withdrawn_capital,
                   cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                   risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
-                  1 if require_pretrade_risk_check else 0, trading_mode,
+                  1 if require_pretrade_risk_check else 0,
+                  1 if strict_paper_mode else 0, trading_mode,
                   1 if kill_switched else 0, json.dumps(kill_metadata)))
             conn.execute("DELETE FROM orders WHERE account_id = ?;", (account_id,))
-            for oid, data in orders_dict.items():
+            for oid, data in (orders_dict or {}).items():
                 conn.execute("INSERT INTO orders VALUES (?, ?, ?);", (oid, account_id, json.dumps(data)))
             conn.execute("DELETE FROM positions WHERE account_id = ?;", (account_id,))
-            for symbol, data in positions_dict.items():
+            for symbol, data in (positions_dict or {}).items():
                 conn.execute("INSERT INTO positions VALUES (?, ?, ?);", (symbol, account_id, json.dumps(data)))
-            for key in idem_keys:
+            for key in (idem_keys or set()):
                 conn.execute("INSERT OR IGNORE INTO idempotency_keys VALUES (?, ?);", (account_id, key))
             conn.execute("DELETE FROM capital_events WHERE account_id = ?;", (account_id,))
-            for event in capital_history:
+            for event in (capital_history or []):
                 conn.execute("INSERT INTO capital_events (account_id, event_json) VALUES (?, ?);",
                              (account_id, json.dumps(event)))
+
+    def strict_mode(self, account_id: str) -> bool:
+        """Read persisted strict policy; this is not an external authority."""
+        with self._connect() as con:
+            row = con.execute(
+                "SELECT strict_paper_mode FROM account_state WHERE account_id=?",
+                (account_id,),
+            ).fetchone()
+            return bool(row and row["strict_paper_mode"] == 1)
 
     def load_snapshot(self, account_id: str) -> dict[str, Any] | None:
         """Recover a complete account snapshot from SQLite."""
