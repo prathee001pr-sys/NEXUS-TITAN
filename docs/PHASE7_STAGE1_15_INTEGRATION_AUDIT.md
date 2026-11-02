@@ -143,3 +143,54 @@ Initial file-level disposition:
 - BLOCKED: complete exact comparison of every overlapping file and independent accounting/security review not yet finished.
 
 No Stage 15 application source has been committed. Only audit documentation is being saved on the isolated audit branch.
+
+
+## Progress log
+### 2026-11-02 — checkpoint 4: blueprint reconciliation and safety fault injection
+
+Reviewed the available project source set for this checkpoint:
+- NEXUS TITAN A-to-Z Master Blueprint v4.0.
+- Trading-only Upgrade Blueprint v5.0.
+- Remaining Work A-to-Z Roadmap (01 Nov 2026).
+- Phase 6 original-source archive PDF and Phase 6 integrated ZIP.
+- Stage 15 source archive, evidence/provenance report and release-preflight JSON.
+- Current GitHub branches, PR #1, compare metadata and recent Actions runs.
+
+Scope limitations:
+- The Stage 1 ZIP referred to in prior project discussion is not present in the currently available conversation files; Stage 1 contents therefore remain unverified.
+- The previously shared Gemini conversation URL could not be retrieved in this environment. The available screenshot is only an instruction to export that conversation, not its contents. This audit must not be described as a review of the full Gemini transcript or every historical raw chat.
+- The newer v5.0 trading-only blueprint is treated as the current Phase 7 implementation scope. Broader A-to-Z v4.0 capabilities outside that locked trading scope remain planning/future modules, not silently assumed to be part of this release.
+
+Additional package-level source comparison:
+- Compared Python source paths in the extracted Phase 6 integrated ZIP with the Stage 15 package: Phase 6 ZIP had 69 Python modules; Stage 15 had 95; 69 paths overlapped, 51 were byte-identical, 18 differed and 26 were Stage-15-only.
+- This ZIP-to-ZIP view is distinct from the Phase 6 source-map statement that 48 original paths were represented (8 unchanged, 40 adapted). Do not conflate these inventories; complete path-by-path reconciliation and semantic API/behavior review is still required.
+
+Stage 15 local validation and preflight:
+- Clean extraction test command: `PYTHONPATH=src pytest -q --disable-warnings --maxfail=1`; 406 tests passed.
+- The package release-preflight JSON reports `release_decision=BLOCKED_EXTERNAL_EVIDENCE`, with licensed market data, independent security assessment, operations recovery drill, multi-day shadow evidence and owner sign-off marked `NOT_VERIFIED`; `live_trading_enabled=false`.
+- Stage 15 report's additional “5 subtests” figure remains a package report claim; the independent local test run establishes 406 passing pytest tests.
+- Stage 15's bundled 120-bar market sample and ₹50,000 account output are deterministic synthetic smoke-test evidence, not market-performance or multi-day paper-trading evidence.
+
+Critical safety finding — SAFETY-RECOVERY-001 (HIGH / P0):
+- Reproduced on the isolated Stage 15 package only: inject a failure in SQLite persistence after the durable kill-switch JSON marker is written with `kill_switched=true`; restart the virtual account; the loader restores the older SQLite snapshot (`kill_switched=false`) and returns before reconciling the lock marker; a new virtual BUY order is then accepted.
+- Failure sequence observed: durable lock marker true → simulated SQLite persistence error → restored kill switch false → new order ACCEPTED.
+- Required remediation: restart/recovery must fail closed and must never clear a durable lock marker because the database snapshot is stale or a write failed. Add fault-injection tests for failure between lock-marker and database persistence, stale/corrupt marker, restart and attempted order; confirm lock remains active until an explicit authorized reset.
+- This reproduction does not establish that the Phase 6 baseline or GitHub main branch contains the same defect. Stage 15 source has not been integrated.
+
+Additional review candidates (not yet accepted as confirmed release blockers):
+- Inspect account-wide idempotency-key handling: ensure a repeated key is bound to the original order and payload, and that reuse for a different order cannot silently return an unrelated prior result.
+- Approval snapshot digest is truncated to 16 hex characters in the Stage 15 virtual-order path; assess replacement with a full-length digest and tests against tampering/collision assumptions.
+- Reconcile Stage 15 release artifact/report naming: the package carries a Stage 14 backtest report alongside Stage 15 preflight/test evidence. Ensure release metadata clearly identifies the exact tested source commit and report version.
+
+GitHub state rechecked:
+- `integration/phase6-zip-baseline` remains 118 commits ahead of `main`, zero behind.
+- PR #1 remains OPEN and DRAFT; it is not merged.
+- Latest inspected green CI run #41257091123 is for Phase 6 baseline commit `4cafb602db06a45d4a3b16cbc862073a1fef49b4`, not Stage 15.
+- `audit/phase7-stage1-15-integration` differs from the Phase 6 baseline only by this audit document; no Stage 2–15 application code has been committed there.
+- `main` remains unchanged.
+
+Decision at checkpoint 4:
+- Phase 6 integration code is already pushed to its feature branch and PR #1 can remain in draft for review.
+- Do not merge PR #1 to `main` as a production-ready release yet.
+- Do not copy/push Stage 15 source as a completed integration. Resolve SAFETY-RECOVERY-001 first; then continue full semantic review of modified protected modules, independent financial fixtures, data provenance, security and operations gates.
+- Trading remains historical research / virtual and paper only. No live execution approval is implied.
