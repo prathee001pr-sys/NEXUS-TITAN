@@ -114,7 +114,8 @@ def run_full_offline_research_audit() -> dict[str, object]:
             "synthetic_historical_backtests": basic,
             "phase7_advanced_suite": {
                 "strategies_evaluated": advanced["strategies_evaluated"],
-                "manifest_sha256": advanced["dataset_manifest"].get("sha256_checksum"),\n                "source_evidence_blockers": advanced["manifest_verification_notes"],
+                "manifest_sha256": advanced["dataset_manifest"].get("sha256_checksum"),
+                "source_evidence_blockers": advanced["manifest_verification_notes"],
                 "manifest_integrity_verified": advanced["manifest_integrity_verified"],
                 "partial_fill_accounting_golden_passed": advanced["partial_fill_accounting_golden_passed"],
                 "futures_options_golden_fixtures_passed": advanced["futures_options_golden_fixtures_passed"],
