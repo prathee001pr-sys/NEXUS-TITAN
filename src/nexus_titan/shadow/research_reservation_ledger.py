@@ -57,7 +57,11 @@ def _money_cents(value: float, label: str, *, allow_zero: bool = True) -> int:
         raise ResearchLedgerError(f"{label} must be finite money") from exc
     if not amount.is_finite() or amount < 0 or (not allow_zero and amount == 0):
         raise ResearchLedgerError(f"{label} must be finite {'non-negative' if allow_zero else 'positive'} money")
-    if amount != amount.quantize(_CENT):
+    try:
+        rounded = amount.quantize(_CENT)
+    except InvalidOperation as exc:
+        raise ResearchLedgerError(f"{label} exceeds research account bounds") from exc
+    if amount != rounded:
         raise ResearchLedgerError(f"{label} must be accurate to two decimal places")
     cents = int(amount * 100)
     if cents > 9_000_000_000_000:
@@ -86,6 +90,9 @@ def _instrument_key(contract: PointInTimeContractSpec, strike: float, option_typ
         raise ResearchLedgerError("option_type must be CE or PE")
     if isinstance(strike, bool) or not isinstance(strike, (int, float)) or not math.isfinite(strike) or strike <= 0:
         raise ResearchLedgerError("strike must be finite and positive")
+    if (isinstance(contract.strike_step, bool) or not isinstance(contract.strike_step, (int, float))
+            or not math.isfinite(contract.strike_step) or contract.strike_step <= 0):
+        raise ResearchLedgerError("Contract strike-step metadata invalid")
     grid = Decimal(str(strike)) / Decimal(str(contract.strike_step))
     if abs(grid - grid.to_integral_value()) > Decimal("0.000001"):
         raise ResearchLedgerError("strike not on contract grid")
@@ -243,7 +250,7 @@ class DurableResearchShadowLedger:
             last = json.loads(rows[-1]["payload_json"])
             if last["post_state_sha256"] != self._state_digest(con):
                 raise ResearchLedgerError("Research ledger state does not match audit")
-        except (TypeError, ValueError, KeyError) as exc:
+        except (TypeError, KeyError, json.JSONDecodeError) as exc:
             raise ResearchLedgerError("Research ledger audit payload invalid") from exc
         ac = con.execute(
             "SELECT cash_cents,reserved_cents FROM accounts WHERE account_id=?",
