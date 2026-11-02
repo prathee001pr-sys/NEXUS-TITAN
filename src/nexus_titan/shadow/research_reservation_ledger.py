@@ -18,6 +18,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from nexus_titan.cost.charges import IndianCostConfig
+from nexus_titan.core.permissions import Action, Decision, decide
+from nexus_titan.risk.portfolio_risk import PortfolioRiskConfig
 from nexus_titan.data.instrument_master import PointInTimeContractSpec
 from nexus_titan.simulation.options_order_reconciliation import (
     ResearchFillEvent, reconcile_options_research_order,
@@ -46,6 +48,26 @@ class ResearchLedgerStatus:
     audit_event_count: int
     live_orders_transmitted: int = 0
     approved_for_strategy_promotion: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class GuardedBuyAdmission:
+    """Untrusted quote / risk state rechecked under SQLite transaction.
+
+    Used only for guarded *research* ledger, not external broker admission.
+    """
+
+    paper_trading_enabled: bool
+    risk_config: "PortfolioRiskConfig"
+    stop_price: float
+    bid: float
+    ask: float
+    ask_quantity: int
+    expected_edge_bps: float
+    slippage_bps: float
+    realized_daily_loss_pct: float
+    consecutive_losses: int
+    current_drawdown_pct: float
 
 
 def _money_cents(value: float, label: str, *, allow_zero: bool = True) -> int:
@@ -112,7 +134,12 @@ class DurableResearchShadowLedger:
     NOT adversarial authentication).
     """
 
-    def __init__(self, db_path: str | Path, *, account_id: str, starting_capital: float) -> None:
+    def __init__(
+        self, db_path: str | Path, *, account_id: str,
+        starting_capital: float, guarded_paper_mode: bool = False,
+    ) -> None:
+        if not isinstance(guarded_paper_mode, bool):
+            raise ResearchLedgerError("guarded_paper_mode must be explicit boolean")
         self.db_path = Path(db_path)
         if str(self.db_path) == ":memory:":
             raise ResearchLedgerError("Durability requires a file-backed SQLite path")
@@ -162,6 +189,10 @@ class DurableResearchShadowLedger:
                     payload_json TEXT NOT NULL,
                     record_hash TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS account_safety (
+                    account_id TEXT PRIMARY KEY,
+                    mode TEXT NOT NULL CHECK(mode IN ('GUARDED_PAPER'))
+                );
             """)
             account = con.execute(
                 "SELECT initial_cents FROM accounts WHERE account_id=?", (self.account_id,)
@@ -171,10 +202,17 @@ class DurableResearchShadowLedger:
                     "INSERT INTO accounts VALUES (?, ?, ?, 0)",
                     (self.account_id, initial_cents, initial_cents),
                 )
+                if guarded_paper_mode:
+                    con.execute(
+                        "INSERT INTO account_safety(account_id,mode) VALUES (?,'GUARDED_PAPER')",
+                        (self.account_id,),
+                    )
                 self._audit(con, {"type": "INITIAL", "capital_cents": initial_cents})
             elif account["initial_cents"] != initial_cents:
                 raise ResearchLedgerError("Restart starting_capital differs from stored account")
             self._verify(con)
+            if guarded_paper_mode and not self._guarded_mode(con):
+                raise ResearchLedgerError("Existing legacy research ledger requires explicit guarded-mode migration")
 
     @contextmanager
     def _transaction(self):
@@ -213,6 +251,10 @@ class DurableResearchShadowLedger:
             (self.account_id,),
         )]
         state = {"account": tuple(ac), "orders": orders, "inventory": inventory, "replay": replay}
+        # Legacy journals retain exact original digest. Once strict mode is
+        # enabled the persistent policy becomes hash-bound to every new state.
+        if self._guarded_mode(con):
+            state["safety_mode"] = "GUARDED_PAPER"
         blob = json.dumps(state, sort_keys=True, separators=(",", ":"), allow_nan=False)
         return hashlib.sha256(blob.encode()).hexdigest()
 
@@ -269,15 +311,153 @@ class DurableResearchShadowLedger:
             self._verify(con)
         return True
 
+    @property
+    def guarded_paper_mode(self) -> bool:
+        """Read persistent account policy, not a mutable process-local switch."""
+        with self._transaction() as con:
+            self._verify(con)
+            return self._guarded_mode(con)
+
+    def _guarded_mode(self, con) -> bool:
+        row = con.execute(
+            "SELECT mode FROM account_safety WHERE account_id=?", (self.account_id,)
+        ).fetchone()
+        return row is not None and row["mode"] == "GUARDED_PAPER"
+
+    def enable_guarded_paper_mode(self) -> None:
+        """Irreversibly harden an EMPTY legacy research account, atomically.
+
+        Caller cannot disable this via constructor argument or mode setter.
+        Existing inventory and unclosed reservations require a separate,
+        human-reviewed migration; this method refuses such accounts.
+        """
+        with self._transaction() as con:
+            self._verify(con)
+            if self._guarded_mode(con):
+                return
+            has_inventory = con.execute(
+                "SELECT 1 FROM inventory WHERE account_id=? AND quantity>0 LIMIT 1",
+                (self.account_id,),
+            ).fetchone()
+            has_orders = con.execute(
+                "SELECT 1 FROM reservations WHERE account_id=? AND status='OPEN' LIMIT 1",
+                (self.account_id,),
+            ).fetchone()
+            if has_inventory or has_orders:
+                raise ResearchLedgerError("Cannot enable guarded admission with outstanding inventory or reservations")
+            con.execute(
+                "INSERT INTO account_safety(account_id,mode) VALUES(?,'GUARDED_PAPER')",
+                (self.account_id,),
+            )
+            self._audit(con, {"type": "ENABLE_GUARDED_PAPER", "no_live_routing": True})
+            self._verify(con)
+
+    def _check_atomic_guarded_buy(
+        self, con, *, contract: PointInTimeContractSpec,
+        strike: float, option_type: str, lots: int, max_unit_premium: float,
+        context: "GuardedBuyAdmission",
+        available_cents: int,
+    ) -> None:
+        """Repeat permission/risk/veto under the same SQLite BEGIN IMMEDIATE."""
+        from nexus_titan.risk.authoritative_risk import AuthoritativeRiskEngine
+        from nexus_titan.risk.portfolio_risk import PortfolioRiskConfig, PortfolioRiskManager
+        from nexus_titan.research.adversarial_red_team import TradeProposal, challenge_trade
+        if not isinstance(context, GuardedBuyAdmission):
+            raise ResearchLedgerError("Guarded-paper account requires atomic risk admission inputs")
+        if decide(Action.PAPER_TRADE, paper_trading_enabled=context.paper_trading_enabled) is not Decision.ALLOW:
+            raise ResearchLedgerError("Atomic admission: PAPER_TRADE permission denied")
+        if (con.execute("SELECT 1 FROM reservations WHERE account_id=? AND status='OPEN' LIMIT 1",
+                        (self.account_id,)).fetchone()
+            or con.execute("SELECT 1 FROM inventory WHERE account_id=? AND quantity>0 LIMIT 1",
+                           (self.account_id,)).fetchone()):
+            raise ResearchLedgerError("Atomic admission: guarded ledger must be flat with no pending orders")
+        if not isinstance(context.risk_config, PortfolioRiskConfig):
+            raise ResearchLedgerError("Atomic admission: exact risk config required")
+        values = (
+            context.stop_price, context.bid, context.ask,
+            context.expected_edge_bps, context.slippage_bps,
+            context.realized_daily_loss_pct, context.current_drawdown_pct,
+        )
+        if any(isinstance(v, bool) or not isinstance(v, (int,float))
+               or not math.isfinite(v) or v < 0 for v in values):
+            raise ResearchLedgerError("Atomic admission: risk/quote inputs must be finite nonnegative numbers")
+        if (context.ask <= 0 or context.bid <= 0 or context.ask < context.bid
+                or context.stop_price <= 0 or context.stop_price >= context.ask
+                or context.ask > max_unit_premium):
+            raise ResearchLedgerError("Atomic admission: invalid bid/ask, stop or maximum premium")
+        if (isinstance(context.ask_quantity, bool) or not isinstance(context.ask_quantity, int)
+                or context.ask_quantity < 1):
+            raise ResearchLedgerError("Atomic admission: strictly positive displayed ask depth required")
+        if (isinstance(context.consecutive_losses, bool) or not isinstance(context.consecutive_losses, int)
+                or context.consecutive_losses < 0):
+            raise ResearchLedgerError("Atomic admission: invalid consecutive-loss count")
+        capital = available_cents / 100
+        quantity = lots * contract.lot_size
+        risk_kwargs = dict(
+            capital=capital, entry_price=max_unit_premium, stop_price=context.stop_price,
+            current_exposure=0.0, current_open_positions=0,
+            realized_daily_loss_pct=context.realized_daily_loss_pct,
+            consecutive_losses=context.consecutive_losses,
+            current_drawdown_pct=context.current_drawdown_pct, side="BUY",
+        )
+        auto = AuthoritativeRiskEngine(context.risk_config).size_and_validate(
+            symbol=contract.symbol, lot_size=contract.lot_size,
+            tick_size=contract.tick_size, **risk_kwargs,
+        )
+        if not auto.approved or auto.quantity < quantity:
+            raise ResearchLedgerError("Atomic admission: authoritative risk veto: " + auto.reason)
+        exact = PortfolioRiskManager(context.risk_config).evaluate_order(
+            spec=contract.to_instrument_spec(), **risk_kwargs,
+        )
+        if not exact.approved or exact.quantity < quantity:
+            raise ResearchLedgerError("Atomic admission: exact-contract risk veto: " + exact.reason)
+        mid = (context.ask + context.bid) / 2
+        spread_bps = (context.ask - context.bid) / mid * 10000
+        red = challenge_trade(TradeProposal(
+            side="BUY", entry=context.ask, stop=context.stop_price, target=None,
+            spread_bps=spread_bps, slippage_bps=context.slippage_bps,
+            expected_edge_bps=context.expected_edge_bps,
+            liquidity_available=context.ask_quantity, order_quantity=quantity,
+        ))
+        if red.veto_recommended:
+            raise ResearchLedgerError("Atomic admission: independent Red-Team veto")
+        # These are untrusted caller-supplied risk metrics and quote evidence;
+        # neither this method nor the provider references authenticate them.
+
     def reserve_buy(
         self, *, order_id: str, contract: PointInTimeContractSpec,
         strike: float, option_type: str, lots: int, as_of: datetime,
         max_unit_premium: float, fee_buffer: float = 25.0,
     ) -> None:
-        """Reserve whole-lot premium and an explicit fee buffer atomically.
+        """Legacy scenario reservation; blocked permanently in guarded mode."""
+        self._reserve_buy_impl(
+            order_id=order_id, contract=contract, strike=strike,
+            option_type=option_type, lots=lots, as_of=as_of,
+            max_unit_premium=max_unit_premium, fee_buffer=fee_buffer,
+            guarded_context=None,
+        )
 
-        This is only a research scenario; it does not authorize or route an order.
-        """
+    def reserve_buy_guarded(
+        self, *, order_id: str, contract: PointInTimeContractSpec,
+        strike: float, option_type: str, lots: int, as_of: datetime,
+        max_unit_premium: float, fee_buffer: float,
+        admission: "GuardedBuyAdmission",
+    ) -> None:
+        """Require transaction-bound permission, risk, exact contract and veto."""
+        self._reserve_buy_impl(
+            order_id=order_id, contract=contract, strike=strike,
+            option_type=option_type, lots=lots, as_of=as_of,
+            max_unit_premium=max_unit_premium, fee_buffer=fee_buffer,
+            guarded_context=admission,
+        )
+
+    def _reserve_buy_impl(
+        self, *, order_id: str, contract: PointInTimeContractSpec,
+        strike: float, option_type: str, lots: int, as_of: datetime,
+        max_unit_premium: float, fee_buffer: float,
+        guarded_context: "GuardedBuyAdmission | None",
+    ) -> None:
+        """Research-only mutation; safety policy checked inside DB lock."""
         oid = _valid_id(order_id, "order_id")
         if not isinstance(as_of, datetime) or as_of.tzinfo is None or as_of.utcoffset() is None:
             raise ResearchLedgerError("as_of must be timezone-aware")
@@ -301,6 +481,15 @@ class DurableResearchShadowLedger:
                 "SELECT cash_cents,reserved_cents FROM accounts WHERE account_id=?",
                 (self.account_id,),
             ).fetchone()
+            if self._guarded_mode(con):
+                self._check_atomic_guarded_buy(
+                    con, contract=contract, strike=strike, option_type=option_type,
+                    lots=lots, max_unit_premium=max_unit_premium,
+                    context=guarded_context,
+                    available_cents=ac["cash_cents"] - ac["reserved_cents"],
+                )
+            elif guarded_context is not None:
+                raise ResearchLedgerError("Guarded reservation needs guarded account mode")
             if held > ac["cash_cents"] - ac["reserved_cents"]:
                 raise ResearchLedgerError("Insufficient unreserved virtual cash")
             if con.execute(
@@ -319,7 +508,10 @@ class DurableResearchShadowLedger:
                 "UPDATE accounts SET reserved_cents=reserved_cents+? WHERE account_id=?",
                 (held, self.account_id),
             )
-            self._audit(con, {"type": "RESERVE_BUY", "order_id": oid, "held_cents": held})
+            self._audit(con, {
+                "type": "RESERVE_BUY", "order_id": oid, "held_cents": held,
+                "atomic_guarded_admission": self._guarded_mode(con),
+            })
 
     def cancel(self, order_id: str) -> None:
         oid = _valid_id(order_id, "order_id")
