@@ -29,7 +29,8 @@ def _guarded_buy(tmp_path):
 
 
 def _sell_params(params,**kw):
-    data=STAGE24["_exit_args"](params)
+    depth=kw.pop("bid_depth",400)
+    data=STAGE24["_exit_args"](params,bid_depth=depth)
     data.update(kw)
     return data
 
