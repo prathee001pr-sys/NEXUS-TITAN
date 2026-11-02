@@ -37,7 +37,7 @@ BUY_SETUP = STAGE23["_setup"]
 
 
 def _exit_history(contract, when, *, bid=8.0, ask=None):
-    ask = bid + 0.5 if ask is None else ask
+    ask = bid + min(0.5, bid * 0.1) if ask is None else ask
     quotes = tuple(OptionChainQuote(
         timestamp=(when-timedelta(seconds=1)).isoformat(),
         symbol=contract.symbol, underlying=contract.underlying,
@@ -130,7 +130,8 @@ def test_loss_exit_records_negative_realized_pnl_not_fake_profit(tmp_path):
 def test_partial_sell_respects_lot_rounding_and_preserves_remaining_basis(tmp_path):
     ledger,buy = _buy(tmp_path)
     initial_basis = report_research_long_portfolio(ledger).positions[0].remaining_cost_basis
-    out = simulate_and_settle_long_exit(**_exit_args(buy,bid_depth=25))
+    # Default microstructure participation cap is 25%: depth 100 -> one lot.
+    out = simulate_and_settle_long_exit(**_exit_args(buy,bid_depth=100))
     assert out.status == "PARTIAL"
     assert out.filled_quantity == 25 and out.remaining_inventory == 25
     record=report_research_long_portfolio(ledger).positions[0]
@@ -269,8 +270,10 @@ def test_exit_past_expiry_fails_before_account_mutation(tmp_path):
     ledger,buy=_buy(tmp_path)
     old=ledger.status()
     when=datetime.fromisoformat("2026-11-06T09:16:00+05:30")
+    args=_exit_args(buy)
+    args["observed_at"]=when
     with pytest.raises(ResearchLedgerError,match="not effective"):
-        simulate_and_settle_long_exit(**_exit_args(buy,when=when))
+        simulate_and_settle_long_exit(**args)
     assert ledger.status()==old
 
 
