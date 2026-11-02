@@ -245,7 +245,8 @@ def test_invalid_sha_declaration_rejected(tmp_path):
 def test_quote_temporally_mismatched_to_file_entry_is_rejected(tmp_path):
     d=_fixture(tmp_path)
     first=d.snapshots[0]
-    d=replace(d,snapshots=(replace(first,observed_at=START+timedelta(seconds=1)),)+d.snapshots[1:])
+    d=replace(d,snapshots=(replace(first,observed_at=START+timedelta(seconds=1)),)+d.snapshots[1:],
+              declared_start=START+timedelta(seconds=1))
     with pytest.raises((OptionChainIngestionError,OptionChainHistoryError),match="time|integrity"):
         _run(tmp_path,d)
 
