@@ -108,5 +108,5 @@ def test_repeated_kill_switch_does_not_reenable_buy():
     a.activate_emergency_kill_switch("second")
     rejected=a.submit_order("ABC","BUY",1)
     assert rejected.state==OrderState.REJECTED
-    with pytest.raises(ValueError,match="cannot be filled"):
+    with pytest.raises(PermissionError,match="prohibits all further BUY"):
         a.execute_fill(rejected.order_id,100)
