@@ -510,6 +510,8 @@ class VirtualAccount:
         order = self.orders.get(order_id)
         if not order or order.state != OrderState.PENDING_APPROVAL:
             raise ValueError("Order is missing or is not pending approval.")
+        if self.kill_switched:
+            raise PermissionError("Emergency kill switch prohibits order approval")
         if not actor.strip() or self.approval_authorizer is None:
             raise PermissionError("An authenticated approval_authorizer is required.")
         if not self.approval_authorizer(actor.strip(), order_id):
@@ -564,6 +566,11 @@ class VirtualAccount:
                 )
         if order.is_emergency and order_id not in self._internal_emergency_order_ids:
             raise PermissionError("Emergency order has no current internal protective-exit provenance")
+        # Kill-switch is durable and must be checked at the FILL boundary,
+        # not only at submission. Previously PARTIALLY_FILLED BUY remained
+        # fillable after emergency lockout because only ACCEPTED was cancelled.
+        if self.kill_switched and order.side == OrderSide.BUY:
+            raise PermissionError("Emergency kill switch prohibits all further BUY fills")
         if order.state not in (OrderState.ACCEPTED, OrderState.PARTIALLY_FILLED):
             raise ValueError(f"Order cannot be filled in state {order.state.value}.")
         if order.approval is not None and order.compute_snapshot_hash() != order.approval.order_snapshot_hash:
@@ -712,7 +719,9 @@ class VirtualAccount:
             return
         self.kill_switched = True
         for order in self.orders.values():
-            if order.side == OrderSide.BUY and order.state in (OrderState.ACCEPTED, OrderState.PENDING_APPROVAL):
+            if order.side == OrderSide.BUY and order.state in (
+                OrderState.ACCEPTED, OrderState.PENDING_APPROVAL, OrderState.PARTIALLY_FILLED
+            ):
                 order.state = OrderState.CANCELLED
                 order.reject_reason = f"Cancelled by emergency kill switch: {reason}"
         self._persist_lock_state(reason, actor)
