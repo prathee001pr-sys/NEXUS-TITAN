@@ -215,7 +215,7 @@ def test_non_session_day_or_unverified_calendar_rejected(tmp_path):
     s = _ledger(tmp_path).status()
     out = _days(_row(date(2026, 11, 7), s))
     assert any("not an exchange session" in x for x in out.discrepancies)
-    with pytest.raises(ShadowEvidenceError, match="MarketCalendar"):
+    with pytest.raises(ShadowEvidenceError, match="market calendar"):
         inspect_multiday_shadow_evidence([_row(SOURCE_DAY, s)], calendar=None)
 
 
@@ -352,3 +352,26 @@ def test_report_deterministic_for_same_records(tmp_path):
     s = _ledger(tmp_path).status()
     rows = (_row(SOURCE_DAY,s),_row(SOURCE_DAY+timedelta(days=1),s))
     assert _days(*rows) == _days(*rows)
+
+
+def test_changed_day_close_state_requires_new_audit_event(tmp_path):
+    s = _ledger(tmp_path).status()
+    changed = replace(
+        s, cash_balance=49900.0, available_cash=49900.0,
+        closed_order_count=1,
+    )
+    records = (
+        _row(SOURCE_DAY, s),
+        _row(SOURCE_DAY + timedelta(days=1), changed, delta=-100.0),
+    )
+    report = _days(*records)
+    assert any("without advancing audit evidence" in i for i in report.discrepancies)
+
+
+def test_unchanged_day_close_does_not_require_fake_audit_events(tmp_path):
+    s = _ledger(tmp_path).status()
+    report = _days(
+        _row(SOURCE_DAY, s),
+        _row(SOURCE_DAY + timedelta(days=1), s),
+    )
+    assert report.is_structurally_valid
