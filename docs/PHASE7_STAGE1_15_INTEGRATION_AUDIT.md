@@ -35,3 +35,75 @@ Each candidate change will be marked:
 - No application source files changed.
 - No tests newly run in this audit workspace yet.
 - Next: materialize and inspect stage archives, compare manifests, paths, tests, and reports against the baseline.
+
+## Progress log
+### 2026-11-02 — checkpoint 1: archive inventory and Stage 15 verification
+
+Materialized and inspected the Stage 2–15 ZIP archives available in this conversation. SHA-256 fingerprints:
+
+| Stage | Archive SHA-256 |
+|---|---|
+| 2 | `1cb90bb6107c1683ca8ca1d29f393eb6bd212862d2fd6ddc1f4f4249f160a629` |
+| 3 | `f56ce383d688b079ebba14a3d080d83c12679cbaa8bd04ada01ad505b62a88a5` |
+| 4 | `f312f64fa84267c1fc9f3907ab6ca5ec61ec1cf6d21929c6f17d6b68e8f74efc` |
+| 5 | `30d5d97817b216b09a7ad91f32b41a224811c2dcfbffa4c1cd6e236f286e9cf5` |
+| 6 | `49822ebf82739f5767dc664be9bddb81ad95548e27580eb36cfd77dad2f3f8ec` |
+| 7 | `fe30495f0907592e1b8a2a56c99bf2068bc572748d17895816eed8593a688be1` |
+| 8 | `ac6ab7bf5a07490802c6d21a1d4d7815855ac88575a0af95104e4daf18a2ce29` |
+| 9 | `00370e2c07f4040fb91fdc64bcbbc51fafc1da3190fc023270b9e0cc05f7a8a5` |
+| 10 | `dcf7fbf2dd307b51375db94490ca5fb7929a82c6a954411c41592dd1c5cfef80` |
+| 11 | `67be26306bdf622c59dc34b9d004470c015ca8a547f2b7abd6ff645e061638c5` |
+| 12 | `e4ac3692df859037700c3f2e502f74cb742aaf91dcd0ef38fb1016c11f80a10d` |
+| 13 | `8658531c316c0bf87b482d6a21f3979ea0c605316adef1c362cc4983b52bfc5e` |
+| 14 | `860838ff00ed389783ca1dff497b4fa999b8da9e9414d4d0a768240dd350df71` |
+| 15 | `3948551a027deaa9e72484869b7f0ce429a5b9d5a79ff4409555c374f9746a34` |
+
+Canonical text/source inventory after normalizing wrapper directories:
+
+| Stage | Files | Python files |
+|---|---:|---:|
+| 2 | 154 | 121 |
+| 3 | 161 | 126 |
+| 4 | 165 | 128 |
+| 5 | 166 | 130 |
+| 6 | 171 | 134 |
+| 7 | 177 | 138 |
+| 8 | 184 | 144 |
+| 9 | 189 | 147 |
+| 10 | 191 | 147 |
+| 11 | 199 | 149 |
+| 12 | 205 | 151 |
+| 13 | 211 | 154 |
+| 14 | 214 | 154 |
+| 15 | 218 | 156 |
+
+Observed staged deltas:
+- Stage 2→3: market-state/consensus intelligence modules and market-data due-diligence document added.
+- Stage 3→4: analytical market-intelligence module and focused tests added.
+- Stage 4→5: trading-intelligence pipeline and tests added; the Stage 4 workflow file is absent in Stage 5 and needs review before any integration.
+- Stage 5→6: strategy lab, adversarial red-team module and tests added.
+- Stage 6→7: digital twin and execution simulator modules/tests added.
+- Stage 7→8: operations health/resource/watchdog and post-mortem additions.
+- Stage 8→9: shadow validation module/tests and a new report.
+- Stage 9→10: integration-release audit and report snapshot changes.
+- Stage 10→11: CI workflow, SECURITY.md, operations runbook and release-preflight tooling added.
+- Stage 11→12: master orchestrator, architecture document and integration tests added.
+- Stage 12→13: specialist evidence roles and governed EVOLVE additions added.
+- Stage 13→14: evidence-hardening changes to specialist/strategy-lab paths and tests.
+- Stage 14→15: canonical evidence-integrity module, master orchestrator verified-evidence entry point, report and tests added.
+
+Stage 15 verification performed from a clean extraction:
+- `PYTHONPATH=src pytest -q --disable-warnings --maxfail=1`: completed successfully.
+- Independent collection count: 406 tests across 54 test files.
+- This local run did not establish the 5-subtest count; that figure remains the package report's claim.
+- Stage 15 contains `data/titan_learning.db` (77,824 bytes), but inspection found zero rows in learnings, proposals, experiments, skills, audit_log, strategy_regime_evidence and code_change_proposals. It is an empty schema/runtime artifact, not populated user learning history.
+- Stage 14 archive contains Python cache/pytest-cache artifacts; Stage 15 archive does not show those cache artifacts in the inspected listing.
+- Stage 15 report correctly states SHA-256 does not authenticate the provider/source or prove licensing/point-in-time correctness.
+
+Initial classifications:
+- PRESENT in Stage 15: prior Stage 3–14 source and reports are carried forward in the Stage 15 snapshot, subject to the Stage 15 source inventory.
+- IMPROVEMENT: Stage 4→5 workflow removal requires explanation; packaging roots vary across stages and must be normalized carefully.
+- BLOCKED: Stage 1 archive is still unavailable; Stage 2 is represented by the hardened Stage 2 archive, but its provenance and relationship to the older Phase 7 hardened ZIP must be confirmed.
+- BLOCKED: no code from Stages 2–15 has yet been copied into the audit branch; this checkpoint is inventory and local test evidence only.
+
+No application source files were modified. No merge to main, no PR merge, and no live trading changes.
