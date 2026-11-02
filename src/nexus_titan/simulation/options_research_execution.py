@@ -101,6 +101,7 @@ def simulate_historical_option_fill(
     limit_price: float | None = None,
     microstructure: MicrostructureConfig | None = None,
     costs: IndianCostConfig | None = None,
+    max_depth_quote_skew_ms: float = 2000.0,
 ) -> OptionResearchFill:
     """Simulate one fragment using supplied, timestamp-matched top-of-book depth.
 
@@ -138,6 +139,11 @@ def simulate_historical_option_fill(
         raise OptionResearchExecutionError("Invalid microstructure configuration")
     if costs is not None and not isinstance(costs, IndianCostConfig):
         raise OptionResearchExecutionError("Invalid transaction-cost configuration")
+    if (isinstance(max_depth_quote_skew_ms, bool)
+            or not isinstance(max_depth_quote_skew_ms, (int, float))
+            or not math.isfinite(max_depth_quote_skew_ms)
+            or max_depth_quote_skew_ms < 0):
+        raise OptionResearchExecutionError("Depth/quote synchronization limit must be finite and non-negative")
 
     # A caller can instantiate the frozen ResearchOptionChainHistory directly.
     # Rechecking stops such a forged instance bypassing the Stage 1-15/PR8 gates.
@@ -171,7 +177,7 @@ def simulate_historical_option_fill(
     quote_when = datetime.fromisoformat(quote.timestamp.replace("Z", "+00:00"))
     # The data at this instant must be a coherent top-of-book observation; do
     # not combine unrelated timestamps or treat OHLCV volume as displayed qty.
-    if abs((depth.as_of - quote_when).total_seconds()) * 1000 > cfg.max_quote_age_ms:
+    if abs((depth.as_of - quote_when).total_seconds()) * 1000 > max_depth_quote_skew_ms:
         raise OptionResearchExecutionError("Displayed depth and option quote are unsynchronized")
 
     book = OrderBookSnapshot(
