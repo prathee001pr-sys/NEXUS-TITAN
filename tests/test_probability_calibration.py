@@ -108,3 +108,23 @@ def test_bin_edges_are_consistent_and_probability_one_is_in_last_bucket():
 def test_wrong_observation_type_is_rejected():
     with pytest.raises(TypeError):
         ProbabilityCalibrator().evaluate([object()])
+
+
+def test_wilson_interval_bounds_and_empty_bins():
+    report = ProbabilityCalibrator(bin_count=2, min_samples=2).evaluate([
+        observation(1, 0.8, True), observation(2, 0.9, False)
+    ])
+    empty, populated = report.bins
+    assert empty.wilson_lower_95 is None
+    assert empty.wilson_upper_95 is None
+    assert populated.observed_frequency == 0.5
+    assert populated.wilson_lower_95 == pytest.approx(0.09453, abs=0.0001)
+    assert populated.wilson_upper_95 == pytest.approx(0.90547, abs=0.0001)
+    assert any("independent" in text for text in report.limitations)
+
+def test_wilson_interval_extreme_outcomes_stays_in_unit_interval():
+    report = ProbabilityCalibrator(bin_count=2, min_samples=1).evaluate([
+        observation(1, 1.0, True)
+    ])
+    assert 0 <= report.bins[1].wilson_lower_95 <= 1
+    assert report.bins[1].wilson_upper_95 == pytest.approx(1.0)
