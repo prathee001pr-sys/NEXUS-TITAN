@@ -16,10 +16,10 @@ from pathlib import Path
 
 from nexus_titan.data.instrument_master import PointInTimeContractSpec
 from nexus_titan.data.option_chain_ingest import (
-    OptionChainIngestionError, load_research_option_chain_csv,
+    load_research_option_chain_csv,
 )
 from nexus_titan.data.option_chain_history import (
-    ResearchOptionChainHistory, OptionChainHistoryError,
+    ResearchOptionChainHistory,
     assemble_research_option_chain_history,
 )
 from nexus_titan.data.sessions import MarketCalendar
@@ -155,8 +155,6 @@ def load_declared_historical_option_chain_bundle(
         raise HistoricalBundleError("Snapshot manifest must be immutable tuple")
     if not 1 <= len(declaration.snapshots) <= min(max_files, 2000):
         raise HistoricalBundleError("Snapshot count is missing or exceeds bounded limit")
-    if len(declaration.snapshots) > (max_total_bytes // 1):
-        raise HistoricalBundleError("Snapshot entry count exceeds allowed bytes")
     if not isinstance(root, (str, Path)) or not str(root).strip():
         raise HistoricalBundleError("Nonempty local root directory required")
     base = Path(root)
@@ -212,8 +210,6 @@ def load_declared_historical_option_chain_bundle(
         )
         snapshots.append(snap)
         file_hashes.append((entry.filename, snap.sha256))
-    if seen_instants != {start, end} and (previous != end or snapshots[0].observed_at.astimezone(timezone.utc) != start):
-        raise HistoricalBundleError("First/last source timestamps don't match declared coverage boundaries")
     if snapshots[0].observed_at.astimezone(timezone.utc) != start or previous != end:
         raise HistoricalBundleError("First/last snapshots must exactly match declared window")
     # Existing Stage16-18 time-grid quality rejects all missing in-window minutes.
