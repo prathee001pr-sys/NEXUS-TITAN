@@ -118,3 +118,28 @@ No application source files were modified. No merge to main, no PR merge, and no
 - Stage 15 archive hash independently calculated as `3948551a027deaa9e72484869b7f0ce429a5b9d5a79ff4409555c374f9746a34`, matching the previously recorded Stage 15 package fingerprint.
 - Stage 4→5 removal of `.github/workflows/tests.yml` is a packaging/CI regression candidate. Stage 11 adds a separate `.github/workflows/ci.yml`; verify the final Stage 15 workflow set and triggers before copying it.
 - No source code has been copied to the audit branch. The only GitHub change remains this audit record.
+
+## Progress log
+### 2026-11-02 — checkpoint 3: baseline overlap and workflow review
+
+Compared the Stage 15 source snapshot against the selected Phase 6 Git tree at `4cafb602db06a45d4a3b16cbc862073a1fef49b4`.
+
+Exact Git blob comparison for representative overlapping files:
+- `src/nexus_titan/core/runtime.py`: identical to Phase 6 baseline (same Git blob SHA).
+- `src/nexus_titan/evolve/research.py`: differs from Phase 6 baseline; Stage 13 introduced governed EVOLVE audit/proposal lifecycle changes. Needs focused regression and safety review before replacement.
+- `src/nexus_titan/dashboard/api_service.py`: differs; Stage 12 extends dashboard telemetry for master integration. Preserve read-only behavior and test backward compatibility.
+- `src/nexus_titan/research/post_mortem.py`: differs; Stage 8 adds post-mortem/attribution functionality. Review arithmetic and assumptions before replacement.
+- `src/nexus_titan/virtual/order_manager.py`: differs from Phase 6 baseline in the Stage 15 archive. Do not replace blindly; it is a protected virtual execution/risk boundary and requires full semantic diff plus independent accounting tests.
+- `src/nexus_titan/core/master_integration.py` and `src/nexus_titan/intelligence/evidence_integrity.py`: absent from Phase 6 baseline; Stage 12/15 additions respectively.
+
+Workflow review:
+- Stage 15 contains `.github/workflows/ci.yml` with push, pull_request and workflow_dispatch triggers; Python 3.11/3.12/3.13 matrix; install, compile/test, deterministic backtest report and artifact upload.
+- Stage 5's removal of the older `.github/workflows/tests.yml` is not itself a final CI loss because Stage 11 adds `ci.yml`, retained in Stage 15. Still review action pinning and workflow behavior before adoption.
+
+Initial file-level disposition:
+- PRESENT / unchanged: at least `core/runtime.py` remains byte-identical to Phase 6.
+- ADDITIVE candidate: master orchestrator, evidence integrity, intelligence state/consensus/pipeline, market intelligence, red-team, simulation, operations, shadow validation, specialist-role modules and their tests.
+- CONFLICT / review required: EVOLVE research, dashboard API, post-mortem, virtual order manager, master integration and Stage 15 README/workflow.
+- BLOCKED: complete exact comparison of every overlapping file and independent accounting/security review not yet finished.
+
+No Stage 15 application source has been committed. Only audit documentation is being saved on the isolated audit branch.
