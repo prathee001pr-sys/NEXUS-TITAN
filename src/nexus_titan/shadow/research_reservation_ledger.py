@@ -364,6 +364,8 @@ class DurableResearchShadowLedger:
         from nexus_titan.research.adversarial_red_team import TradeProposal, challenge_trade
         if not isinstance(context, GuardedBuyAdmission):
             raise ResearchLedgerError("Guarded-paper account requires atomic risk admission inputs")
+        if not isinstance(context.paper_trading_enabled, bool):
+            raise ResearchLedgerError("Atomic admission: explicit boolean PAPER_TRADE permission required")
         if decide(Action.PAPER_TRADE, paper_trading_enabled=context.paper_trading_enabled) is not Decision.ALLOW:
             raise ResearchLedgerError("Atomic admission: PAPER_TRADE permission denied")
         if (con.execute("SELECT 1 FROM reservations WHERE account_id=? AND status='OPEN' LIMIT 1",
