@@ -1,7 +1,7 @@
 # Phase 7 Stages 1–15 Integration Audit
 
 Date: 2026-11-02
-Repository: prathee001pr-sys/NEXUS-TITAN-V2
+Repository: prathee001pr-sys/NEXUS-TITAN (renamed from NEXUS-TITAN-V2 by the owner on 2026-11-02)
 Audit branch: `audit/phase7-stage1-15-integration`
 Base branch: `integration/phase6-zip-baseline`
 Base commit: `4cafb602db06a45d4a3b16cbc862073a1fef49b4`
@@ -16,7 +16,7 @@ This branch is an audit/integration workspace. The original `main`, Phase 6 inte
 - PR #1 remains open and draft.
 - Latest inspected CI run #41257091123 completed successfully; the recorded suite result is 280 passed + 5 subtests.
 - Phase 6 report records original ZIP compatibility as 246 passed, but those 30 original test modules are not yet part of the repository's recurring CI suite.
-- The separate `NEXUS-TITAN` repository contains only an initial README commit; its `stage15-consolidated-baseline` branch is identical to its `main`.
+- Repository identity was subsequently confirmed by the owner: `prathee001pr-sys/NEXUS-TITAN` is the renamed `NEXUS-TITAN-V2` repository. The owner also reports that the earlier separate repository was deleted. Treat the rename as preserving this repository's existing branches and PR history; use `prathee001pr-sys/NEXUS-TITAN` as the canonical remote going forward.
 
 ## Stage archive inventory
 Stage 2–15 archives are visible in the conversation file set. Stage 1 archive is not present in the currently indexed conversation files. Archives must be inspected and hashed before their contents are considered authoritative.
@@ -206,3 +206,13 @@ Follow-up source inspection of Stage 15 `src/nexus_titan/virtual/order_manager.p
 The idempotency reproduction is a Stage 15 source finding only; it has not been tested against the Phase 6 branch or deployed code.
 
 No application source was modified. Audit branch remains documentation-only; the above findings are recorded for remediation and review, not yet fixed or accepted.
+
+
+## Progress log
+### 2026-11-02 — checkpoint 6: repository rename confirmation
+
+- Owner supplied the canonical repository URL: `https://github.com/prathee001pr-sys/NEXUS-TITAN`.
+- GitHub connector successfully fetched the default-branch `README.md` and the existing `audit/phase7-stage1-15-integration` audit report from `prathee001pr-sys/NEXUS-TITAN`, confirming that the audit branch and report are accessible under the renamed repository path.
+- Updated the repository identity in this report. Future GitHub work should target `prathee001pr-sys/NEXUS-TITAN`; do not use the former `NEXUS-TITAN-V2` name as the canonical repository name.
+- The fetched default-branch README still contains the older scaffold text and title `NEXUS-TITAN-V2`; this is content, not proof that the rename failed. It should be reviewed separately before any README edit.
+- No branch was merged, no pull request was changed, and no application source was modified as part of this rename-recording checkpoint.
