@@ -9,13 +9,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from math import isfinite
+from math import isfinite, sqrt, fsum
 from typing import Iterable
 
 
 @dataclass(frozen=True, slots=True)
 class CalibrationObservation:
-    """A probability forecast and its later, independently resolved outcome."""
+    """A probability forecast and its later, independently resolved outcome.
+
+    ``outcome`` must be defined consistently by the caller (for example, a
+    predeclared target-before-stop event). The calibrator does not infer it.
+    """
 
     prediction_id: str
     probability: float
@@ -32,6 +36,8 @@ class ReliabilityBin:
     sample_count: int
     mean_probability: float | None
     observed_frequency: float | None
+    wilson_lower_95: float | None = None
+    wilson_upper_95: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,8 +55,9 @@ class CalibrationReport:
 class ProbabilityCalibrator:
     """Compute reliability diagnostics from clean OOS binary observations.
 
-    Scores are descriptive. READY_FOR_REVIEW requires the configured minimum
-    OOS sample count; it is not strategy promotion or trade authorization.
+    Scores are descriptive. A report is marked ``READY_FOR_REVIEW`` only when
+    the configured minimum OOS sample count is met; this is not a strategy
+    promotion decision and is never a trade authorization.
     """
 
     def __init__(self, *, bin_count: int = 10, min_samples: int = 100) -> None:
@@ -106,15 +113,16 @@ class ProbabilityCalibrator:
             )
 
         buckets: list[list[CalibrationObservation]] = [[] for _ in range(self.bin_count)]
-        squared_error = 0.0
+        squared_errors: list[float] = []
         for item in items:
             probability = float(item.probability)
-            squared_error += (probability - float(item.outcome)) ** 2
+            squared_errors.append((probability - float(item.outcome)) ** 2)
+            # Probability 1.0 belongs to the final inclusive bucket.
             index = min(int(probability * self.bin_count), self.bin_count - 1)
             buckets[index].append(item)
 
         n = len(items)
-        brier = squared_error / n
+        brier = fsum(squared_errors) / n
         reliability_bins: list[ReliabilityBin] = []
         weighted_gap = 0.0
         for index, bucket in enumerate(buckets):
@@ -123,12 +131,26 @@ class ProbabilityCalibrator:
             if bucket:
                 mean_probability = sum(float(x.probability) for x in bucket) / len(bucket)
                 observed_frequency = sum(int(x.outcome) for x in bucket) / len(bucket)
+                # Wilson score interval for a binomial frequency (95%, z=1.96).
+                z = 1.96
+                m = len(bucket)
+                denominator = 1 + z * z / m
+                center = (observed_frequency + z * z / (2 * m)) / denominator
+                half_width = z * sqrt(
+                    observed_frequency * (1 - observed_frequency) / m
+                    + z * z / (4 * m * m)
+                ) / denominator
+                lower_95 = max(0.0, center - half_width)
+                upper_95 = min(1.0, center + half_width)
                 weighted_gap += (len(bucket) / n) * abs(mean_probability - observed_frequency)
             else:
                 mean_probability = None
                 observed_frequency = None
+                lower_95 = None
+                upper_95 = None
             reliability_bins.append(ReliabilityBin(
-                lower, upper, len(bucket), mean_probability, observed_frequency
+                lower, upper, len(bucket), mean_probability, observed_frequency,
+                lower_95, upper_95
             ))
 
         sufficient = n >= self.min_samples
@@ -138,11 +160,15 @@ class ProbabilityCalibrator:
                 f"Need at least {self.min_samples} resolved OOS observations; received {n}."
             )
         limitations.append(
-            "Calibration depends on a predeclared outcome definition, sampling process, "
-            "and valid walk-forward separation."
+            "Calibration is only as valid as the caller's predeclared outcome definition, "
+            "sampling process, and walk-forward separation."
         )
         limitations.append(
-            "These diagnostics do not authorize trades, strategy promotion, or risk-limit changes."
+            "Wilson intervals assume independent binary observations; overlapping trades "
+            "or regime clustering can make them overconfident."
+        )
+        limitations.append(
+            "These diagnostics do not authorize a trade, strategy promotion, or risk-limit change."
         )
         return CalibrationReport(
             sample_count=n,
