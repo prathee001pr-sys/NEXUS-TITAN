@@ -186,6 +186,7 @@ class VirtualAccount:
         require_pretrade_risk_check: bool = True,
         initial_margin_pct: float = 20.0,
         approval_authorizer: Callable[[str, str], bool] | None = None,
+        strict_paper_mode: bool = False,
     ):
         if starting_capital is None:
             raise ValueError("Starting capital must be explicitly configured.")
@@ -201,6 +202,18 @@ class VirtualAccount:
             raise ValueError("Invalid margin percentage or risk-check setting.")
         if not isinstance(account_id, str) or not account_id.strip():
             raise ValueError("account_id is required.")
+        if not isinstance(strict_paper_mode, bool):
+            raise ValueError("strict_paper_mode must be an explicit boolean")
+        if strict_paper_mode and (
+            state_dir is None or TradingMode(trading_mode) is not TradingMode.MANUAL_APPROVAL
+            or require_pretrade_risk_check is not True
+            or not callable(approval_authorizer)
+        ):
+            raise PermissionError(
+                "Strict paper mode requires durable state, manual approval, risk checks and identity callback"
+            )
+        self._strict_paper_requested = strict_paper_mode
+        self.strict_paper_mode = strict_paper_mode
         self.account_id = account_id
         self.initial_capital = float(starting_capital)
         self.added_capital = 0.0
@@ -277,6 +290,7 @@ class VirtualAccount:
             max_portfolio_exposure_pct=self.max_portfolio_exposure_pct,
             initial_margin_pct=self.initial_margin_pct,
             require_pretrade_risk_check=self.require_pretrade_risk_check,
+            strict_paper_mode=self.strict_paper_mode,
             trading_mode=self.trading_mode.value, kill_switched=self.kill_switched,
             kill_metadata=self.kill_switch_metadata,
             orders_dict={k: v.to_dict() for k, v in self.orders.items()},
@@ -299,8 +313,21 @@ class VirtualAccount:
                              "blocked_margin", "realized_pnl", "total_fees", "peak_equity",
                              "risk_per_trade_pct", "max_portfolio_exposure_pct", "initial_margin_pct"):
                     setattr(self, name, float(st[name]))
+                saved_strict = st.get("strict_paper_mode", 0)
+                if saved_strict not in (0, 1):
+                    raise PermissionError("Durable strict-paper policy value invalid")
+                if self._strict_paper_requested and saved_strict != 1:
+                    raise PermissionError(
+                        "Legacy account cannot silently upgrade to strict paper; use enable_strict_paper_mode on empty account"
+                    )
+                self.strict_paper_mode = (saved_strict == 1)
                 self.require_pretrade_risk_check = bool(st["require_pretrade_risk_check"])
                 self.trading_mode = TradingMode(st["trading_mode"])
+                if self.strict_paper_mode and (
+                    not self.require_pretrade_risk_check
+                    or self.trading_mode is not TradingMode.MANUAL_APPROVAL
+                ):
+                    raise PermissionError("Saved strict paper account violates manual/risk invariants")
                 self.kill_switched = bool(st["kill_switched"])
                 import json
                 self.kill_switch_metadata = json.loads(st["kill_metadata_json"])
@@ -397,6 +424,44 @@ class VirtualAccount:
         self._sync_durable_store()
         return item
 
+    def _assert_strict_paper_policy(self) -> None:
+        """Check persisted policy before any paper order state mutation."""
+        saved_strict = bool(
+            self.durable_store and self.durable_store.strict_mode(self.account_id)
+        )
+        if saved_strict and self.strict_paper_mode is not True:
+            raise PermissionError("Durable strict paper account cannot be downgraded in memory")
+        if self.strict_paper_mode and (
+            not self.durable_store or
+            self.trading_mode is not TradingMode.MANUAL_APPROVAL
+            or self.require_pretrade_risk_check is not True
+            or not callable(self.approval_authorizer)
+        ):
+            raise PermissionError("Strict paper account requires manual/risk/auth safety invariants")
+
+    def enable_strict_paper_mode(self) -> None:
+        """Explicit opt-in migration for a flat account with durable state."""
+        if self.strict_paper_mode:
+            self._assert_strict_paper_policy()
+            return
+        if (self.durable_store is None
+                or self.trading_mode is not TradingMode.MANUAL_APPROVAL
+                or self.require_pretrade_risk_check is not True
+                or not callable(self.approval_authorizer)
+                or self.positions
+                or any(o.state in (
+                    OrderState.NEW, OrderState.ACCEPTED, OrderState.PENDING_APPROVAL,
+                    OrderState.PARTIALLY_FILLED,
+                ) for o in self.orders.values())):
+            raise PermissionError("Strict paper migration requires flat durable manual account and risk/auth gate")
+        self.strict_paper_mode = True
+        try:
+            self._sync_durable_store()
+        except Exception:
+            self.strict_paper_mode = False
+            raise
+        self._assert_strict_paper_policy()
+
     def set_trading_mode(
         self, mode: TradingMode | str, *, actor: str | None = None,
     ) -> None:
@@ -410,6 +475,9 @@ class VirtualAccount:
         selected = TradingMode(mode)
         if selected == TradingMode.LIVE_DISABLED:
             raise ValueError("Live trading is strictly disabled in this environment.")
+        self._assert_strict_paper_policy()
+        if self.strict_paper_mode and selected is TradingMode.AUTO_PAPER:
+            raise PermissionError("Strict paper mode permanently requires MANUAL_APPROVAL")
         if selected == self.trading_mode:
             return
         if self.kill_switched and selected == TradingMode.AUTO_PAPER:
@@ -442,6 +510,7 @@ class VirtualAccount:
             raise PermissionError(
                 "Public submit_order cannot grant emergency status; use monitored protective exit or emergency_square_off."
             )
+        self._assert_strict_paper_policy()
         if not isinstance(symbol, str) or not symbol.strip():
             raise ValueError("A non-empty symbol is required.")
         try:
@@ -464,6 +533,17 @@ class VirtualAccount:
             raise ValueError("LIMIT orders require limit_price.")
         if type_enum == OrderType.STOP_LOSS and stop_price is None:
             raise ValueError("STOP_LOSS orders require stop_price.")
+        if self.strict_paper_mode and side_enum is OrderSide.SELL:
+            key = symbol.strip().upper()
+            position = self.positions.get(key)
+            if position is None or position.quantity < quantity:
+                raise PermissionError("Strict paper SELL requires existing long inventory")
+            if any(o.symbol == key and o.side is OrderSide.SELL
+                   and o.state in (
+                       OrderState.NEW, OrderState.ACCEPTED,
+                       OrderState.PENDING_APPROVAL, OrderState.PARTIALLY_FILLED,
+                   ) for o in self.orders.values()):
+                raise PermissionError("Strict paper SELL cannot duplicate unfinished close")
         indicative = entry_price if entry_price is not None else (limit_price if type_enum == OrderType.LIMIT else None)
         if side_enum == OrderSide.BUY and self.require_pretrade_risk_check and not is_emergency:
             if indicative is None or stop_price is None:
@@ -526,6 +606,7 @@ class VirtualAccount:
         return order
 
     def approve_order(self, order_id: str, actor: str = "HUMAN_OPERATOR") -> VirtualOrder:
+        self._assert_strict_paper_policy()
         order = self.orders.get(order_id)
         if not order or order.state != OrderState.PENDING_APPROVAL:
             raise ValueError("Order is missing or is not pending approval.")
@@ -545,6 +626,7 @@ class VirtualAccount:
 
     def execute_fill(self, order_id: str, fill_price: float, fill_qty: int | None = None,
                      idempotency_key: str | None = None) -> VirtualOrder:
+        self._assert_strict_paper_policy()
         order = self.orders.get(order_id)
         if not order:
             raise ValueError("Unknown order.")
@@ -585,6 +667,11 @@ class VirtualAccount:
                 )
         if order.is_emergency and order_id not in self._internal_emergency_order_ids:
             raise PermissionError("Emergency order has no current internal protective-exit provenance")
+        if self.strict_paper_mode and not order.is_emergency:
+            if (order.approval is None or
+                    order.approval.order_id != order.order_id or
+                    order.approval.order_snapshot_hash != order.compute_snapshot_hash()):
+                raise PermissionError("Strict paper fill requires intact authenticated manual approval")
         # Kill-switch is durable and must be checked at the FILL boundary,
         # not only at submission. Previously PARTIALLY_FILLED BUY remained
         # fillable after emergency lockout because only ACCEPTED was cancelled.
