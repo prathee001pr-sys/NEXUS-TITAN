@@ -153,6 +153,10 @@ def test_strict_mode_requires_hardening_prerequisites(tmp_path,invalid):
 def test_strict_migration_needs_explicit_method_for_flat_legacy(tmp_path):
     a=_account(tmp_path,strict=False)
     assert not a.strict_paper_mode
+    # A legacy account only has a durable identity after its first mutation.
+    # Make and cancel a benign pending intent to establish that identity.
+    old=_buy(a)
+    a.cancel_order(old.order_id)
     with pytest.raises(PermissionError,match="cannot silently upgrade"):
         _account(tmp_path,strict=True)
     a.enable_strict_paper_mode()
