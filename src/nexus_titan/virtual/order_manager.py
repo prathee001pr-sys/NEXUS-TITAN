@@ -236,6 +236,9 @@ class VirtualAccount:
         self.kill_switch_metadata: dict = {}
         self.processed_fill_idempotency_keys: set[str] = set()
         self.orders: dict[str, VirtualOrder] = {}
+        # Internal-only virtual protective exits; deliberately not restored
+        # across restart: ambiguous in-flight emergency orders fail closed.
+        self._internal_emergency_order_ids: set[str] = set()
         self.positions: dict[str, VirtualPosition] = {}
         self.capital_history = [CapitalAdjustment(
             _now(), "INITIAL", self.initial_capital, 0.0, self.initial_capital,
@@ -416,6 +419,10 @@ class VirtualAccount:
         lot_size: int = 1, is_emergency: bool = False, entry_price: float | None = None,
         target_price: float | None = None,
     ) -> VirtualOrder:
+        if is_emergency is not False:
+            raise PermissionError(
+                "Public submit_order cannot grant emergency status; use monitored protective exit or emergency_square_off."
+            )
         if not isinstance(symbol, str) or not symbol.strip():
             raise ValueError("A non-empty symbol is required.")
         try:
@@ -476,6 +483,29 @@ class VirtualAccount:
         self._sync_durable_store()
         return order
 
+    def _submit_internal_protective_exit(self, position: VirtualPosition) -> VirtualOrder:
+        """Create only a position-reducing SELL under internal paper monitor.
+
+        No arbitrary caller-supplied symbol/quantity/side is accepted here.
+        This is an in-process safety boundary, NOT cryptographic authorization.
+        """
+        if not isinstance(position, VirtualPosition) or position.quantity < 1:
+            raise ValueError("Protective close requires an existing long position")
+        current = self.positions.get(position.symbol)
+        if current is not position or position.quantity < 1:
+            raise ValueError("Protective close position no longer matches account")
+        order = VirtualOrder(
+            f"ORD-{uuid4().hex[:8].upper()}", position.symbol, OrderSide.SELL,
+            OrderType.MARKET, position.quantity,
+            instrument_type=position.instrument_type,
+            lot_size=1, is_emergency=True,
+            state=OrderState.ACCEPTED,
+        )
+        self.orders[order.order_id] = order
+        self._internal_emergency_order_ids.add(order.order_id)
+        self._sync_durable_store()
+        return order
+
     def approve_order(self, order_id: str, actor: str = "HUMAN_OPERATOR") -> VirtualOrder:
         order = self.orders.get(order_id)
         if not order or order.state != OrderState.PENDING_APPROVAL:
@@ -532,6 +562,8 @@ class VirtualAccount:
                 raise ValueError(
                     "Idempotency key exists without a matching fill record; refusing unsafe replay."
                 )
+        if order.is_emergency and order_id not in self._internal_emergency_order_ids:
+            raise PermissionError("Emergency order has no current internal protective-exit provenance")
         if order.state not in (OrderState.ACCEPTED, OrderState.PARTIALLY_FILLED):
             raise ValueError(f"Order cannot be filled in state {order.state.value}.")
         if order.approval is not None and order.compute_snapshot_hash() != order.approval.order_snapshot_hash:
@@ -666,8 +698,7 @@ class VirtualAccount:
             reason = "STOP_LOSS" if trigger_exits and price <= pos.stop_loss else (
                 "TARGET" if trigger_exits and pos.target is not None and price >= pos.target else None)
             if reason:
-                order = self.submit_order(pos.symbol, OrderSide.SELL, pos.quantity,
-                                          instrument_type=pos.instrument_type, is_emergency=True)
+                order = self._submit_internal_protective_exit(pos)
                 self.execute_fill(order.order_id, float(price))
                 order.reject_reason = f"Protective {reason} trigger executed by virtual price monitor."
                 triggered.append(order)
@@ -692,8 +723,7 @@ class VirtualAccount:
         for symbol in list(self.positions):
             position = self.positions[symbol]
             price = current_prices.get(symbol, position.current_ltp)
-            order = self.submit_order(symbol, OrderSide.SELL, position.quantity,
-                                      instrument_type=position.instrument_type, is_emergency=True)
+            order = self._submit_internal_protective_exit(position)
             self.execute_fill(order.order_id, price)
             exits.append(order)
         return exits
