@@ -10,16 +10,17 @@ module makes no broker calls or strategy-promotion decisions.
 from __future__ import annotations
 
 import json
+from decimal import Decimal, InvalidOperation
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from nexus_titan.data.sessions import MarketCalendar
 from nexus_titan.shadow.long_option_exit_research import (
-    _fifo_consume, _replay_account, report_research_long_portfolio,
+    _fifo_consume, _replay_account,
 )
 from nexus_titan.shadow.research_reservation_ledger import (
-    DurableResearchShadowLedger, ResearchLedgerError, _money_cents,
+    DurableResearchShadowLedger, ResearchLedgerError,
 )
 
 _INDIA = ZoneInfo("Asia/Kolkata")
@@ -244,7 +245,6 @@ def reconstruct_sell_aware_daily_journal(
             ))
         if cash != account["cash_cents"]:
             raise ResearchLedgerError("Daily event cashflow does not match SQLite account")
-        portfolio = report_research_long_portfolio(ledger) if False else None
         # Use the same transaction to avoid nested transaction deadlocks.
         final_qty = sum(q for entries in lots.values() for q, _ in entries)
         final_basis = sum(c for entries in lots.values() for _, c in entries)
@@ -279,6 +279,8 @@ def inspect_sell_aware_day_closes(
         raise ResearchLedgerError("Day-close claims must be list or tuple")
     journal = reconstruct_sell_aware_daily_journal(ledger, calendar=calendar)
     issues: list[str] = []
+    if not journal.days:
+        issues.append("No audited BUY/SELL day-close evidence")
     if len(claims) != len(journal.days):
         issues.append("Missing or extra configured trading-session day-close claims")
     for index, day in enumerate(journal.days):
@@ -310,18 +312,18 @@ def inspect_sell_aware_day_closes(
             ("realized P&L", c.cumulative_realized_net_pnl, day.cumulative_realized_net_pnl),
         ):
             try:
-                same = _money_cents(value, label) == _money_cents(
-                    expected, label, allow_zero=label != "realized P&L"
+                if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+                    raise ValueError
+                actual = Decimal(str(value))
+                target = Decimal(str(expected))
+                same = (
+                    actual.is_finite()
+                    and (actual >= 0 or label == "realized P&L")
+                    and actual * 100 == (actual * 100).to_integral_value()
+                    and actual == target
                 )
-            except ResearchLedgerError:
-                # P&L can be negative; compare signed cents separately.
-                try:
-                    from decimal import Decimal
-                    actual = Decimal(str(value))
-                    target = Decimal(str(expected))
-                    same = actual.is_finite() and (actual * 100).to_integral_value() == actual * 100 and actual == target
-                except Exception:
-                    same = False
+            except (ValueError, InvalidOperation):
+                same = False
             if not same:
                 issues.append(f"Day {index}: {label} mismatch")
     return LongResearchDailyValidation(
