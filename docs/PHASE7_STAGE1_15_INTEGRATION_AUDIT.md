@@ -194,3 +194,15 @@ Decision at checkpoint 4:
 - Do not merge PR #1 to `main` as a production-ready release yet.
 - Do not copy/push Stage 15 source as a completed integration. Resolve SAFETY-RECOVERY-001 first; then continue full semantic review of modified protected modules, independent financial fixtures, data provenance, security and operations gates.
 - Trading remains historical research / virtual and paper only. No live execution approval is implied.
+
+
+### 2026-11-02 — checkpoint 5: idempotency and approval-digest review
+
+Follow-up source inspection of Stage 15 `src/nexus_titan/virtual/order_manager.py`:
+- Reproduced a fill-idempotency edge case in an isolated in-memory account: fill order AAA using key `same-fill-key`; then execute a fill for a different accepted order BBB with the same key. The second call returns the BBB order unchanged in ACCEPTED state, with zero fill, and creates no BBB position. It does not double-fill, but the API silently treats a key collision/reuse as a no-op without verifying that the key belongs to the same order and fill payload.
+- Required hardening: persist an idempotency record that binds key to order ID plus normalized fill request (price/quantity/instrument); exact retry returns the original fill result, while reuse for a different order/payload raises a clear conflict. Add restart and concurrent/retry regression tests.
+- `VirtualOrder.compute_snapshot_hash()` uses SHA-256 but truncates the hex digest to 16 characters (64 bits). For an approval-integrity boundary, retain the full digest and version the snapshot canonicalization; add modification/tamper and compatibility tests.
+
+The idempotency reproduction is a Stage 15 source finding only; it has not been tested against the Phase 6 branch or deployed code.
+
+No application source was modified. Audit branch remains documentation-only; the above findings are recorded for remediation and review, not yet fixed or accepted.
