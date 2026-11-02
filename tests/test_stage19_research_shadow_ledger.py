@@ -187,7 +187,7 @@ def test_underreserved_fee_buffer_rolls_back_atomically(tmp_path):
     ledger=_db(tmp_path)
     _reserve(ledger, premium=5.50, fee_buffer=0)
     before=ledger.status()
-    with pytest.raises(ResearchLedgerError,match="exceeds reserved"):
+    with pytest.raises(ResearchLedgerError,match="exceed reserved"):
         _settle(ledger,events=[_evt("OVER-RESERVE",_fragment(lots=4,depth_ask=400))])
     assert ledger.status()==before
     ledger.cancel("ONE")
@@ -340,3 +340,18 @@ def test_no_broker_operations_emitted(tmp_path):
     _settle(ledger)
     assert ledger.status().live_orders_transmitted==0
     assert ledger.status().approved_for_strategy_promotion is False
+
+
+def test_invalid_strike_step_metadata_is_rejected_cleanly(tmp_path):
+    ledger = _db(tmp_path)
+    with pytest.raises(ResearchLedgerError, match="strike-step metadata"):
+        _reserve(ledger, contract=_contract(strike_step=0))
+    assert ledger.status().open_order_count == 0
+
+
+def test_huge_finite_cash_and_premium_are_rejected_with_domain_error(tmp_path):
+    with pytest.raises(ResearchLedgerError, match="research account bounds"):
+        _db(tmp_path, account_id="HUGE", starting_capital=1e150)
+    ledger = _db(tmp_path)
+    with pytest.raises(ResearchLedgerError):
+        _reserve(ledger, premium=1e150)
