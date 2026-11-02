@@ -26,7 +26,9 @@ from nexus_titan.risk.authoritative_risk import AuthoritativeRiskEngine
 from nexus_titan.risk.portfolio_risk import (
     PortfolioRiskConfig, PortfolioRiskManager, PreTradeRiskResult,
 )
-from nexus_titan.shadow.research_reservation_ledger import DurableResearchShadowLedger
+from nexus_titan.shadow.research_reservation_ledger import (
+    DurableResearchShadowLedger, GuardedBuyAdmission,
+)
 from nexus_titan.simulation.options_order_reconciliation import (
     ResearchFillEvent, ResearchOptionsOrderStatement,
 )
@@ -220,11 +222,32 @@ def guarded_options_research_buy(
     # The research ledger's own BEGIN IMMEDIATE prevents over-reserving cash.
     # The separate risk and ledger calls are NOT an atomic global admission
     # under cross-process portfolio changes: paper-only and flat-account gate.
-    ledger.reserve_buy(
+    reservation = dict(
         order_id=order_id, contract=contract, strike=strike,
         option_type=option_type, lots=lots, as_of=observed_at,
         max_unit_premium=max_unit_premium, fee_buffer=fee_buffer,
     )
+    if ledger.guarded_paper_mode:
+        # Double-check inside SQLite BEGIN IMMEDIATE with current account
+        # cash/flatness, permission, independent Red-Team and exact risk.
+        # A precheck outside the transaction is never sufficient.
+        ledger.reserve_buy_guarded(
+            **reservation,
+            admission=GuardedBuyAdmission(
+                paper_trading_enabled=paper_trading_enabled,
+                risk_config=config, stop_price=stop_price,
+                bid=quote.bid, ask=quote.ask,
+                ask_quantity=depth.ask_quantity,
+                expected_edge_bps=expected_edge_bps,
+                slippage_bps=slippage_bps,
+                realized_daily_loss_pct=realized_daily_loss_pct,
+                consecutive_losses=consecutive_losses,
+                current_drawdown_pct=current_drawdown_pct,
+            ),
+        )
+    else:
+        # Preserve old research simulations; they are NOT production order routes.
+        ledger.reserve_buy(**reservation)
     try:
         statement = ledger.settle_buy(
             order_id=order_id, contract=contract, strike=strike,
