@@ -97,7 +97,9 @@ def run_offline_smoke(
     contract = _contract()
     calendar = nse_equity_derivatives_baseline()
     payload = _snapshot_csv()
-    csv_path.write_bytes(payload)
+    # Exclusive create avoids even a concurrent fixture-path overwrite.
+    with csv_path.open("xb") as stream:
+        stream.write(payload)
     snapshot = load_research_option_chain_csv(
         csv_path,
         expected_sha256=(
@@ -131,7 +133,8 @@ def run_offline_smoke(
         max_unit_premium=6.0, fee_buffer=25.0,
     )
     reserved = ledger.status()
-    assert reserved.reserved_cash > 0 and reserved.cash_balance == opening.cash_balance
+    if reserved.reserved_cash <= 0 or reserved.cash_balance != opening.cash_balance:
+        raise AssertionError("Virtual reserve must hold funds without debiting cash")
 
     statement = ledger.settle_buy(
         order_id="SYNTHETIC-ORDER-001", contract=contract,
