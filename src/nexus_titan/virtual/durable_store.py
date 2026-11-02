@@ -80,10 +80,10 @@ class DurableAccountStore:
         realized_pnl: float, total_fees: float, peak_equity: float,
         risk_per_trade_pct: float, max_portfolio_exposure_pct: float,
         initial_margin_pct: float, require_pretrade_risk_check: bool,
+        trading_mode: str, kill_switched: bool, kill_metadata: dict[str, Any],
+        orders_dict: dict[str, Any], positions_dict: dict[str, Any],
+        idem_keys: set[str], capital_history: list[Any],
         strict_paper_mode: bool = False,
-        trading_mode: str = "MANUAL_APPROVAL", kill_switched: bool = False, kill_metadata: dict[str, Any],
-        orders_dict: dict[str, Any] | None = None, positions_dict: dict[str, Any] | None = None,
-        idem_keys: set[str] | None = None, capital_history: list[Any] | None = None,
     ) -> None:
         """Atomically persist the entire virtual-account snapshot.
 
@@ -117,15 +117,15 @@ class DurableAccountStore:
                   1 if strict_paper_mode else 0, trading_mode,
                   1 if kill_switched else 0, json.dumps(kill_metadata)))
             conn.execute("DELETE FROM orders WHERE account_id = ?;", (account_id,))
-            for oid, data in (orders_dict or {}).items():
+            for oid, data in orders_dict.items():
                 conn.execute("INSERT INTO orders VALUES (?, ?, ?);", (oid, account_id, json.dumps(data)))
             conn.execute("DELETE FROM positions WHERE account_id = ?;", (account_id,))
-            for symbol, data in (positions_dict or {}).items():
+            for symbol, data in positions_dict.items():
                 conn.execute("INSERT INTO positions VALUES (?, ?, ?);", (symbol, account_id, json.dumps(data)))
-            for key in (idem_keys or set()):
+            for key in idem_keys:
                 conn.execute("INSERT OR IGNORE INTO idempotency_keys VALUES (?, ?);", (account_id, key))
             conn.execute("DELETE FROM capital_events WHERE account_id = ?;", (account_id,))
-            for event in (capital_history or []):
+            for event in capital_history:
                 conn.execute("INSERT INTO capital_events (account_id, event_json) VALUES (?, ?);",
                              (account_id, json.dumps(event)))
 
