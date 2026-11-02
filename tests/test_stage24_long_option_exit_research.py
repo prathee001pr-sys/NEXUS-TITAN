@@ -38,8 +38,11 @@ BUY_SETUP = STAGE23["_setup"]
 
 def _exit_history(contract, when, *, bid=8.0, ask=None):
     ask = bid + min(0.5, bid * 0.1) if ask is None else ask
+    # At regular session open (09:15:00), the quote must not fall outside NSE hours.
+    open_time = when.replace(hour=9, minute=15, second=0, microsecond=0)
+    quote_time = max(when-timedelta(seconds=1), open_time)
     quotes = tuple(OptionChainQuote(
-        timestamp=(when-timedelta(seconds=1)).isoformat(),
+        timestamp=quote_time.isoformat(),
         symbol=contract.symbol, underlying=contract.underlying,
         expiry_date=contract.expiry_date.isoformat(), strike=100.0,
         option_type=typ, bid=bid, ask=ask, ltp=(bid+ask)/2,
@@ -295,7 +298,7 @@ def test_unfilled_exit_does_not_count_as_closed_trade(tmp_path):
 def test_backdated_exit_before_buy_is_blocked_without_fake_pnl(tmp_path):
     ledger,buy=_buy(tmp_path)
     state=ledger.status()
-    earlier=OBS-timedelta(seconds=30)
+    earlier=OBS-timedelta(minutes=1)
     with pytest.raises(ResearchLedgerError,match="chronological order"):
         simulate_and_settle_long_exit(**_exit_args(buy,when=earlier,lots=1))
     assert ledger.status()==state
