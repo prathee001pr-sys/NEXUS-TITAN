@@ -24,6 +24,7 @@ class DashboardBackendService:
         evolve_engine: TitanEvolveEngine | None = None,
         starting_capital: float | None = None,
         options_spot_price: float | None = None,
+        master_orchestrator: Any | None = None,
     ) -> None:
         if account is None:
             if starting_capital is None:
@@ -41,6 +42,7 @@ class DashboardBackendService:
             # explicitly configured; default storage is local EVOLVE research state.
         )
         self.options_spot_price = float(options_spot_price) if options_spot_price is not None else None
+        self.master_orchestrator = master_orchestrator
 
     def get_system_telemetry(self) -> dict[str, Any]:
         reconcile = self.account.reconcile()
@@ -96,9 +98,26 @@ class DashboardBackendService:
             "open_positions": [asdict(p) for p in self.account.positions.values()],
             "recent_orders": [o.to_dict() for o in list(self.account.orders.values())[-10:]],
             "options_analytics": options,
+            "master_integration": self.get_master_integration_status(),
             "market_data": {"status": "NO_PROVIDER_CONNECTED", "live_prices": False},
             "safety": {"broker_connected": False, "live_trading_enabled": False,
                        "generated_code_execution_enabled": False},
+        }
+
+
+    def get_master_integration_status(self) -> dict[str, Any]:
+        """Return read-only master-orchestrator health; never starts a trading cycle."""
+        if self.master_orchestrator is None:
+            return {
+                "connected": False, "status": "NOT_ATTACHED",
+                "order_submitted": False, "live_trading_enabled": False,
+            }
+        report = self.master_orchestrator.health_report()
+        return {
+            "connected": True, "status": report.status,
+            "checked_at": report.checked_at,
+            "components": [asdict(item) for item in report.components],
+            "order_submitted": False, "live_trading_enabled": False,
         }
 
     def run_evolve_agent_cycle(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:

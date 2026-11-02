@@ -150,6 +150,7 @@ class VirtualPosition:
     target: float | None = None
     realized_pnl: float = 0.0
     margin_used: float = 0.0
+    unamortized_entry_fees: float | None = None
 
     @property
     def unrealized_pnl(self) -> float:
@@ -285,6 +286,12 @@ class VirtualAccount:
             snap = self.durable_store.load_snapshot(self.account_id)
             if snap:
                 st = snap["state"]
+                stored_initial_capital = float(st.get("initial_capital", 0.0))
+                if not math.isclose(stored_initial_capital, self.initial_capital, rel_tol=0.0, abs_tol=0.01):
+                    raise ValueError(
+                        "Durable account starting capital does not match the requested baseline; "
+                        "use the same account_id with its original starting_capital or a new account_id."
+                    )
                 for name in ("initial_capital", "added_capital", "withdrawn_capital", "cash_balance",
                              "blocked_margin", "realized_pnl", "total_fees", "peak_equity",
                              "risk_per_trade_pct", "max_portfolio_exposure_pct", "initial_margin_pct"):
@@ -569,11 +576,17 @@ class VirtualAccount:
                 self.blocked_margin += margin
             pos = self.positions.get(order.symbol)
             if pos:
+                prev_unamortized = (
+                    pos.unamortized_entry_fees
+                    if pos.unamortized_entry_fees is not None
+                    else calculate_indian_trade_costs("BUY", pos.average_entry_price, pos.quantity, pos.instrument_type).total_charges
+                )
                 new_qty = pos.quantity + qty
                 pos.average_entry_price = (pos.average_entry_price * pos.quantity + fill_price * qty) / new_qty
                 pos.quantity = new_qty
                 pos.current_ltp = float(fill_price)
                 pos.margin_used += margin if future else 0.0
+                pos.unamortized_entry_fees = round(prev_unamortized + fee, 4)
                 if order.stop_price:
                     pos.stop_loss = order.stop_price
                 if order.target_price:
@@ -582,14 +595,21 @@ class VirtualAccount:
                 self.positions[order.symbol] = VirtualPosition(
                     order.symbol, qty, float(fill_price), float(fill_price),
                     order.stop_price or fill_price * 0.98, order.instrument_type,
-                    order.target_price, 0.0, margin if future else 0.0)
+                    order.target_price, 0.0, margin if future else 0.0,
+                    unamortized_entry_fees=round(fee, 4))
         else:
             pos = self.positions.get(order.symbol)
             if not pos or pos.quantity < qty:
                 return self._reject(order, "Insufficient open position to sell.")
-            entry_fee = calculate_indian_trade_costs("BUY", pos.average_entry_price, qty, pos.instrument_type).total_charges
+            total_unamortized = (
+                pos.unamortized_entry_fees
+                if pos.unamortized_entry_fees is not None
+                else calculate_indian_trade_costs("BUY", pos.average_entry_price, pos.quantity, pos.instrument_type).total_charges
+            )
+            allocated_entry_fee = total_unamortized if qty == pos.quantity else round(total_unamortized * (qty / pos.quantity), 4)
+            pos.unamortized_entry_fees = round(max(0.0, total_unamortized - allocated_entry_fee), 4)
             gross = (fill_price - pos.average_entry_price) * qty
-            realized_fill_pnl = round(gross - fee - entry_fee, 2)
+            realized_fill_pnl = round(gross - fee - allocated_entry_fee, 2)
             if pos.instrument_type == "FUTURES":
                 release = pos.margin_used * qty / pos.quantity
                 self.cash_balance += release + gross - fee
@@ -682,7 +702,11 @@ class VirtualAccount:
         unrealized = sum(p.unrealized_pnl for p in self.positions.values())
         open_locked = sum(
             (p.margin_used if p.instrument_type == "FUTURES" else p.average_entry_price * p.quantity)
-            + calculate_indian_trade_costs("BUY", p.average_entry_price, p.quantity, p.instrument_type).total_charges
+            + (
+                p.unamortized_entry_fees
+                if p.unamortized_entry_fees is not None
+                else calculate_indian_trade_costs("BUY", p.average_entry_price, p.quantity, p.instrument_type).total_charges
+            )
             for p in self.positions.values())
         expected_cash = round(self.current_capital + self.realized_pnl - open_locked, 2)
         discrepancy = round(abs(self.cash_balance - expected_cash), 2)

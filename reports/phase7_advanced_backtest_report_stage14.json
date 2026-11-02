@@ -1,0 +1,2239 @@
+{
+  "report_schema_version": "1.1",
+  "generated_at": "2026-11-01T10:30:00.879980+00:00",
+  "mode": "HISTORICAL_AND_SHADOW_RESEARCH_ONLY",
+  "source_code_fingerprint": {
+    "sha256": "fbae9af05ff11c9e771ec68745293c0148991dc198ee6149254d7c58a1a101d4",
+    "python_source_file_count": 95
+  },
+  "strategy_research_scope": {
+    "status": "SYNTHETIC_SIGNAL_SMOKE_TEST_ONLY",
+    "warning": "The bundled NIFTY daily sample is synthetic and the index itself is not an equity-delivery instrument. The scorecard's EQUITY_DELIVERY charge setting is a placeholder to exercise the simulator path, not a valid NIFTY execution model. Do not interpret these rupee-like P&L figures as tradable performance. Re-run on a verified tradable contract with official point-in-time metadata and broker/exchange costs.",
+    "promotion_allowed": false
+  },
+  "dataset_manifest": {
+    "dataset_id": "NIFTY-RESEARCH-nifty_daily_sample",
+    "file_path": "data/nifty_daily_sample.csv",
+    "sha256_checksum": "de29949d098c79ee12e7162f2e308c3bd8063a2e2dac6b0f65efed6713d3a304",
+    "vendor_name": "SYNTHETIC_QA_GENERATOR",
+    "licence_id": "INTERNAL-QA-ONLY",
+    "instrument_symbol": "NIFTY",
+    "venue": "NSE",
+    "interval": "1d",
+    "timezone_name": "Asia/Kolkata",
+    "start_timestamp": "2025-01-01T03:45:00+00:00",
+    "end_timestamp": "2025-04-30T03:45:00+00:00",
+    "bar_count": 120,
+    "dataset_class": "SYNTHETIC_SMOKE_FIXTURE",
+    "survivorship_bias_free": false,
+    "vendor_corrections_applied": false,
+    "missing_bars_count": null,
+    "duplicate_bars_count": 0,
+    "allowed_for_strategy_promotion": false,
+    "notes": "Canonical OHLCV structure validated; session coverage not verified.",
+    "recorded_at": "2026-11-01T10:30:00.590064+00:00",
+    "coverage_verified": false,
+    "vendor_identity_evidence_ref": "",
+    "licence_evidence_ref": "",
+    "coverage_evidence_ref": "",
+    "instrument_metadata_evidence_ref": "",
+    "evidence_reviewed_by": "",
+    "evidence_reviewed_at": ""
+  },
+  "manifest_verification_notes": [
+    "Dataset class SYNTHETIC_SMOKE_FIXTURE is not licensed exchange history.",
+    "A verifiable data vendor must be identified.",
+    "A valid vendor licence identifier is required.",
+    "Missing-bar count is unknown; an explicit calendar-based coverage audit is required."
+  ],
+  "manifest_integrity_verified": false,
+  "test_run_evidence": {
+    "passed": 400,
+    "total": 400,
+    "subtests_passed": 5,
+    "success": true,
+    "return_code": 0,
+    "output_tail": "........................................................................ [ 18%]\n........................................................................ [ 36%]\n................................................................... [ 52%]\n........................................................................ [ 70%]\n........................................................................ [ 88%]\n.............................................                            [100%]\n400 passed, 5 subtests passed in 8.23s\n\n"
+  },
+  "safety_smoke_evidence": {
+    "approval_replay_protection_verified": true,
+    "stale_feed_protection_verified": true,
+    "kill_switch_verified": true,
+    "daily_loss_lockout_verified": true,
+    "microstructure_golden_fixtures_passed": true
+  },
+  "partial_fill_accounting_golden_passed": true,
+  "futures_options_golden_evidence": {
+    "futures_margin_arithmetic": true,
+    "futures_buy_cost_arithmetic": true,
+    "futures_sell_cost_arithmetic": true,
+    "index_option_expiry_pnl_arithmetic": true
+  },
+  "futures_options_golden_fixtures_passed": true,
+  "futures_options_fixture_scope": "Hand-calculated model arithmetic only; does not verify official exchange rates, broker contract notes, actual SPAN/ELM parameters, or stock-option physical delivery.",
+  "point_in_time_instrument_master": {
+    "catalogue_status": "UNVERIFIED_STATIC_RESEARCH_REFERENCE",
+    "production_sizing_allowed": false,
+    "verification_note": "Bundled historical lot-size entries are illustrative references, not an attached official point-in-time exchange contract master. Use resolve_verified_lot_size() only after independently validating and recording the official source.",
+    "BANKNIFTY_lot_2023_reference": 25,
+    "BANKNIFTY_lot_2026_reference": 15,
+    "NIFTY_lot_2026_reference": 25
+  },
+  "strategies_evaluated": 8,
+  "strategy_scorecards": [
+    {
+      "strategy_key": "sma",
+      "strategy_name": "SMA Crossover",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49777.510549,
+        "total_trades": 3,
+        "winning_trades": 0,
+        "losing_trades": 3,
+        "win_rate_percent": 0.0,
+        "net_profit": -222.48945100000128,
+        "return_percent": -0.4449789020000026,
+        "max_drawdown_percent": 0.49636960766113486,
+        "profit_factor": 0.0,
+        "expectancy": -74.1631503333341,
+        "breakeven_trades": 0,
+        "total_fees": 189.87,
+        "sharpe_ratio": -2.5498,
+        "sortino_ratio": -2.9233,
+        "calmar_ratio": -0.8965,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -1.07,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 33,
+            "exit_index": 52,
+            "entry_price": 21568.83,
+            "exit_price": 21529.04,
+            "quantity": 1.0,
+            "pnl": -103.0,
+            "return_pct": -0.48,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 64,
+            "exit_index": 83,
+            "entry_price": 21580.02,
+            "exit_price": 21571.42,
+            "quantity": 1.0,
+            "pnl": -71.87,
+            "return_pct": -0.33,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 3,
+            "side": "LONG",
+            "entry_index": 99,
+            "exit_index": 115,
+            "entry_price": 21614.72,
+            "exit_price": 21630.49,
+            "quantity": 1.0,
+            "pnl": -47.62,
+            "return_pct": -0.22,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 129494.51,
+        "average_exposure_percent": 19.66,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.2,
+            "out_of_sample_return_pct": 0.09,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 3.8338,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.33,
+            "out_of_sample_return_pct": 0.11,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 4.276,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.23,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.05,
+        "compounded_oos_return_pct": 0.2,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.2,
+            "out_of_sample_return_pct": 0.09,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 3.8338,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.09,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.14,
+            "out_of_sample_return_pct": 0.11,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 4.276,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.05,
+        "compounded_oos_return_pct": 0.2,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.44,
+        "median_max_drawdown_pct": 0.44,
+        "percentile_95_max_drawdown_pct": 0.56,
+        "worst_case_drawdown_pct": 0.56,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 3,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 3 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -2.5498,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "SMA Crossover",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -74.16).",
+          "Monte Carlo sample inadequate (3 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (2 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "SMA Crossover",
+        "total_trades": 3,
+        "gross_market_pnl": -20.62,
+        "slippage_drag": 12.0,
+        "statutory_fees_drag": 189.87,
+        "net_realized_pnl": -222.49,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 3,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 3,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -74.16,
+        "best_trade_pnl": -47.62,
+        "worst_trade_pnl": -103.0,
+        "average_holding_bars": 18.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            3
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 3 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "ema",
+      "strategy_name": "EMA Crossover",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49702.639395000006,
+        "total_trades": 3,
+        "winning_trades": 0,
+        "losing_trades": 3,
+        "win_rate_percent": 0.0,
+        "net_profit": -297.3606049999944,
+        "return_percent": -0.5947212099999888,
+        "max_drawdown_percent": 0.6119189637576589,
+        "profit_factor": 0.0,
+        "expectancy": -99.12020166666794,
+        "breakeven_trades": 0,
+        "total_fees": 189.9,
+        "sharpe_ratio": -3.488,
+        "sortino_ratio": -3.8694,
+        "calmar_ratio": -0.9719,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -1.22,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 34,
+            "exit_index": 53,
+            "entry_price": 21585.97,
+            "exit_price": 21510.33,
+            "quantity": 1.0,
+            "pnl": -138.84,
+            "return_pct": -0.64,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 65,
+            "exit_index": 85,
+            "entry_price": 21587.85,
+            "exit_price": 21551.62,
+            "quantity": 1.0,
+            "pnl": -99.49,
+            "return_pct": -0.46,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 3,
+            "side": "LONG",
+            "entry_index": 100,
+            "exit_index": 118,
+            "entry_price": 21632.94,
+            "exit_price": 21637.35,
+            "quantity": 1.0,
+            "pnl": -59.03,
+            "return_pct": -0.27,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 129506.06,
+        "average_exposure_percent": 20.78,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.27,
+            "out_of_sample_return_pct": 0.05,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 2.1283,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.19,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.46,
+            "out_of_sample_return_pct": 0.03,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 1.5678,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.39,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.02,
+        "compounded_oos_return_pct": 0.08,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.27,
+            "out_of_sample_return_pct": 0.05,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 2.1283,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.09,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.18,
+            "out_of_sample_return_pct": 0.03,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 1.5678,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.07,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.02,
+        "compounded_oos_return_pct": 0.08,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.59,
+        "median_max_drawdown_pct": 0.59,
+        "percentile_95_max_drawdown_pct": 0.75,
+        "worst_case_drawdown_pct": 0.75,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 3,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 3 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -3.488,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "EMA Crossover",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -99.12).",
+          "Monte Carlo sample inadequate (3 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (2 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "EMA Crossover",
+        "total_trades": 3,
+        "gross_market_pnl": -95.46,
+        "slippage_drag": 12.0,
+        "statutory_fees_drag": 189.9,
+        "net_realized_pnl": -297.36,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 3,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 3,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -99.12,
+        "best_trade_pnl": -59.03,
+        "worst_trade_pnl": -138.84,
+        "average_holding_bars": 19.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            3
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 3 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "rsi",
+      "strategy_name": "RSI Mean Reversion",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 50119.76569300001,
+        "total_trades": 2,
+        "winning_trades": 2,
+        "losing_trades": 0,
+        "win_rate_percent": 100.0,
+        "net_profit": 119.76569300000847,
+        "return_percent": 0.23953138600001692,
+        "max_drawdown_percent": 0.10858160604254956,
+        "profit_factor": null,
+        "expectancy": 59.882846500002856,
+        "breakeven_trades": 0,
+        "total_fees": 126.28999999999999,
+        "sharpe_ratio": 2.029,
+        "sortino_ratio": 2.9215,
+        "calmar_ratio": 2.206,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -0.38,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 27,
+            "exit_index": 34,
+            "entry_price": 21444.4,
+            "exit_price": 21577.65,
+            "quantity": 1.0,
+            "pnl": 70.18,
+            "return_pct": 0.33,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 58,
+            "exit_index": 71,
+            "entry_price": 21504.09,
+            "exit_price": 21616.9,
+            "quantity": 1.0,
+            "pnl": 49.59,
+            "return_pct": 0.23,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 86143.04,
+        "average_exposure_percent": 7.23,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.07,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.26,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.26,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.26,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.07,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.14,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.0,
+        "median_max_drawdown_pct": 0.0,
+        "percentile_95_max_drawdown_pct": 0.0,
+        "worst_case_drawdown_pct": 0.0,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 2,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 2 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": 2.029,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 1.0,
+        "passes_multiple_testing_gate": true,
+        "summary": "Deflated Sharpe probability 100.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "RSI Mean Reversion",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Monte Carlo sample inadequate (2 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (0 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "RSI Mean Reversion",
+        "total_trades": 2,
+        "gross_market_pnl": 254.06,
+        "slippage_drag": 8.0,
+        "statutory_fees_drag": 126.29,
+        "net_realized_pnl": 119.77,
+        "execution_efficiency_pct": 47.14,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 2,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 2,
+        "short_trades": 0,
+        "average_win": 59.89,
+        "average_loss": 0.0,
+        "best_trade_pnl": 70.18,
+        "worst_trade_pnl": 49.59,
+        "average_holding_bars": 10.0,
+        "profit_concentration_pct": 58.6,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            2
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 2 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "rsi_momentum",
+      "strategy_name": "RSI Momentum",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49964.63749299999,
+        "total_trades": 3,
+        "winning_trades": 0,
+        "losing_trades": 3,
+        "win_rate_percent": 0.0,
+        "net_profit": -35.362507000012556,
+        "return_percent": -0.07072501400002512,
+        "max_drawdown_percent": 0.32126867172422313,
+        "profit_factor": 0.0,
+        "expectancy": -11.787502333333881,
+        "breakeven_trades": 0,
+        "total_fees": 189.75,
+        "sharpe_ratio": -0.4069,
+        "sortino_ratio": -0.5149,
+        "calmar_ratio": -0.2201,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -0.69,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 30,
+            "exit_index": 51,
+            "entry_price": 21493.46,
+            "exit_price": 21551.13,
+            "quantity": 1.0,
+            "pnl": -5.43,
+            "return_pct": -0.03,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 61,
+            "exit_index": 82,
+            "entry_price": 21542.24,
+            "exit_price": 21591.79,
+            "quantity": 1.0,
+            "pnl": -13.69,
+            "return_pct": -0.06,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 3,
+            "side": "LONG",
+            "entry_index": 98,
+            "exit_index": 113,
+            "entry_price": 21599.63,
+            "exit_price": 21646.79,
+            "quantity": 1.0,
+            "pnl": -16.23,
+            "return_pct": -0.08,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 129425.05,
+        "average_exposure_percent": 20.7,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.0,
+            "out_of_sample_return_pct": 0.14,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 6.8324,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.16,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.02,
+            "out_of_sample_return_pct": 0.02,
+            "out_of_sample_trades": 2,
+            "out_of_sample_sharpe": 0.4155,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.04,
+        "compounded_oos_return_pct": 0.15,
+        "total_oos_trades": 3,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 3 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.0,
+            "out_of_sample_return_pct": 0.14,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 6.8324,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.08,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.02,
+            "out_of_sample_return_pct": 0.02,
+            "out_of_sample_trades": 2,
+            "out_of_sample_sharpe": 0.4155,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.01,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.04,
+        "compounded_oos_return_pct": 0.15,
+        "total_oos_trades": 3,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 3 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.07,
+        "median_max_drawdown_pct": 0.07,
+        "percentile_95_max_drawdown_pct": 0.09,
+        "worst_case_drawdown_pct": 0.09,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 3,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 3 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -0.4069,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "RSI Momentum",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -11.79).",
+          "Monte Carlo sample inadequate (3 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (3 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "RSI Momentum",
+        "total_trades": 3,
+        "gross_market_pnl": 166.4,
+        "slippage_drag": 12.0,
+        "statutory_fees_drag": 189.75,
+        "net_realized_pnl": -35.35,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 3,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 3,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -11.78,
+        "best_trade_pnl": -5.43,
+        "worst_trade_pnl": -16.23,
+        "average_holding_bars": 19.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            3
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 3 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "macd",
+      "strategy_name": "MACD Trend",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49983.945123,
+        "total_trades": 2,
+        "winning_trades": 0,
+        "losing_trades": 2,
+        "win_rate_percent": 0.0,
+        "net_profit": -16.054877000002307,
+        "return_percent": -0.03210975400000461,
+        "max_drawdown_percent": 0.2715048987328739,
+        "profit_factor": 0.0,
+        "expectancy": -8.027438500001953,
+        "breakeven_trades": 0,
+        "total_fees": 126.76,
+        "sharpe_ratio": -0.2246,
+        "sortino_ratio": -0.2907,
+        "calmar_ratio": -0.1183,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -0.66,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 63,
+            "exit_index": 81,
+            "entry_price": 21569.4,
+            "exit_price": 21616.83,
+            "quantity": 1.0,
+            "pnl": -15.9,
+            "return_pct": -0.07,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 98,
+            "exit_index": 112,
+            "entry_price": 21599.63,
+            "exit_price": 21662.9,
+            "quantity": 1.0,
+            "pnl": -0.16,
+            "return_pct": -0.0,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 86448.76,
+        "average_exposure_percent": 11.64,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.02,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.03,
+        "median_max_drawdown_pct": 0.03,
+        "percentile_95_max_drawdown_pct": 0.03,
+        "worst_case_drawdown_pct": 0.03,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 2,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 2 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -0.2246,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "MACD Trend",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -8.03).",
+          "Monte Carlo sample inadequate (2 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (0 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "MACD Trend",
+        "total_trades": 2,
+        "gross_market_pnl": 118.7,
+        "slippage_drag": 8.0,
+        "statutory_fees_drag": 126.76,
+        "net_realized_pnl": -16.06,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 2,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 2,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -8.03,
+        "best_trade_pnl": -0.16,
+        "worst_trade_pnl": -15.9,
+        "average_holding_bars": 16.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            2
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 2 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "bollinger",
+      "strategy_name": "Bollinger Breakout",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49950.412026,
+        "total_trades": 1,
+        "winning_trades": 0,
+        "losing_trades": 1,
+        "win_rate_percent": 0.0,
+        "net_profit": -49.58797400000185,
+        "return_percent": -0.09917594800000369,
+        "max_drawdown_percent": 0.24188416643435434,
+        "profit_factor": 0.0,
+        "expectancy": -49.58797399999952,
+        "breakeven_trades": 0,
+        "total_fees": 63.44,
+        "sharpe_ratio": -1.0434,
+        "sortino_ratio": -1.3279,
+        "calmar_ratio": -0.41,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -0.72,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 100,
+            "exit_index": 113,
+            "entry_price": 21632.94,
+            "exit_price": 21646.79,
+            "quantity": 1.0,
+            "pnl": -49.59,
+            "return_pct": -0.23,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 43279.74,
+        "average_exposure_percent": 4.74,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.07,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 3.1813,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.07,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.02,
+        "compounded_oos_return_pct": 0.07,
+        "total_oos_trades": 1,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 1 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": 0.07,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": 3.1813,
+            "is_profitable_oos": true
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.07,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.02,
+        "compounded_oos_return_pct": 0.07,
+        "total_oos_trades": 1,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 1 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "trade_shuffle",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.1,
+        "median_max_drawdown_pct": 0.1,
+        "percentile_95_max_drawdown_pct": 0.1,
+        "worst_case_drawdown_pct": 0.1,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 1,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 1 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -1.0434,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "Bollinger Breakout",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -49.59).",
+          "Monte Carlo sample inadequate (1 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (1 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "Bollinger Breakout",
+        "total_trades": 1,
+        "gross_market_pnl": 17.85,
+        "slippage_drag": 4.0,
+        "statutory_fees_drag": 63.44,
+        "net_realized_pnl": -49.59,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 1,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 1,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -49.59,
+        "best_trade_pnl": -49.59,
+        "worst_trade_pnl": -49.59,
+        "average_holding_bars": 13.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            1
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 1 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "atr_channel",
+      "strategy_name": "ATR Volatility Channel",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49799.316689,
+        "total_trades": 2,
+        "winning_trades": 0,
+        "losing_trades": 2,
+        "win_rate_percent": 0.0,
+        "net_profit": -200.68331100000069,
+        "return_percent": -0.4013666220000014,
+        "max_drawdown_percent": 0.4013666220000014,
+        "profit_factor": 0.0,
+        "expectancy": -100.34165549999909,
+        "breakeven_trades": 0,
+        "total_fees": 127.02999999999999,
+        "sharpe_ratio": -3.7955,
+        "sortino_ratio": -3.9152,
+        "calmar_ratio": -1.0,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -1.02,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 74,
+            "exit_index": 81,
+            "entry_price": 21678.65,
+            "exit_price": 21616.83,
+            "quantity": 1.0,
+            "pnl": -125.31,
+            "return_pct": -0.58,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 102,
+            "exit_index": 112,
+            "entry_price": 21674.74,
+            "exit_price": 21662.9,
+            "quantity": 1.0,
+            "pnl": -75.37,
+            "return_pct": -0.35,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 86633.12,
+        "average_exposure_percent": 6.21,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": -0.11,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": -4.4028,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.24,
+            "out_of_sample_return_pct": -0.01,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": -1.1063,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.26,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": -0.03,
+        "compounded_oos_return_pct": -0.12,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": 0.0,
+            "out_of_sample_return_pct": -0.11,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": -4.4028,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.24,
+            "out_of_sample_return_pct": -0.01,
+            "out_of_sample_trades": 1,
+            "out_of_sample_sharpe": -1.1063,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.26,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": -0.03,
+        "compounded_oos_return_pct": -0.12,
+        "total_oos_trades": 2,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 2 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.4,
+        "median_max_drawdown_pct": 0.4,
+        "percentile_95_max_drawdown_pct": 0.4,
+        "worst_case_drawdown_pct": 0.4,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 2,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 2 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -3.7955,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "ATR Volatility Channel",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -100.34).",
+          "Monte Carlo sample inadequate (2 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (2 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "ATR Volatility Channel",
+        "total_trades": 2,
+        "gross_market_pnl": -65.65,
+        "slippage_drag": 8.0,
+        "statutory_fees_drag": 127.03,
+        "net_realized_pnl": -200.68,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 2,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 2,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -100.34,
+        "best_trade_pnl": -75.37,
+        "worst_trade_pnl": -125.31,
+        "average_holding_bars": 8.5,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            2
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 2 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    },
+    {
+      "strategy_key": "regime_adaptive",
+      "strategy_name": "Regime Adaptive Composite",
+      "backtest": {
+        "starting_capital": 50000.0,
+        "ending_capital": 49885.007333,
+        "total_trades": 2,
+        "winning_trades": 0,
+        "losing_trades": 2,
+        "win_rate_percent": 0.0,
+        "net_profit": -114.99266699999862,
+        "return_percent": -0.22998533399999724,
+        "max_drawdown_percent": 0.22998533399999724,
+        "profit_factor": 0.0,
+        "expectancy": -57.496333499998514,
+        "breakeven_trades": 0,
+        "total_fees": 125.99,
+        "sharpe_ratio": -2.801,
+        "sortino_ratio": -2.7584,
+        "calmar_ratio": -1.0,
+        "benchmark_return_percent": 0.62,
+        "alpha_percent": -0.85,
+        "intrabar_stops_hit": 0,
+        "intrabar_targets_hit": 0,
+        "sizing_mode": "fixed",
+        "instrument_type": "EQUITY_DELIVERY",
+        "rejected_for_risk_count": 0,
+        "trade_log": [
+          {
+            "trade_num": 1,
+            "side": "LONG",
+            "entry_index": 28,
+            "exit_index": 29,
+            "entry_price": 21453.74,
+            "exit_price": 21462.32,
+            "quantity": 1.0,
+            "pnl": -54.35,
+            "return_pct": -0.25,
+            "exit_reason": "SIGNAL_EXIT"
+          },
+          {
+            "trade_num": 2,
+            "side": "LONG",
+            "entry_index": 58,
+            "exit_index": 59,
+            "entry_price": 21504.09,
+            "exit_price": 21506.51,
+            "quantity": 1.0,
+            "pnl": -60.64,
+            "return_pct": -0.28,
+            "exit_reason": "SIGNAL_EXIT"
+          }
+        ],
+        "total_turnover": 85926.67,
+        "average_exposure_percent": 0.72,
+        "fill_ratio_percent": 100.0,
+        "short_trades": 0
+      },
+      "walk_forward_4fold_anchored": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.21,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 75,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.21,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 90,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.21,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 105,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.21,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "anchored"
+      },
+      "walk_forward_4fold_sliding": {
+        "total_folds": 4,
+        "folds": [
+          {
+            "fold_number": 1,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.21,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 2,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.11,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 3,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.12,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          },
+          {
+            "fold_number": 4,
+            "train_bars": 60,
+            "test_bars": 15,
+            "warmup_bars_used": 25,
+            "in_sample_return_pct": -0.08,
+            "out_of_sample_return_pct": 0.0,
+            "out_of_sample_trades": 0,
+            "out_of_sample_sharpe": null,
+            "is_profitable_oos": false
+          }
+        ],
+        "aggregate_oos_return_pct": 0.0,
+        "compounded_oos_return_pct": 0.0,
+        "total_oos_trades": 0,
+        "confidence_verdict": "INSUFFICIENT_EVIDENCE",
+        "status_summary": "Sample size gate failed: Only 0 out-of-sample trades across 4 folds (minimum 5 required). Never promote thin samples.",
+        "window_mode": "sliding"
+      },
+      "monte_carlo": {
+        "iterations": 500,
+        "method": "block_bootstrap",
+        "block_size": 2,
+        "original_max_drawdown_pct": 0.23,
+        "median_max_drawdown_pct": 0.23,
+        "percentile_95_max_drawdown_pct": 0.23,
+        "worst_case_drawdown_pct": 0.23,
+        "ruin_probability_pct": 0.0,
+        "sample_size": 2,
+        "sample_adequate": false,
+        "warning": "INSUFFICIENT_SAMPLE: 2 closed trades; at least 30 required for this operational Monte Carlo gate. Results are exploratory only.",
+        "drawdown_scope": "CLOSED_TRADE_PNL_ONLY; intratrade and unrealized exposure are excluded."
+      },
+      "deflated_sharpe": {
+        "observed_sharpe": -2.801,
+        "num_trials": 8,
+        "sample_length": 120,
+        "expected_max_sharpe_null": 0.2104,
+        "deflated_sharpe_probability": 0.0,
+        "passes_multiple_testing_gate": false,
+        "summary": "Deflated Sharpe probability 0.00% vs 95% threshold across 8 trials (null max SR=0.210)."
+      },
+      "promotion_decision": {
+        "strategy_name": "Regime Adaptive Composite",
+        "current_stage": "BACKTEST_VALIDATED",
+        "recommended_stage": "DRAFT",
+        "promoted": false,
+        "reasons": [
+          "Dataset provenance/license is unverified (smoke-test sample only).",
+          "Non-positive net expectancy (Rs -57.50).",
+          "Monte Carlo sample inadequate (2 < 30 trades); stress percentiles are exploratory only.",
+          "Insufficient OOS trades (0 < 30 required).",
+          "Walk-forward verdict is 'INSUFFICIENT_EVIDENCE', not 'ROBUST_CANDIDATE'."
+        ]
+      },
+      "post_mortem": {
+        "strategy_name": "Regime Adaptive Composite",
+        "total_trades": 2,
+        "gross_market_pnl": 19.0,
+        "slippage_drag": 8.0,
+        "statutory_fees_drag": 125.99,
+        "net_realized_pnl": -114.99,
+        "execution_efficiency_pct": 0.0,
+        "stop_loss_exits": 0,
+        "target_exits": 0,
+        "signal_exits": 2,
+        "premature_stop_outs": 0,
+        "primary_leakage_source": "EXECUTION_FRICTION_AND_TAXES",
+        "actionable_recommendation": "Validate instrument-specific charges and reduce turnover only if out-of-sample evidence supports it.",
+        "long_trades": 2,
+        "short_trades": 0,
+        "average_win": 0.0,
+        "average_loss": -57.5,
+        "best_trade_pnl": -54.35,
+        "worst_trade_pnl": -60.64,
+        "average_holding_bars": 1.0,
+        "profit_concentration_pct": 0.0,
+        "exit_reason_counts": [
+          [
+            "SIGNAL_EXIT",
+            2
+          ]
+        ],
+        "regime_attribution": [],
+        "evidence_warning": "Insufficient evidence: 2 trades; minimum review threshold is 30. Descriptive only. Regime attribution unavailable: entry-index regime labels were not supplied.",
+        "attribution_method": "DESCRIPTIVE_TRADE_LOG_NOT_CAUSAL"
+      }
+    }
+  ],
+  "futures_long_short_backtest": {
+    "starting_capital": 250000.0,
+    "ending_capital": 255645.91585624998,
+    "total_trades": 3,
+    "winning_trades": 2,
+    "losing_trades": 1,
+    "win_rate_percent": 66.66666666666666,
+    "net_profit": 5645.91585624998,
+    "return_percent": 2.2583663424999916,
+    "max_drawdown_percent": 1.1825467389640514,
+    "profit_factor": 104.77398689132522,
+    "expectancy": 1881.9719520833278,
+    "breakeven_trades": 0,
+    "total_fees": 1058.1599999999999,
+    "sharpe_ratio": 3.6882,
+    "sortino_ratio": 6.0405,
+    "calmar_ratio": 1.9097,
+    "benchmark_return_percent": 0.62,
+    "alpha_percent": 1.64,
+    "intrabar_stops_hit": 0,
+    "intrabar_targets_hit": 0,
+    "sizing_mode": "fixed",
+    "instrument_type": "FUTURES",
+    "rejected_for_risk_count": 0,
+    "trade_log": [
+      {
+        "trade_num": 1,
+        "side": "LONG",
+        "entry_index": 27,
+        "exit_index": 34,
+        "entry_price": 21441.87,
+        "exit_price": 21580.19,
+        "quantity": 25.0,
+        "pnl": 3105.92,
+        "return_pct": 0.58,
+        "exit_reason": "SIGNAL_EXIT"
+      },
+      {
+        "trade_num": 2,
+        "side": "LONG",
+        "entry_index": 58,
+        "exit_index": 71,
+        "entry_price": 21501.55,
+        "exit_price": 21619.44,
+        "quantity": 25.0,
+        "pnl": 2594.4,
+        "return_pct": 0.48,
+        "exit_reason": "SIGNAL_EXIT"
+      },
+      {
+        "trade_num": 3,
+        "side": "SHORT",
+        "entry_index": 101,
+        "exit_index": 119,
+        "entry_price": 21647.55,
+        "exit_price": 21635.59,
+        "quantity": 25.0,
+        "pnl": -54.41,
+        "return_pct": -0.01,
+        "exit_reason": "FINAL_CLOSE"
+      }
+    ],
+    "total_turnover": 3235654.73,
+    "average_exposure_percent": 69.67,
+    "fill_ratio_percent": 100.0,
+    "short_trades": 1
+  },
+  "shadow_50k_paper_account": {
+    "entry_microstructure": {
+      "accepted_for_fill": true,
+      "filled_qty": 10,
+      "residual_qty": 0,
+      "execution_price": 1301.0,
+      "spread_cost_per_unit": 0.25,
+      "impact_slippage_per_unit": 0.975,
+      "latency_drift_per_unit": 0.0284,
+      "status_reason": "AGGRESSIVE_SPREAD_CROSS_FILL"
+    },
+    "daily_statement": {
+      "statement_date": "2026-11-01",
+      "account_id": "TITAN-50K-SHADOW-DEMO",
+      "starting_capital": 50000.0,
+      "ending_equity": 50151.59,
+      "cash_balance": 50151.59,
+      "blocked_margin": 0.0,
+      "realized_pnl": 151.58,
+      "unrealized_pnl": 0,
+      "total_fees_paid": 38.41,
+      "orders_submitted": 2,
+      "orders_filled": 2,
+      "orders_partially_filled": 0,
+      "orders_rejected": 0,
+      "open_positions_count": 0,
+      "balance_discrepancy": 0.01,
+      "is_reconciled": true,
+      "live_orders_transmitted": 0
+    }
+  },
+  "derivatives_analytics_and_settlement": {
+    "spot_price": 21633.97,
+    "atm_strike": 21650.0,
+    "call_greeks_with_dividend": {
+      "option_type": "CE",
+      "theoretical_price": 170.89,
+      "delta": 0.5106,
+      "gamma": 0.000951,
+      "theta_daily": -13.61,
+      "vega_per_pct": 11.95,
+      "rho_per_pct": 2.09,
+      "implied_volatility": 0.14
+    },
+    "recovered_iv": 0.14,
+    "option_chain_quality": {
+      "quote_count": 1,
+      "crossed_quotes": 0,
+      "intrinsic_arbitrage_violations": 0,
+      "wide_spread_quotes": 0,
+      "zero_oi_quotes": 0,
+      "errors": []
+    },
+    "nifty_futures_span_elm_margin": {
+      "instrument_type": "FUTURES",
+      "notional_value": 540849.25,
+      "span_margin": 64901.91,
+      "exposure_margin": 16225.48,
+      "premium_required": 0.0,
+      "total_margin_blocked": 81127.39
+    },
+    "itm_expiry_settlement": {
+      "symbol": "NIFTY26NOV21650CE",
+      "option_type": "CE",
+      "side": "LONG",
+      "settlement_spot": 21790.0,
+      "strike": 21650.0,
+      "quantity": 25,
+      "entry_premium": 170.89,
+      "intrinsic_payoff_per_unit": 140.0,
+      "is_in_the_money": true,
+      "exercised": true,
+      "settlement_mode": "CASH_INDEX",
+      "exercise_stt": 5.25,
+      "gross_pnl": -772.25,
+      "net_pnl_after_exercise_stt": -780.93,
+      "warning": "Cash-settled index option exercised at intrinsic value."
+    }
+  },
+  "crypto_virtual_silo_reconciliation": {
+    "starting_capital": 1000.0,
+    "cash_balance": 1006.53,
+    "realized_pnl": 6.53,
+    "total_fees": 0.57,
+    "total_tds_withheld": 2.9,
+    "open_cost_locked": 0,
+    "discrepancy": 0.0,
+    "is_reconciled": true
+  },
+  "roadmap_quality_gates_g0_to_g9": {
+    "total_gates": 10,
+    "code_verified_gates": 4,
+    "external_input_required_gates": 6,
+    "failed_gates": 0,
+    "live_trading_disabled": true,
+    "gates": [
+      {
+        "gate_id": "G0",
+        "name": "Build reproducibility",
+        "status": "PASSED_CODE_VERIFIED",
+        "evidence": "Test runner success=True; passed=400; total=400.",
+        "fail_action": "Fix CI/build failures; no promotion."
+      },
+      {
+        "gate_id": "G1",
+        "name": "API/behavior correctness",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "Path mapping and tests alone do not establish complete API/behavior parity.",
+        "fail_action": "Keep adapted API parity audit open."
+      },
+      {
+        "gate_id": "G2",
+        "name": "Data integrity",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "Vendor licence, provenance, timezone, gaps and point-in-time metadata are not verified.",
+        "fail_action": "Block strategy promotion on synthetic/unverified data."
+      },
+      {
+        "gate_id": "G3",
+        "name": "Accounting accuracy",
+        "status": "PASSED_CODE_VERIFIED",
+        "evidence": "Independent cash/fees/partial fills reconciled=True; futures/options golden fixtures=True.",
+        "fail_action": "Disable affected instrument type until golden fixtures reconcile."
+      },
+      {
+        "gate_id": "G4",
+        "name": "Risk and approval safety",
+        "status": "PASSED_CODE_VERIFIED",
+        "evidence": "Durable replay=True; stale feed=True; kill switch=True; daily loss=True.",
+        "fail_action": "Fail closed; no fresh entries or promotion."
+      },
+      {
+        "gate_id": "G5",
+        "name": "Execution realism",
+        "status": "PASSED_CODE_VERIFIED",
+        "evidence": "₹50k paper ledger reconciled=True; execution golden fixtures=True.",
+        "fail_action": "Label execution as simplified; do not make performance claims."
+      },
+      {
+        "gate_id": "G6",
+        "name": "Independent security",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "No independent pentest sign-off supplied.",
+        "fail_action": "No production rollout."
+      },
+      {
+        "gate_id": "G7",
+        "name": "Operations and recovery",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "Operational recovery acceptance evidence is missing.",
+        "fail_action": "No unattended operation."
+      },
+      {
+        "gate_id": "G8",
+        "name": "Paper evidence",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "Shadow reconciliation=True; multi-day observation=False; licensed data=False.",
+        "fail_action": "Continue controlled shadow observation; do not promote strategy."
+      },
+      {
+        "gate_id": "G9",
+        "name": "Release sign-off",
+        "status": "EXTERNAL_INPUT_REQUIRED",
+        "evidence": "Owner signed=False; all preceding evidence complete=False; live trading disabled.",
+        "fail_action": "Keep release blocked and PR draft."
+      }
+    ]
+  }
+}

@@ -65,6 +65,10 @@ class EvolveResearch:
     def notes(self) -> tuple[ResearchNote, ...]:
         return tuple(self._notes)
 
+    @property
+    def experiment_count(self) -> int:
+        return len(self._experiments)
+
     def propose(self, *, name: str, hypothesis: str, target: str) -> Experiment:
         if not name.strip() or not hypothesis.strip() or not target.strip():
             raise ValueError("name, hypothesis, and target must not be empty")

@@ -1,9 +1,11 @@
-"""Advanced portfolio risk controls, lot/tick rounding, and circuit breakers."""
+"""Advanced portfolio risk controls, Decimal tick rounding, lot rounding, and circuit breakers."""
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from decimal import Decimal, ROUND_HALF_UP
+from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -13,13 +15,15 @@ class InstrumentSpec:
     lot_size: int = 1
     tick_size: float = 0.05
     max_lots_per_trade: int = 20
+    freeze_quantity: int = 1800
 
 
 DEFAULT_INSTRUMENT_SPECS: dict[str, InstrumentSpec] = {
-    "NIFTY": InstrumentSpec(symbol="NIFTY", lot_size=25, tick_size=0.05, max_lots_per_trade=10),
-    "BANKNIFTY": InstrumentSpec(symbol="BANKNIFTY", lot_size=15, tick_size=0.05, max_lots_per_trade=10),
-    "FINNIFTY": InstrumentSpec(symbol="FINNIFTY", lot_size=25, tick_size=0.05, max_lots_per_trade=10),
-    "EQUITY_DEFAULT": InstrumentSpec(symbol="EQUITY_DEFAULT", lot_size=1, tick_size=0.05, max_lots_per_trade=500),
+    "NIFTY": InstrumentSpec(symbol="NIFTY", lot_size=25, tick_size=0.05, max_lots_per_trade=10, freeze_quantity=1800),
+    "BANKNIFTY": InstrumentSpec(symbol="BANKNIFTY", lot_size=15, tick_size=0.05, max_lots_per_trade=10, freeze_quantity=900),
+    "FINNIFTY": InstrumentSpec(symbol="FINNIFTY", lot_size=25, tick_size=0.05, max_lots_per_trade=10, freeze_quantity=1800),
+    "MIDCPNIFTY": InstrumentSpec(symbol="MIDCPNIFTY", lot_size=50, tick_size=0.05, max_lots_per_trade=10, freeze_quantity=2800),
+    "EQUITY_DEFAULT": InstrumentSpec(symbol="EQUITY_DEFAULT", lot_size=1, tick_size=0.05, max_lots_per_trade=500, freeze_quantity=100000),
 }
 
 
@@ -46,12 +50,20 @@ class PreTradeRiskResult:
 
 
 def round_to_tick(price: float, tick_size: float = 0.05) -> float:
-    """Round a price to the nearest exchange valid tick."""
-    return round(round(price / tick_size) * tick_size, 4)
+    """Round a price deterministically to the nearest exchange valid tick using Decimal arithmetic."""
+    if isinstance(price, bool) or isinstance(tick_size, bool) or not isinstance(price, (int, float)) or not isinstance(tick_size, (int, float)):
+        raise ValueError("price and tick_size must be numeric.")
+    if not (math.isfinite(price) and math.isfinite(tick_size)) or tick_size <= 0:
+        raise ValueError("price must be finite and tick_size must be positive.")
+    d_price = Decimal(str(price))
+    d_tick = Decimal(str(tick_size))
+    steps = (d_price / d_tick).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    rounded = (steps * d_tick).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+    return float(rounded)
 
 
 class PortfolioRiskManager:
-    """Deterministic pre-trade risk gatekeeper."""
+    """Deterministic pre-trade risk gatekeeper supporting Long (BUY) and Short (SELL) entries."""
 
     def __init__(self, config: PortfolioRiskConfig = PortfolioRiskConfig()):
         self.config = config
@@ -67,8 +79,9 @@ class PortfolioRiskManager:
         stop_price: float,
         spec: InstrumentSpec | None = None,
         current_drawdown_pct: float = 0.0,
+        side: Literal["BUY", "SELL"] = "BUY",
     ) -> PreTradeRiskResult:
-        """Run pre-trade risk checks including lot rounding and circuit breakers."""
+        """Run pre-trade risk checks including lot rounding, freeze qty, and circuit breakers."""
         spec = spec or DEFAULT_INSTRUMENT_SPECS["EQUITY_DEFAULT"]
         for val in (capital, current_exposure, realized_daily_loss_pct, entry_price, stop_price, current_drawdown_pct):
             if isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(val):
@@ -85,6 +98,8 @@ class PortfolioRiskManager:
                 or not math.isfinite(spec.tick_size) or spec.tick_size <= 0
                 or not isinstance(spec.max_lots_per_trade, int) or spec.max_lots_per_trade < 1):
             return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, "Instrument lot/tick configuration is invalid.")
+        if not isinstance(side, str) or side.upper() not in ("BUY", "SELL"):
+            return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, "side must be BUY or SELL.")
         cfg_values = (
             self.config.max_risk_per_trade_pct, self.config.max_portfolio_exposure_pct,
             self.config.daily_loss_limit_pct, self.config.max_drawdown_limit_pct,
@@ -103,8 +118,16 @@ class PortfolioRiskManager:
 
         clean_entry = round_to_tick(entry_price, spec.tick_size)
         clean_stop = round_to_tick(stop_price, spec.tick_size)
-        if clean_stop <= 0 or clean_stop >= clean_entry:
-            return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, "Stop price must be positive and below entry price.")
+        is_buy = side.upper() == "BUY"
+        if is_buy:
+            if clean_stop <= 0 or clean_stop >= clean_entry:
+                return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, "Stop price must be positive and below entry price.")
+            risk_per_share = clean_entry - clean_stop
+        else:
+            if clean_stop <= clean_entry:
+                return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, "SHORT stop price must be strictly above entry price.")
+            risk_per_share = clean_stop - clean_entry
+
         if realized_daily_loss_pct >= self.config.daily_loss_limit_pct:
             return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, f"Daily loss limit ({self.config.daily_loss_limit_pct}%) breached. Trading locked.")
         if current_drawdown_pct >= self.config.max_drawdown_limit_pct:
@@ -115,14 +138,13 @@ class PortfolioRiskManager:
             return PreTradeRiskResult(False, 0, 0.0, 0.0, 0.0, f"Max concurrent positions ({self.config.max_concurrent_positions}) reached.")
 
         risk_budget = capital * (self.config.max_risk_per_trade_pct / 100.0)
-        risk_per_share = clean_entry - clean_stop
         raw_quantity = math.floor(risk_budget / risk_per_share)
         max_allowed_exposure = capital * (self.config.max_portfolio_exposure_pct / 100.0)
         remaining_exposure = max(0.0, max_allowed_exposure - current_exposure)
         exposure_cap_qty = math.floor(remaining_exposure / clean_entry)
         target_qty = min(raw_quantity, exposure_cap_qty)
         lot_rounded_qty = (target_qty // spec.lot_size) * spec.lot_size
-        max_allowed_qty = spec.max_lots_per_trade * spec.lot_size
+        max_allowed_qty = min(spec.max_lots_per_trade * spec.lot_size, getattr(spec, "freeze_quantity", 100000))
         final_qty = min(lot_rounded_qty, max_allowed_qty)
 
         if final_qty < spec.lot_size:

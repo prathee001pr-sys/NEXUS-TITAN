@@ -77,14 +77,28 @@ def calculate_indian_trade_costs(
     This helper does not fully model option exercise/physical settlement; it is
     an entry/exit estimate, not an official contract-note calculator.
     """
-    if price <= 0 or quantity <= 0:
-        raise ValueError("Price and quantity must be positive.")
-    if not (math.isfinite(price) and math.isfinite(quantity)):
-        raise ValueError("Price and quantity must be finite.")
-    if side.upper() not in ("BUY", "SELL"):
+    if (isinstance(price, bool) or not isinstance(price, (int, float))
+            or isinstance(quantity, bool) or not isinstance(quantity, int)):
+        raise ValueError("Price must be numeric and quantity must be a whole integer.")
+    if not (math.isfinite(price) and price > 0 and quantity > 0):
+        raise ValueError("Price and quantity must be finite and positive.")
+    if not isinstance(side, str) or side.upper() not in ("BUY", "SELL"):
         raise ValueError("side must be BUY or SELL.")
     if instrument not in ("EQUITY_DELIVERY", "EQUITY_INTRADAY", "FUTURES", "OPTIONS"):
         raise ValueError("Unsupported instrument type.")
+    config_numbers = (config.brokerage_pct, config.brokerage_flat_cap, config.gst_pct,
+                      config.sebi_per_crore, config.stt_equity_delivery_pct,
+                      config.stt_equity_intraday_sell_pct, config.stt_futures_sell_pct,
+                      config.stt_options_sell_pct, config.stt_options_exercise_pct,
+                      config.exchange_turnover_equity_pct, config.exchange_turnover_futures_pct,
+                      config.exchange_turnover_options_pct, config.stamp_duty_equity_delivery_pct,
+                      config.stamp_duty_equity_intraday_pct, config.stamp_duty_futures_pct,
+                      config.stamp_duty_options_pct)
+    if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0
+           for v in config_numbers):
+        raise ValueError("Cost configuration must contain finite non-negative rates and caps.")
+    if config.brokerage_flat_cap <= 0 or not config.version or not config.effective_date:
+        raise ValueError("Cost schedule version/date and positive brokerage cap are required.")
     turnover = price * quantity
     is_buy = side.upper() == "BUY"
     raw_brokerage = turnover * (config.brokerage_pct / 100.0)
@@ -121,11 +135,14 @@ def calculate_indian_trade_costs(
 
     taxable_service = brokerage + exchange_charges + sebi_charges
     gst = taxable_service * (config.gst_pct / 100.0)
-    total_charges = round(brokerage + stt + exchange_charges + sebi_charges + stamp_duty + gst, 2)
+    rounded_components = (round(brokerage, 2), round(stt, 2),
+                          round(exchange_charges, 2), round(sebi_charges, 2),
+                          round(stamp_duty, 2), round(gst, 2))
+    total_charges = round(sum(rounded_components), 2)
     return TradeCostBreakdown(
-        brokerage=round(brokerage, 2), stt=round(stt, 2),
-        exchange_charges=round(exchange_charges, 2),
-        sebi_charges=round(sebi_charges, 2), stamp_duty=round(stamp_duty, 2),
-        gst=round(gst, 2), total_charges=total_charges,
+        brokerage=rounded_components[0], stt=rounded_components[1],
+        exchange_charges=rounded_components[2],
+        sebi_charges=rounded_components[3], stamp_duty=rounded_components[4],
+        gst=rounded_components[5], total_charges=total_charges,
         schedule_version=config.version,
     )

@@ -1,4 +1,4 @@
-"""Pure standard-library Indian F&O Contract Master and Black-Scholes Options Greeks Engine."""
+"""Pure standard-library Indian F&O Contract Master and Black-Scholes Options Greeks Engine (with dividend yield)."""
 
 from __future__ import annotations
 
@@ -46,64 +46,99 @@ def _norm_pdf(x: float) -> float:
 
 
 def calculate_option_greeks(
-    spot: float, strike: float, days_to_expiry: float,
-    volatility: float = 0.15, risk_free_rate: float = 0.068,
+    spot: float,
+    strike: float,
+    days_to_expiry: float,
+    volatility: float = 0.15,
+    risk_free_rate: float = 0.068,
     option_type: OptionType = "CE",
+    dividend_yield: float = 0.0,
 ) -> OptionGreeks:
-    """Calculate theoretical option premium and Black-Scholes first/second-order sensitivities."""
-    for label, value in (("spot", spot), ("strike", strike),
-                         ("days_to_expiry", days_to_expiry),
-                         ("volatility", volatility), ("risk_free_rate", risk_free_rate)):
+    """Calculate theoretical option premium and Black-Scholes-Merton first/second-order sensitivities."""
+    for label, value in (
+        ("spot", spot),
+        ("strike", strike),
+        ("days_to_expiry", days_to_expiry),
+        ("volatility", volatility),
+        ("risk_free_rate", risk_free_rate),
+        ("dividend_yield", dividend_yield),
+    ):
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
             raise ValueError(f"{label} must be a finite number.")
-    if spot <= 0 or strike <= 0 or volatility <= 0 or days_to_expiry < 0:
-        raise ValueError("Spot, strike and volatility must be positive; days_to_expiry cannot be negative.")
+    if spot <= 0 or strike <= 0 or volatility <= 0 or days_to_expiry < 0 or dividend_yield < 0:
+        raise ValueError("Spot, strike and volatility must be positive; days_to_expiry and dividend_yield cannot be negative.")
     opt_clean = option_type.upper()
     if opt_clean not in ("CE", "PE"):
         raise ValueError("option_type must be 'CE' or 'PE'.")
     t = max(days_to_expiry / 365.0, 1e-5)
     sqrt_t = math.sqrt(t)
-    d1 = (math.log(spot / strike) + (risk_free_rate + 0.5 * volatility * volatility) * t) / (volatility * sqrt_t)
+    d1 = (math.log(spot / strike) + (risk_free_rate - dividend_yield + 0.5 * volatility * volatility) * t) / (volatility * sqrt_t)
     d2 = d1 - volatility * sqrt_t
     pdf_d1 = _norm_pdf(d1)
     discount = math.exp(-risk_free_rate * t)
+    div_discount = math.exp(-dividend_yield * t)
     if opt_clean == "CE":
-        price = spot * _norm_cdf(d1) - strike * discount * _norm_cdf(d2)
-        delta = _norm_cdf(d1)
-        theta_annual = -(spot * pdf_d1 * volatility) / (2.0 * sqrt_t) - risk_free_rate * strike * discount * _norm_cdf(d2)
+        price = spot * div_discount * _norm_cdf(d1) - strike * discount * _norm_cdf(d2)
+        delta = div_discount * _norm_cdf(d1)
+        theta_annual = (
+            -(spot * div_discount * pdf_d1 * volatility) / (2.0 * sqrt_t)
+            - risk_free_rate * strike * discount * _norm_cdf(d2)
+            + dividend_yield * spot * div_discount * _norm_cdf(d1)
+        )
         rho = (strike * t * discount * _norm_cdf(d2)) / 100.0
     else:
-        price = strike * discount * _norm_cdf(-d2) - spot * _norm_cdf(-d1)
-        delta = _norm_cdf(d1) - 1.0
-        theta_annual = -(spot * pdf_d1 * volatility) / (2.0 * sqrt_t) + risk_free_rate * strike * discount * _norm_cdf(-d2)
+        price = strike * discount * _norm_cdf(-d2) - spot * div_discount * _norm_cdf(-d1)
+        delta = div_discount * (_norm_cdf(d1) - 1.0)
+        theta_annual = (
+            -(spot * div_discount * pdf_d1 * volatility) / (2.0 * sqrt_t)
+            + risk_free_rate * strike * discount * _norm_cdf(-d2)
+            - dividend_yield * spot * div_discount * _norm_cdf(-d1)
+        )
         rho = -(strike * t * discount * _norm_cdf(-d2)) / 100.0
-    gamma = pdf_d1 / (spot * volatility * sqrt_t)
-    vega = (spot * pdf_d1 * sqrt_t) / 100.0
+    gamma = (div_discount * pdf_d1) / (spot * volatility * sqrt_t)
+    vega = (spot * div_discount * pdf_d1 * sqrt_t) / 100.0
     theta_daily = theta_annual / 365.0
     return OptionGreeks(
-        option_type=opt_clean, theoretical_price=round(max(0.05, price), 2),
-        delta=round(delta, 4), gamma=round(gamma, 6),
-        theta_daily=round(theta_daily, 2), vega_per_pct=round(vega, 2),
-        rho_per_pct=round(rho, 2), implied_volatility=round(volatility, 4),
+        option_type=opt_clean,
+        theoretical_price=round(max(0.05, price), 2),
+        delta=round(delta, 4),
+        gamma=round(gamma, 6),
+        theta_daily=round(theta_daily, 2),
+        vega_per_pct=round(vega, 2),
+        rho_per_pct=round(rho, 2),
+        implied_volatility=round(volatility, 4),
     )
 
 
 def solve_implied_volatility(
-    market_price: float, spot: float, strike: float, days_to_expiry: float,
-    option_type: OptionType = "CE", risk_free_rate: float = 0.068,
+    market_price: float,
+    spot: float,
+    strike: float,
+    days_to_expiry: float,
+    option_type: OptionType = "CE",
+    risk_free_rate: float = 0.068,
+    dividend_yield: float = 0.0,
 ) -> float:
     """Solve implied volatility using a bounded bisection search."""
-    for label, value in (("market_price", market_price), ("spot", spot), ("strike", strike),
-                         ("days_to_expiry", days_to_expiry), ("risk_free_rate", risk_free_rate)):
+    for label, value in (
+        ("market_price", market_price),
+        ("spot", spot),
+        ("strike", strike),
+        ("days_to_expiry", days_to_expiry),
+        ("risk_free_rate", risk_free_rate),
+        ("dividend_yield", dividend_yield),
+    ):
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
             raise ValueError(f"{label} must be finite.")
-    if market_price <= 0 or spot <= 0 or strike <= 0 or days_to_expiry < 0:
-        raise ValueError("Premium and underlying prices must be positive; expiry cannot be negative.")
+    if market_price <= 0 or spot <= 0 or strike <= 0 or days_to_expiry < 0 or dividend_yield < 0:
+        raise ValueError("Premium and underlying prices must be positive; expiry and dividend_yield cannot be negative.")
     if option_type.upper() not in ("CE", "PE"):
         raise ValueError("option_type must be CE or PE.")
     low_vol, high_vol, vol = 0.01, 3.00, 0.20
     for _ in range(60):
-        greeks = calculate_option_greeks(spot, strike, days_to_expiry, vol, risk_free_rate, option_type)
+        greeks = calculate_option_greeks(
+            spot, strike, days_to_expiry, vol, risk_free_rate, option_type, dividend_yield
+        )
         diff = greeks.theoretical_price - market_price
         if abs(diff) < 0.01:
             return round(vol, 4)

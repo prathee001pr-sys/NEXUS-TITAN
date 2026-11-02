@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from nexus_titan.risk.portfolio_risk import (
     DEFAULT_INSTRUMENT_SPECS,
     InstrumentSpec,
@@ -32,6 +34,7 @@ class AuthoritativeRiskEngine:
         consecutive_losses: int = 0,
         slippage_buffer: float = 0.0,
         current_drawdown_pct: float = 0.0,
+        side: Literal["BUY", "SELL"] = "BUY",
     ) -> PreTradeRiskResult:
         """Evaluate risk and compute whole-lot quantity within configured limits."""
         base_spec = DEFAULT_INSTRUMENT_SPECS.get(symbol.upper(), DEFAULT_INSTRUMENT_SPECS["EQUITY_DEFAULT"])
@@ -41,8 +44,12 @@ class AuthoritativeRiskEngine:
             lot_size=effective_lot,
             tick_size=tick_size,
             max_lots_per_trade=base_spec.max_lots_per_trade,
+            freeze_quantity=base_spec.freeze_quantity,
         )
-        adjusted_stop = stop_price - slippage_buffer if stop_price < entry_price else stop_price
+        if side.upper() == "BUY":
+            adjusted_stop = stop_price - slippage_buffer if stop_price < entry_price else stop_price
+        else:
+            adjusted_stop = stop_price + slippage_buffer if stop_price > entry_price else stop_price
         return self._portfolio_mgr.evaluate_order(
             capital=capital,
             current_exposure=current_exposure,
@@ -53,4 +60,5 @@ class AuthoritativeRiskEngine:
             stop_price=adjusted_stop,
             spec=effective_spec,
             current_drawdown_pct=current_drawdown_pct,
+            side=side,
         )
