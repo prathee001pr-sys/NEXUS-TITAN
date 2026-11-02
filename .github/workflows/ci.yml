@@ -25,10 +25,14 @@ jobs:
         run: python scripts/run_project_validation.py
       - name: Generate deterministic research report
         run: python scripts/run_advanced_backtest_suite.py --json-out reports/ci_backtest_report.json
+      - name: Stage25 full offline synthetic system backtest and integration smoke
+        run: python scripts/run_stage25_full_research_audit.py --json-out reports/stage25_full_offline_audit.json
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: titan-validation-py${{ matrix.python-version }}
-          path: reports/ci_backtest_report.json
+          path: |
+            reports/ci_backtest_report.json
+            reports/stage25_full_offline_audit.json
           if-no-files-found: ignore

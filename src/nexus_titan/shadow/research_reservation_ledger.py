@@ -423,6 +423,11 @@ class DurableResearchShadowLedger:
                 "type": "SETTLE_BUY", "order_id": oid, "simulated_event_ids": [e.event_id for e in events],
                 "filled_quantity": report.filled_quantity, "debit_cents": debit,
                 "released_cents": row["held_cents"] - debit,
+                # Stage25 additive metadata: explicit research event time and
+                # premium/fee split so day-level net P&L never guesses.
+                "fill_observed_at_utc": max(e.observed_at for e in events).astimezone(timezone.utc).isoformat(),
+                "buy_premium_cents": _money_cents(report.filled_notional, "buy_premium"),
+                "buy_fees_cents": _money_cents(report.conservative_fee_reserve, "buy_fees"),
             })
             return report
 
