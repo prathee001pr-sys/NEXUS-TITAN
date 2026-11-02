@@ -23,5 +23,22 @@ class DashboardBackendTests(unittest.TestCase):
             DashboardBackendService()
 
 
+    def test_dashboard_exposes_master_integration_health_read_only(self):
+        from nexus_titan.core.master_integration import MasterTradingOrchestrator
+        with tempfile.TemporaryDirectory() as temp:
+            account = VirtualAccount("DASHBOARD-MASTER", 50000, require_pretrade_risk_check=False)
+            orchestrator = MasterTradingOrchestrator()
+            service = DashboardBackendService(
+                account, Path(temp) / "missing.csv", master_orchestrator=orchestrator,
+            )
+            status = service.get_master_integration_status()
+            self.assertTrue(status["connected"])
+            self.assertFalse(status["order_submitted"])
+            self.assertFalse(status["live_trading_enabled"])
+            telemetry = service.get_system_telemetry()
+            self.assertTrue(telemetry["master_integration"]["connected"])
+            orchestrator.close()
+
+
 if __name__=="__main__":
     unittest.main()

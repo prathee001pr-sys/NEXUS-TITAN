@@ -72,14 +72,15 @@ def evaluate_out_of_sample(
     return engine.run(combined, strategy, start_index=len(split.in_sample) - 1)
 
 
-# V6 compatibility exports. These are kept alongside the original V2 chronological
-# OHLCV split/evaluation API above; no V2 validation entry point is replaced.
+# V6 & Phase 7 compatibility exports.
 from nexus_titan.research.v6_validation import (
     MonteCarloReport,
+    MultipleComparisonReport,
     PromotionStage,
     StrategyPromotionDecision,
     WalkForwardFoldResult,
     WalkForwardReport,
+    evaluate_multiple_comparison_bias,
     evaluate_strategy_promotion,
     rolling_walk_forward_validation,
     run_monte_carlo_simulation,
@@ -94,9 +95,11 @@ __all__ = [
     "WalkForwardFoldResult",
     "WalkForwardReport",
     "MonteCarloReport",
+    "MultipleComparisonReport",
     "StrategyPromotionDecision",
     "walk_forward_validation",
     "rolling_walk_forward_validation",
     "run_monte_carlo_simulation",
+    "evaluate_multiple_comparison_bias",
     "evaluate_strategy_promotion",
 ]

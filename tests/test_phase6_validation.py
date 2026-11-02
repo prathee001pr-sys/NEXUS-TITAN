@@ -9,7 +9,7 @@ from nexus_titan.research.v6_validation import (
     run_monte_carlo_simulation,
     walk_forward_validation,
 )
-from nexus_titan.research.backtest import run_backtest
+from nexus_titan.research.backtest import BacktestResult, run_backtest
 
 
 class Phase6ValidationTests(unittest.TestCase):
@@ -61,6 +61,37 @@ class Phase6ValidationTests(unittest.TestCase):
         report = run_monte_carlo_simulation([], starting_capital=50000.0)
         self.assertEqual(report.original_max_drawdown_pct, 0.0)
         self.assertEqual(report.ruin_probability_pct, 0.0)
+
+    def test_monte_carlo_marks_thin_samples_as_exploratory(self):
+        report = run_monte_carlo_simulation([100.0, -20.0, 30.0], starting_capital=50000.0)
+        self.assertEqual(report.sample_size, 3)
+        self.assertFalse(report.sample_adequate)
+        self.assertIn("INSUFFICIENT_SAMPLE", report.warning)
+
+    def test_monte_carlo_rejects_invalid_parameters(self):
+        with self.assertRaises(ValueError):
+            run_monte_carlo_simulation([1.0], iterations=0)
+        with self.assertRaises(ValueError):
+            run_monte_carlo_simulation([float("nan")])
+
+    def test_promotion_gate_blocks_inadequate_monte_carlo_sample(self):
+        backtest = BacktestResult(
+            starting_capital=50_000.0, ending_capital=50_100.0,
+            total_trades=10, winning_trades=10, losing_trades=0,
+            win_rate_percent=100.0, net_profit=100.0, return_percent=0.2,
+            max_drawdown_percent=0.0, profit_factor=None, expectancy=10.0,
+        )
+        walk = WalkForwardReport(
+            total_folds=4, folds=[], aggregate_oos_return_pct=1.0,
+            compounded_oos_return_pct=1.0, total_oos_trades=30,
+            confidence_verdict="ROBUST_CANDIDATE", status_summary="sample fixture",
+        )
+        mc = run_monte_carlo_simulation([10.0] * 10, starting_capital=50_000.0)
+        decision = evaluate_strategy_promotion(
+            "sample", backtest, walk, mc, is_verified_dataset=True, min_oos_trades=30,
+        )
+        self.assertFalse(decision.promoted)
+        self.assertTrue(any("Monte Carlo sample inadequate" in reason for reason in decision.reasons))
 
     def test_promotion_gate_blocks_unverified_dataset(self):
         backtest = run_backtest(

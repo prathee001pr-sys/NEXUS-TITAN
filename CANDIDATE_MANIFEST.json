@@ -1,0 +1,1187 @@
+{
+  "project": "NEXUS TITAN",
+  "snapshot": "Stage 1–15 canonical candidate with OOS calibration diagnostics",
+  "created_date": "2026-11-02",
+  "python_runtime": "3.13.5",
+  "regression_tests": {
+    "passed": 426,
+    "subtests_passed": 5,
+    "result": "PASS"
+  },
+  "compile_check": "PASS",
+  "project_validation": "PASS",
+  "release_decision": "BLOCKED_EXTERNAL_EVIDENCE",
+  "live_trading_enabled": false,
+  "main_branch_modified": false,
+  "source_python_modules": 96,
+  "test_modules": 56,
+  "file_count": 231,
+  "master_trading_upgrade_register": "docs/MASTER_TRADING_UPGRADE_REGISTER_2026-11-02.md",
+  "calibration_design_note": "docs/PROBABILITY_CALIBRATION.md",
+  "github_feature_pr": {
+    "number": 3,
+    "url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/pull/3",
+    "head_sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+    "hosted_ci_run": 41393193730,
+    "hosted_ci_result": "183 passed on Python 3.11",
+    "status": "DRAFT_UNMERGED"
+  },
+  "note": "426-test result is local candidate evidence until the complete matching source tree is committed to a dedicated GitHub branch and hosted CI is green. Standalone PR #3 hosted CI covers only the three-file calibration increment. External data licensing, independent security and operational/shadow gates remain open.",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "40b3bdb0e37dbc01a267dab14d7abbaae744b65055c57cff36bb4ba1b22c6941",
+      "size_bytes": 219
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "c883d6b05af2147cf9eaa1a9c4314df050926f985d3ae05b7bd4339413122d00",
+      "size_bytes": 1080
+    },
+    {
+      "path": ".github/workflows/tests.yml",
+      "sha256": "c291757d6b02e5c33c6b7c7576b41b82bc5a499c23eeec82988704d2f9af9286",
+      "size_bytes": 1011
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "114f3cdc2057d610cbc810f69cbc4f195acec0cd15dd54e9b154cf5f6657fc24",
+      "size_bytes": 4664
+    },
+    {
+      "path": "README.md",
+      "sha256": "1f8071025669925ec354c264be753ac8ff07ac371a4196ef48dcd28ad53e985b",
+      "size_bytes": 12061
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "b8bfe1972d4afdf43d0a02337c9cd92f0633de4df54ce88366206de2002562c3",
+      "size_bytes": 2494
+    },
+    {
+      "path": "data/README.md",
+      "sha256": "7897f187d876032da8250d1e24c6523fb51fd7560f9cbb19904f15e75dac6a48",
+      "size_bytes": 663
+    },
+    {
+      "path": "data/market_sample.csv",
+      "sha256": "6049cc82fcaee017870eaab02fc713f3569d2dd0582c94c2cfd7fa423fb0b43a",
+      "size_bytes": 848
+    },
+    {
+      "path": "data/nifty_daily_sample.csv",
+      "sha256": "de29949d098c79ee12e7162f2e308c3bd8063a2e2dac6b0f65efed6713d3a304",
+      "size_bytes": 7576
+    },
+    {
+      "path": "docs/CORE_RUNTIME_INTEGRATION.md",
+      "sha256": "14ca90099570c9595fa1fc71ec9aa6380887e17195b55bfe93c05a72d6a2a6fa",
+      "size_bytes": 1168
+    },
+    {
+      "path": "docs/CSV_SQLITE_HISTORICAL_STORAGE.md",
+      "sha256": "b0d9e5bb3aef7cd4efc15b34fe4e98d77be456ca816a5443a42ba221e1825426",
+      "size_bytes": 1743
+    },
+    {
+      "path": "docs/DATASET_PROVENANCE_PROMOTION_GATE.md",
+      "sha256": "5602c949e56b008c69a842decb72587253d026583b9258a10185ad12f545552b",
+      "size_bytes": 2247
+    },
+    {
+      "path": "docs/DATA_VENDOR_DUE_DILIGENCE_2026-11-01.md",
+      "sha256": "5749717da642a55de8c71547102d6e18661d1fac2c3ecc610caeb6eab6a7b504",
+      "size_bytes": 8829
+    },
+    {
+      "path": "docs/HISTORICAL_BACKTEST_ENGINE.md",
+      "sha256": "165d75d2fbab9c7781f23b2eb4cb9a1064fa253bba59db159ff82fb3aabd5c15",
+      "size_bytes": 1628
+    },
+    {
+      "path": "docs/HISTORICAL_MARKET_DATA_SERVICE.md",
+      "sha256": "c1209686413939626958ef0ac5b6a7a499e2a997b46912112a923468e5f6889d",
+      "size_bytes": 1370
+    },
+    {
+      "path": "docs/MARKET_SESSION_CALENDAR.md",
+      "sha256": "744a4345a086087aded2747f841f271cfe3e3880053f514149c8496a8316fd01",
+      "size_bytes": 1390
+    },
+    {
+      "path": "docs/MASTER_INTEGRATION_ARCHITECTURE.md",
+      "sha256": "b6008c466141f074b0fd845ad0fedefb8f1909c374907692e8e353556f43c621",
+      "size_bytes": 7989
+    },
+    {
+      "path": "docs/MASTER_REQUIREMENTS_REGISTER.md",
+      "sha256": "c22e749800d786351ff0487014b1440d0d1761fc3f65d7bb85f699c3c1184122",
+      "size_bytes": 33561
+    },
+    {
+      "path": "docs/MASTER_TRADING_UPGRADE_REGISTER_2026-11-02.md",
+      "sha256": "7be17c1d90eeca63ee779c1b85e80aad51b2f299db847c92cb54ea6ffd6a22c8",
+      "size_bytes": 15261
+    },
+    {
+      "path": "docs/MOVING_AVERAGE_CROSSOVER.md",
+      "sha256": "ffb2d3684bb61c4be1b0ddaa6f614ac57e2722021adde3436fc4ae7a6ab380df",
+      "size_bytes": 1534
+    },
+    {
+      "path": "docs/OPERATIONS_RUNBOOK.md",
+      "sha256": "10ff39c065d7f7aee6c7e6fe403795950000a3d123312f58f84168949196d65e",
+      "size_bytes": 1824
+    },
+    {
+      "path": "docs/OUT_OF_SAMPLE_VALIDATION.md",
+      "sha256": "e99932d99a15f29cf467b8c53865700b57d41c6af44a58878d6e7bc06e5a7a46",
+      "size_bytes": 1680
+    },
+    {
+      "path": "docs/PHASE6_INTEGRATION_STATUS.md",
+      "sha256": "8a797ff53b5a7423b34c6e9d12f916070159de07fcf0211d53fabc9258485726",
+      "size_bytes": 9810
+    },
+    {
+      "path": "docs/PHASE6_ZIP_COMPATIBILITY_TEST_REPORT.md",
+      "sha256": "b2539abbbab66dc92d804e88aba031c4c7397e90b1826f4d07d9e64d93e3df6e",
+      "size_bytes": 3690
+    },
+    {
+      "path": "docs/PHASE6_ZIP_INTEGRATION_PLAN.md",
+      "sha256": "167deadf2413a15a77bf3a4763b286f212e1f65637df7d25fb004dcb5e2dfc2f",
+      "size_bytes": 5521
+    },
+    {
+      "path": "docs/PHASE6_ZIP_SOURCE_MAP.md",
+      "sha256": "42648c8d8db99e259462cc8ed777e7abaeefee1945712f09bd97fdc7e4c4116e",
+      "size_bytes": 4006
+    },
+    {
+      "path": "docs/PHASE7_ADVANCED_AUDIT_2026-11-01.md",
+      "sha256": "5b118e26f4e632fc46842183a1750e8d339f4e408cbef876bcfc2b82e0d06ccc",
+      "size_bytes": 13233
+    },
+    {
+      "path": "docs/PHASE7_ADVANCED_ROADMAP_IMPLEMENTATION.md",
+      "sha256": "ad795291c57e09efb62b0f69292d2c039085dc13b70e8b43d8d5a315f85caf16",
+      "size_bytes": 3964
+    },
+    {
+      "path": "docs/PHASE7_HARDENING_REPORT.md",
+      "sha256": "4d120f14addd11c577bb94720013ba858316d70297554a1d18302abed42cc665",
+      "size_bytes": 11613
+    },
+    {
+      "path": "docs/PHASE7_STAGE10_INTEGRATION_RELEASE_AUDIT_2026-11-01.md",
+      "sha256": "9355241e2303e28fb769d2d9d6027b49d17ea8adbe13324686fb1de7ada4918d",
+      "size_bytes": 3744
+    },
+    {
+      "path": "docs/PHASE7_STAGE11_PROFESSIONALIZATION_REPORT_2026-11-01.md",
+      "sha256": "4a4d97f756fd5c8bd7769a123b6e3bc047f16ca358a7c3e5c684faa4b457cd84",
+      "size_bytes": 3770
+    },
+    {
+      "path": "docs/PHASE7_STAGE12_MASTER_INTEGRATION_REPORT_2026-11-01.md",
+      "sha256": "1a3e28b5f3c6ced4d812042967e3fda38cb46298eb6f101d351a04c9444e4aa7",
+      "size_bytes": 6991
+    },
+    {
+      "path": "docs/PHASE7_STAGE13_SPECIALIST_EVOLVE_REPORT_2026-11-01.md",
+      "sha256": "e8ba916e3f03b6de108bb2e851839c61e43c7aee49f0193a40a7f6608f6b7e46",
+      "size_bytes": 2151
+    },
+    {
+      "path": "docs/PHASE7_STAGE14_EVIDENCE_HARDENING_REPORT_2026-11-01.md",
+      "sha256": "294036f150461b8294757f418d09b29c6c24ba633ca8bfb5322f68f5f5cd3fa8",
+      "size_bytes": 3334
+    },
+    {
+      "path": "docs/PHASE7_STAGE15_EVIDENCE_PROVENANCE_REPORT_2026-11-01.md",
+      "sha256": "f4199328cb366314ad3a3702ad45b21c45f412ce383f3f1dee1bffc0f48205ad",
+      "size_bytes": 2298
+    },
+    {
+      "path": "docs/PHASE7_STAGE15_SAFETY_FIX_VALIDATION_2026-11-02.md",
+      "sha256": "2680d3b6692946d2b9d375c4af9ed5d880101b103c85a177e0ba4f1a43cddceb",
+      "size_bytes": 3623
+    },
+    {
+      "path": "docs/PHASE7_STAGE1_15_CANONICAL_INTEGRATION_AUDIT_2026-11-02.md",
+      "sha256": "3af93cd3bbb94987c9ad8cb6972894d36583504bb5eeb90a098e147d1f0e5550",
+      "size_bytes": 3780
+    },
+    {
+      "path": "docs/PHASE7_STAGE3_MARKET_INTELLIGENCE_REPORT_2026-11-01.md",
+      "sha256": "1e34d0fd5acaf18c81005e5560829f41a95782aa920295f20238104a7541bdad",
+      "size_bytes": 2879
+    },
+    {
+      "path": "docs/PHASE7_STAGE4_ANALYTICAL_INTELLIGENCE_REPORT_2026-11-01.md",
+      "sha256": "aea1f70426fed4fd4b9cc41bac2c8ebec73ddf367e49f276546dae6b0becc316",
+      "size_bytes": 2377
+    },
+    {
+      "path": "docs/PHASE7_STAGE5_SPECIALIST_INTEGRATION_REPORT_2026-11-01.md",
+      "sha256": "10d3a6e446787dca5298bafbab014515478eacff0b44d7297d1b6ff7dbef877a",
+      "size_bytes": 2641
+    },
+    {
+      "path": "docs/PHASE7_STAGE6_STRATEGY_EVALUATION_REDTEAM_REPORT_2026-11-01.md",
+      "sha256": "8c4cb842a28f0ba832af9fa375b61fc0b5cc82f0bca9a96f2f9e3daa3bec4aa3",
+      "size_bytes": 3524
+    },
+    {
+      "path": "docs/PHASE7_STAGE7_DIGITAL_TWIN_EXECUTION_REPORT_2026-11-01.md",
+      "sha256": "93999b7100368add922598077f5bc65dd08aabaa77793df5b93670eeb93c20e9",
+      "size_bytes": 2415
+    },
+    {
+      "path": "docs/PHASE7_STAGE8_POSTMORTEM_OPERATIONS_REPORT_2026-11-01.md",
+      "sha256": "85eb5ee94ebe17bee5a967fb453eb530aa3efae50f753743297ff4650e16b8bb",
+      "size_bytes": 5705
+    },
+    {
+      "path": "docs/PHASE7_STAGE9_SHADOW_VALIDATION_REPORT_2026-11-01.md",
+      "sha256": "59ea505f43f468d2273d8ec4af5d0d507f99e5e22b2d2f7862a534c891b1d2e0",
+      "size_bytes": 2863
+    },
+    {
+      "path": "docs/PROBABILITY_CALIBRATION.md",
+      "sha256": "b3e2ad9683f7c6c8c585b79f198e00c9fa61edfba72273538cba875f20d913b5",
+      "size_bytes": 2382
+    },
+    {
+      "path": "docs/TELEGRAM_CHANNEL_INTEGRATION.md",
+      "sha256": "d69b7a71bd9064539c6f0fd35c3183f6cd78991a6899540f2cf44eb9d6c99a72",
+      "size_bytes": 7690
+    },
+    {
+      "path": "docs/TRADING_DATA_FOUNDATION.md",
+      "sha256": "30cb8657a09e5c456bf1e24e4688aeed2ee470a5256afb2a86e44b2d3cf78ebc",
+      "size_bytes": 1252
+    },
+    {
+      "path": "docs/TRADING_DATA_QUALITY.md",
+      "sha256": "34b2d8c6533da9be7ea9c3ab6a437ed78b6e15356a5de1e56bf91803696117e4",
+      "size_bytes": 1854
+    },
+    {
+      "path": "docs/phase6_reference/IMPLEMENTATION_STATUS_PHASE5.md",
+      "sha256": "b3f03b89dd905561363f5ac2b2c165a7fca8bd7225c9a985f7c563b560c5da37",
+      "size_bytes": 2039
+    },
+    {
+      "path": "docs/phase6_reference/IMPLEMENTATION_STATUS_PHASE6.md",
+      "sha256": "9008447073e9f4d18cbaffa40989a4d1ed730614fb39f43f414ecc1db99c0b9e",
+      "size_bytes": 2354
+    },
+    {
+      "path": "docs/phase6_reference/TITAN_EVOLVE_AGENT_CREATION_ENGINE.md",
+      "sha256": "ee5c1cefd5d23af0c0440edaa1e0a43be23658763cb11f7bd09b51dcb253b64f",
+      "size_bytes": 3361
+    },
+    {
+      "path": "docs/phase6_reference/TITAN_EVOLVE_PHASE6_RUNTIME_AND_COLLABORATION.md",
+      "sha256": "55f0890fa637050355ec288ea051e3d44ce4d8ad096faf2cdb31e1f3f645ab9c",
+      "size_bytes": 4958
+    },
+    {
+      "path": "docs/phase6_reference/TITAN_EVOLVE_SCHEDULED_RESEARCH.md",
+      "sha256": "52f72201b2b433dc41ec065a10c339a2edf999c9ac938132f0fbf3955b4f215f",
+      "size_bytes": 2239
+    },
+    {
+      "path": "docs/phase6_reference/V6_PHASE5_AGENT_CREATION_RELEASE_REPORT.md",
+      "sha256": "f6bcccca2460067a8e7c1daaeb57fed59f6bb52af2ae24bf5d8a14c3e8e48d74",
+      "size_bytes": 1323
+    },
+    {
+      "path": "examples/agent_workflow.sample.json",
+      "sha256": "afa44929cdf425686f106f68b34351325a6306b055c75c38ec0de04faa0bc699",
+      "size_bytes": 663
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "bf9a0486ae55bcb04a0b35cbed5769be23cc8e4bab3dd0c3dcdf88629ac8b2fb",
+      "size_bytes": 424
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report.json",
+      "sha256": "84cd5781434884c5fe123370d2ad2f001252aceffc1d4896a4c4f4ef499a129e",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage10.json",
+      "sha256": "458788132bb5ef47ecfef31cfc19cf253ddc206d9cccc2128dcafc21ffa863a0",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage11.json",
+      "sha256": "9c76f98611ec0714c6d5765da62e88bcad084bb8e64ab8d138d35665d9e69376",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage12.json",
+      "sha256": "17da4c84e7db9baec9280ef4d95a83b21da67facdc6c05d69719be8b650a7e48",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage13.json",
+      "sha256": "50cd315aa0995063884ffb14df062662ded4a5bd73dd95d818e0ef9f001a6671",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage14.json",
+      "sha256": "bdd5509f208ca1f464f9be83dbbf5b9ed94efea04314c976e28b78be506d6c2c",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage1_15_after_fixes.json",
+      "sha256": "8102125ce0a7aa7dc5170802d4c419a34161ea6419c80a3f376eee27abe97d73",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/phase7_advanced_backtest_report_stage9.json",
+      "sha256": "b53e8c39d7463b3cc0deb87c4a560f66642ba4a7e4ef4381fbc42467901308ec",
+      "size_bytes": 80335
+    },
+    {
+      "path": "reports/release_preflight_stage11.json",
+      "sha256": "a89ceba94d90a4176104f40a9e4d80c0cd4e886d416fdffd921b9c06144ad3fb",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage12.json",
+      "sha256": "042eb6ed8fc11d2b56195946349a3d7fa20f9e3c5e221ab015835ecb67def853",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage13.json",
+      "sha256": "b0a3ecdcb3eadf80a083b3ab25f90a77f321432e00434c117ef1a92d06e44968",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage14.json",
+      "sha256": "743ba397c1f22ac8df43234e7762eb0a05c31903a7b8521afa638b0a3468d31b",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage15.json",
+      "sha256": "f1d27759c98a661d688e77e10e2210d7386572961344db42d11b90510c6fb478",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage15_after_fixes.json",
+      "sha256": "5d616d5dc58ba20f9a2efc7a4495650696441282fb44e87c6dfb2441a3b44049",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/release_preflight_stage1_15_after_fixes.json",
+      "sha256": "f63b96d513c288a7b27266b4f2c86949ee16975db68e8b0c7950f6d3d26e2df9",
+      "size_bytes": 1427
+    },
+    {
+      "path": "reports/stage7_pytest.txt",
+      "sha256": "f38aaf38c7982497a814b26ca0c9cb085aa2a66e50f576828058d18527e999fb",
+      "size_bytes": 475
+    },
+    {
+      "path": "scripts/release_preflight.py",
+      "sha256": "b57016a4f7628435c9cc2dbab187e9943c0c5f43e462761eb8fef3642b709744",
+      "size_bytes": 3963
+    },
+    {
+      "path": "scripts/run_advanced_backtest_suite.py",
+      "sha256": "0bccb356f695494e6db9b1d61cb3036084a3c6f4d4020ce6247e07e189461aa7",
+      "size_bytes": 25677
+    },
+    {
+      "path": "scripts/run_agent_runtime.py",
+      "sha256": "e5a2033e2b8930c4cbbdb148fe846c17b4506af72d517c060113dfac563ef3a8",
+      "size_bytes": 2597
+    },
+    {
+      "path": "scripts/run_backtest.py",
+      "sha256": "3bbe95fceb730edd1371f9fce85ad467ae3017123ac6ea47824a8034afab9b55",
+      "size_bytes": 3497
+    },
+    {
+      "path": "scripts/run_evolve_agents.py",
+      "sha256": "36d64595f0f44a0293f947d83310d37b9194582859b28f11b7824c828a052dd8",
+      "size_bytes": 4632
+    },
+    {
+      "path": "scripts/run_evolve_scheduler.py",
+      "sha256": "9df8903ec06e1753a97262abb33d585e9b6f1b7dce4abde8c7fd058e2855eb52",
+      "size_bytes": 3931
+    },
+    {
+      "path": "scripts/run_project_validation.py",
+      "sha256": "b14527364adb4fb8ba136dd782f7d77425fb63827b0fa9f77fe9b1d13d7a8819",
+      "size_bytes": 1196
+    },
+    {
+      "path": "src/nexus_titan/__init__.py",
+      "sha256": "ce0d5989c5c2c470177765a2c76902a82ee2e204dab500adb42beed38ff89fbb",
+      "size_bytes": 62
+    },
+    {
+      "path": "src/nexus_titan/ai_agents/__init__.py",
+      "sha256": "d46a9b6d195b24e416171f799bb699a500c09ede131ed7cd8672f8ca0b350a6b",
+      "size_bytes": 319
+    },
+    {
+      "path": "src/nexus_titan/ai_agents/agent_system.py",
+      "sha256": "bc9641e87b5411b35c01d8bc2c782af5e428324fc24925f74255f6318aaeb1a6",
+      "size_bytes": 6306
+    },
+    {
+      "path": "src/nexus_titan/config/__init__.py",
+      "sha256": "6eaf02bae60ecaa721c182a3099e6a08b1a0bcb89f8ffa735d4be573a0e07101",
+      "size_bytes": 66
+    },
+    {
+      "path": "src/nexus_titan/core/__init__.py",
+      "sha256": "83c76fd5374ff6a8c87369c517dba0c2fa1e89ab476cd0485b7bec0915cb1967",
+      "size_bytes": 32
+    },
+    {
+      "path": "src/nexus_titan/core/audit.py",
+      "sha256": "98a31bfaa217cbb4546908cc5cea2695901000dde15b69c0c3034c7fcd87df61",
+      "size_bytes": 4935
+    },
+    {
+      "path": "src/nexus_titan/core/config.py",
+      "sha256": "dc55d320a337e0a97a0e4c61e60db73a88a158a15dab03dde0bc17b0b578a01a",
+      "size_bytes": 1934
+    },
+    {
+      "path": "src/nexus_titan/core/events.py",
+      "sha256": "6bb36f8fd00775cd776e09d2d318ac4067de6e4b386dd9f35e828cec2c579d46",
+      "size_bytes": 1957
+    },
+    {
+      "path": "src/nexus_titan/core/master_integration.py",
+      "sha256": "1302842da3e7022b9e451c1412f56868a09de1dce70c6352674bca8e0a3d889a",
+      "size_bytes": 19673
+    },
+    {
+      "path": "src/nexus_titan/core/memory.py",
+      "sha256": "74925969b6d421586013b2aaca063f3cdfc4f24ce561bffc400d8608cdab4367",
+      "size_bytes": 4925
+    },
+    {
+      "path": "src/nexus_titan/core/modules.py",
+      "sha256": "ca783b4f538d3dcdb5308df9c2b860bbd90c7ea491e7db0cc9bf137c2504f2eb",
+      "size_bytes": 1546
+    },
+    {
+      "path": "src/nexus_titan/core/permissions.py",
+      "sha256": "8c10e2d5c4ec560f626c234d53b8feb6845529b58fc80480e9c8bae071973aff",
+      "size_bytes": 1307
+    },
+    {
+      "path": "src/nexus_titan/core/requirements.py",
+      "sha256": "d4d419a8ac239ff8c24501b7d6c993ff267267462dbfad613dfbad49fbb013f3",
+      "size_bytes": 5379
+    },
+    {
+      "path": "src/nexus_titan/core/runtime.py",
+      "sha256": "a82553e2c3c8cf65ebcf883711e9e7af592e4c720fe07bef1819615f65a07548",
+      "size_bytes": 4259
+    },
+    {
+      "path": "src/nexus_titan/core/security_gates.py",
+      "sha256": "55ec8b9a2459b22a729f042e55af6b0ffce1717ea651a7b6f964f22af95d1472",
+      "size_bytes": 13790
+    },
+    {
+      "path": "src/nexus_titan/cost/__init__.py",
+      "sha256": "e11144a1bcfd21faaf00e0d6e5cdd15486d5fb08f4956ad9f09843a50167aa98",
+      "size_bytes": 243
+    },
+    {
+      "path": "src/nexus_titan/cost/charges.py",
+      "sha256": "bca8b6e335f7981c5cef837bcdb3e34e56996bad172d75b8db2ea765be027bf8",
+      "size_bytes": 6794
+    },
+    {
+      "path": "src/nexus_titan/crypto/__init__.py",
+      "sha256": "f212f615f4af7010f6503f96fb024f371ef067868d4e83e61571f857b8d66a05",
+      "size_bytes": 320
+    },
+    {
+      "path": "src/nexus_titan/crypto/crypto_engine.py",
+      "sha256": "141560ad930a041d1f73747b4f30a6c3bf603b42ae65fe42be528559b7c35221",
+      "size_bytes": 9313
+    },
+    {
+      "path": "src/nexus_titan/dashboard/__init__.py",
+      "sha256": "f8240130b56058843b317784542c51608d7882e049f74d382e4723c8a00d3d15",
+      "size_bytes": 118
+    },
+    {
+      "path": "src/nexus_titan/dashboard/api_service.py",
+      "sha256": "317ef2a8bc0e771b60b523ab98703421a66275b0d77b2d9088b40f98a9c58d66",
+      "size_bytes": 9322
+    },
+    {
+      "path": "src/nexus_titan/data/__init__.py",
+      "sha256": "07ebcf847ec424552cb5d2d65625be64c1b142af89e301ae2e044e83225278c0",
+      "size_bytes": 50
+    },
+    {
+      "path": "src/nexus_titan/data/canonical.py",
+      "sha256": "fb749d299ae59b1215682e1a496a4e2d4ee5684625ff59b70e2f02e33d150e0e",
+      "size_bytes": 8977
+    },
+    {
+      "path": "src/nexus_titan/data/csv_import.py",
+      "sha256": "d2d8a94e764e38fc08f6ad21bc7cb01093de80949536f8571d9f7a31dc6e3840",
+      "size_bytes": 3529
+    },
+    {
+      "path": "src/nexus_titan/data/csv_ohlcv.py",
+      "sha256": "f12f1946fde2195faba8904887210efdfa80eda1cc06db52f290d49d52f5fbc6",
+      "size_bytes": 3647
+    },
+    {
+      "path": "src/nexus_titan/data/instrument_master.py",
+      "sha256": "1eaae2c68c7cf6916d490fba9c721d8e5918c8fc21a9e26d6d4cb44b6c247c15",
+      "size_bytes": 8920
+    },
+    {
+      "path": "src/nexus_titan/data/market_data.py",
+      "sha256": "b489f29b3b5b670aafffd005fc153983a07990f8acef094617b1ab1b268af5b5",
+      "size_bytes": 3608
+    },
+    {
+      "path": "src/nexus_titan/data/ohlcv.py",
+      "sha256": "7e53a6f80d5389f91dc1059d623cd64c6b8d9a907c377209b53c4827f38d229c",
+      "size_bytes": 3718
+    },
+    {
+      "path": "src/nexus_titan/data/provenance.py",
+      "sha256": "f884450f1ff67212c30dd3bdbbf4027017d7ad46737241549bca28a288f01131",
+      "size_bytes": 15582
+    },
+    {
+      "path": "src/nexus_titan/data/quality.py",
+      "sha256": "ec6bbdad280c166c9ca8eef287aaa192610d9cbdf3572716542175938e76a797",
+      "size_bytes": 5421
+    },
+    {
+      "path": "src/nexus_titan/data/service.py",
+      "sha256": "1737cb9a121830072312daed82eb42074599604d6b585170dcc52871e017cb00",
+      "size_bytes": 3011
+    },
+    {
+      "path": "src/nexus_titan/data/sessions.py",
+      "sha256": "a641ac452e1bdb43f16e83aa64c1aeabff81edd3042b1ed057f6253450a01088",
+      "size_bytes": 3814
+    },
+    {
+      "path": "src/nexus_titan/data/sqlite_store.py",
+      "sha256": "8957093a1f49b15758ac981aee4cfc35f8a585df8b969bc653d4b83543ab4f16",
+      "size_bytes": 4229
+    },
+    {
+      "path": "src/nexus_titan/data/telegram_ingest.py",
+      "sha256": "5117da0eddea6372200bd83347ebf4bbe4f324b56fbc3b8c2bcdc895038629e5",
+      "size_bytes": 11269
+    },
+    {
+      "path": "src/nexus_titan/derivatives/__init__.py",
+      "sha256": "8dfb9794ccbc5d630459d00a733429ab944ccf1672c4d5260ed241b4dcfaec8e",
+      "size_bytes": 846
+    },
+    {
+      "path": "src/nexus_titan/derivatives/chain_and_settlement.py",
+      "sha256": "809310d07513286272ebc7794f8bac07986dacd304a7229bee5d2423fafa40df",
+      "size_bytes": 14621
+    },
+    {
+      "path": "src/nexus_titan/derivatives/options_engine.py",
+      "sha256": "38872bd2cd2ed5b43b28e67d72a4df4b82d98eac31915b75fd80eef114890a5d",
+      "size_bytes": 5528
+    },
+    {
+      "path": "src/nexus_titan/evolve/__init__.py",
+      "sha256": "eef422326153133ad5fcbfa50c0f027fc064f4643f8254191568cec3196e01e0",
+      "size_bytes": 49
+    },
+    {
+      "path": "src/nexus_titan/evolve/governance.py",
+      "sha256": "c081aac58506e615ca0ce024c7ed615ecbd417d03be3807ec0c9cb0f2c679fad",
+      "size_bytes": 2970
+    },
+    {
+      "path": "src/nexus_titan/evolve/research.py",
+      "sha256": "adc4017217726883549809d818a4ef24c0ec9ce94717ca19a3faf65e72f1b76e",
+      "size_bytes": 4921
+    },
+    {
+      "path": "src/nexus_titan/evolve/sandbox.py",
+      "sha256": "fed29aed6b6d3864d7fe07c0a7aa1553fbb6f0d7848e83fb3bc7a6bde3f042ff",
+      "size_bytes": 5039
+    },
+    {
+      "path": "src/nexus_titan/intelligence/__init__.py",
+      "sha256": "7628b43adf6bf483cb18dbe1a4f99de31f04f4c3933dee9a2ff0ba489bdf3952",
+      "size_bytes": 715
+    },
+    {
+      "path": "src/nexus_titan/intelligence/calibration.py",
+      "sha256": "1f5031d1744ad072138b5f50b0fb8c913d53ab1c3e07791e5a73f1f9afbecaeb",
+      "size_bytes": 6851
+    },
+    {
+      "path": "src/nexus_titan/intelligence/consensus.py",
+      "sha256": "1c825069cfe518e62922c7092f92f018f50232b458950e29fee380f593bce92c",
+      "size_bytes": 2931
+    },
+    {
+      "path": "src/nexus_titan/intelligence/evidence_integrity.py",
+      "sha256": "281755077e0aa07a8aa927583cc181c3a19bb5dc141bb7f8f6898c137e57978f",
+      "size_bytes": 3201
+    },
+    {
+      "path": "src/nexus_titan/intelligence/market_state.py",
+      "sha256": "47f353d64bd56e9cf2994beb00f5983c435fac46be32ae659f7bbfe51e3b138e",
+      "size_bytes": 4623
+    },
+    {
+      "path": "src/nexus_titan/intelligence/pipeline.py",
+      "sha256": "e2ba8848d38a1a523184f27ccbd433f3b53c300ed2c126d4e3e155ded9cd0f47",
+      "size_bytes": 4483
+    },
+    {
+      "path": "src/nexus_titan/intelligence/specialist_roles.py",
+      "sha256": "d5e3cba1c1dea44b215dc4b376606679cd5b80cdc5c9413a494067722dfd3b60",
+      "size_bytes": 2997
+    },
+    {
+      "path": "src/nexus_titan/operations/__init__.py",
+      "sha256": "23c7fcfded268ad7de45b2bebf6a13a1117e3cac86bab3511d601451d1784b6b",
+      "size_bytes": 562
+    },
+    {
+      "path": "src/nexus_titan/operations/health.py",
+      "sha256": "228e84cbb8ffcfd54efbf20f304ea2a8c3c11a3ba5f76a82c855f5682a772947",
+      "size_bytes": 4626
+    },
+    {
+      "path": "src/nexus_titan/operations/resource_manager.py",
+      "sha256": "0cea31c53182303f6375c48ea6f8165e15e07671753f183ff5615f87a0b2e086",
+      "size_bytes": 3076
+    },
+    {
+      "path": "src/nexus_titan/operations/watchdog.py",
+      "sha256": "259d9719b2a1e99b717c43a48262e64b23a0ceacb27e9ff757ca3a19825feef1",
+      "size_bytes": 1856
+    },
+    {
+      "path": "src/nexus_titan/research/__init__.py",
+      "sha256": "fced4164fd4f324b348afc49322b417c817b19c4b52f34a561d7db2fdcaba83d",
+      "size_bytes": 47
+    },
+    {
+      "path": "src/nexus_titan/research/adversarial_red_team.py",
+      "sha256": "95c9b8ae00670a2a13f4a8b6cb40e2c81ff816a496290d0ce04ee6edc7b03bbf",
+      "size_bytes": 3230
+    },
+    {
+      "path": "src/nexus_titan/research/backtest.py",
+      "sha256": "143a93d36b7e23ea68efe8acecc525b49d0777cee54586cd9b01d5306816c590",
+      "size_bytes": 27610
+    },
+    {
+      "path": "src/nexus_titan/research/backtest_engine.py",
+      "sha256": "83e776246973717f41f900f830e6b49db3a882ba3cdb49268eb258524a559bcb",
+      "size_bytes": 8656
+    },
+    {
+      "path": "src/nexus_titan/research/indicators.py",
+      "sha256": "66dba2b9eba83b14f99c7a75c623943a0398d4b2cbd3a3ccaef0e64a239e2a03",
+      "size_bytes": 6230
+    },
+    {
+      "path": "src/nexus_titan/research/market_intelligence.py",
+      "sha256": "b78085254ea1ed0e1b130d93f358c45257d6771ca32a04dc3382d46386dd4478",
+      "size_bytes": 12758
+    },
+    {
+      "path": "src/nexus_titan/research/market_signal.py",
+      "sha256": "6d8cebccadf5b1c775361e7e5100e75f390512ba841bb8eaf7521325e2d56225",
+      "size_bytes": 651
+    },
+    {
+      "path": "src/nexus_titan/research/post_mortem.py",
+      "sha256": "bd607e27d68d3685cdc62a2dc51674825cb5b0ee19c368430d908cd086f9ac9c",
+      "size_bytes": 9124
+    },
+    {
+      "path": "src/nexus_titan/research/signal_engine.py",
+      "sha256": "912d4033e5f248b42b10e75db5b44e02d60971bdc58e5dc62cf1b589ddde3950",
+      "size_bytes": 1774
+    },
+    {
+      "path": "src/nexus_titan/research/strategies.py",
+      "sha256": "4e309fee36c5e260b19fdfa0e0a5ddddb54097a8457ddba580736d9662a20b38",
+      "size_bytes": 2636
+    },
+    {
+      "path": "src/nexus_titan/research/strategy_lab.py",
+      "sha256": "34aad6edd3040483ce176c61f39953e162ed2816a2d848207db3b4e12803958c",
+      "size_bytes": 4217
+    },
+    {
+      "path": "src/nexus_titan/research/v6_strategies.py",
+      "sha256": "c8ed89339aab7fd69fb8bfb8a806716683153d531d7189cfc475bb5884aacf69",
+      "size_bytes": 8632
+    },
+    {
+      "path": "src/nexus_titan/research/v6_validation.py",
+      "sha256": "6cf5b557722bb90979e82f3710b7f6a9d096401b583b56a5eca7dcbaa4f33881",
+      "size_bytes": 21664
+    },
+    {
+      "path": "src/nexus_titan/research/validation.py",
+      "sha256": "fa75d2f79019894976ab50c226bc95fa763e7f961e806b177929f9e7ffa2c2a8",
+      "size_bytes": 3895
+    },
+    {
+      "path": "src/nexus_titan/risk/__init__.py",
+      "sha256": "716eeadd19806ab0949a15040fb54332ff4842d2fe405143edad6e6390ddf672",
+      "size_bytes": 77
+    },
+    {
+      "path": "src/nexus_titan/risk/authoritative_risk.py",
+      "sha256": "5c8887d63d37f5b1febfe175343084094153835b30b57f963486f3ca1823ded7",
+      "size_bytes": 2432
+    },
+    {
+      "path": "src/nexus_titan/risk/portfolio_risk.py",
+      "sha256": "84b077c57a7a90bd787a3ed04407f1a77f43116ece0f77bed110d2f8b0dbb146",
+      "size_bytes": 8864
+    },
+    {
+      "path": "src/nexus_titan/risk/risk_manager.py",
+      "sha256": "6e4e9a07806e3b3b73ebb1d3cf79a2b58792784efa3b11839fbbfb0966fbb03f",
+      "size_bytes": 2944
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/__init__.py",
+      "sha256": "5534eb5fc67c2f03344ad16056d1543d09ea9458251152701a87a550d394a49a",
+      "size_bytes": 2173
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/adaptive.py",
+      "sha256": "595854c2158c09fbe3fcd993a01e7abab580bfdbf95657db3df236e0ece2e9fb",
+      "size_bytes": 7456
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/agent_creation.py",
+      "sha256": "0a7286dd759b19c6e14ae7b5c28e7718955978236de797a61664682177166a17",
+      "size_bytes": 12106
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/agent_runtime.py",
+      "sha256": "cd125c3afa9051584a8d1c1881363645ad14a85eae4e6cfb1ca73dc97ec4430a",
+      "size_bytes": 26647
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/agents.py",
+      "sha256": "12a67bba9db739812e97eaa28cdab6ecca50f71e72afd721c7e0e05b2c43504a",
+      "size_bytes": 31233
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/code_proposals.py",
+      "sha256": "26a28fe786c9103992812d8793cc2807f8229c6ff1a07b0fe52c1037f36ee965",
+      "size_bytes": 8826
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/engine.py",
+      "sha256": "58cd4861240f4a9ef19ee65b645a77f122968ff3735a639216f2ee6a6bbcf1e8",
+      "size_bytes": 19499
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/experimentation.py",
+      "sha256": "7b4e1eaf42d27fc416fcba54df7cddc05a8a8e09898f88ac3690287bffa59274",
+      "size_bytes": 11211
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/llm_provider.py",
+      "sha256": "fc2433509852f030e87d660db6c63a558342b576c6e6f36944d95cbcb86136f1",
+      "size_bytes": 5310
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/llm_research.py",
+      "sha256": "4b1740f8410f122796916b2359cb0b364be3ae2e1105e1157d0ab255a6fcc12b",
+      "size_bytes": 4132
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/research_sources.py",
+      "sha256": "efb8661952008e78707a6736416f02e4d65a8db8fad0081a0ff11f8dbe38c338",
+      "size_bytes": 9097
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/scheduler.py",
+      "sha256": "95a923ce0a4e1d41d63d1244e5105b383dbc1a79efd4ed03db883091da51cbb2",
+      "size_bytes": 16477
+    },
+    {
+      "path": "src/nexus_titan/shadow/__init__.py",
+      "sha256": "b676cf96ebc615f54708393e0ac403d307a12f3b2e000a6e08da2226003f2317",
+      "size_bytes": 74
+    },
+    {
+      "path": "src/nexus_titan/shadow/validation.py",
+      "sha256": "450d2ab1c1d05cd3e9f1384d42292a54df86c5d18e791973d4a3afd615496c41",
+      "size_bytes": 7082
+    },
+    {
+      "path": "src/nexus_titan/simulation/__init__.py",
+      "sha256": "a5b03e9cf19ef007c161f40ac2b068f261b5910987a7d1b268f165ae1ae957e8",
+      "size_bytes": 81
+    },
+    {
+      "path": "src/nexus_titan/simulation/digital_twin.py",
+      "sha256": "15ec8117f8f8a3bace7ec60c3d1dfe6514fa660f6543c4b1f962a4d3089e571c",
+      "size_bytes": 2829
+    },
+    {
+      "path": "src/nexus_titan/simulation/execution_simulator.py",
+      "sha256": "2edbda048d37104386b95e2bc89179bb9fee67c87d84a7c4a094f9bd0d78828c",
+      "size_bytes": 2614
+    },
+    {
+      "path": "src/nexus_titan/storage/__init__.py",
+      "sha256": "04f7acc8835ae43af5519b08fd5edbd44128adb8159623fe8088ab0190b9f9e8",
+      "size_bytes": 178
+    },
+    {
+      "path": "src/nexus_titan/storage/sqlite_ledger.py",
+      "sha256": "65776bef7384a1813f746fa33415e87098e03132c326e3fdc5bc1667f4e655cd",
+      "size_bytes": 6137
+    },
+    {
+      "path": "src/nexus_titan/storage/trade_ledger.py",
+      "sha256": "7bc44540e965081fd1bb6de0527abae5756b72bff129e1bb735c9bbfb47a914d",
+      "size_bytes": 3548
+    },
+    {
+      "path": "src/nexus_titan/storage/virtual_trading.py",
+      "sha256": "ab6c16ac31d974eb0e1317f36e6b719d95a59deedf0c798f4e2366342ba6655d",
+      "size_bytes": 1183
+    },
+    {
+      "path": "src/nexus_titan/trading_engine.py",
+      "sha256": "5701c036a04be780e03a4239a0061ab566017d6d934a051f5495296b84cda6ad",
+      "size_bytes": 2552
+    },
+    {
+      "path": "src/nexus_titan/virtual/__init__.py",
+      "sha256": "dd46882057b7780bce8b3567145865f5986d0aef63d389da4b577a46c0ad6e63",
+      "size_bytes": 1015
+    },
+    {
+      "path": "src/nexus_titan/virtual/durable_store.py",
+      "sha256": "d6a26b82f68bb1e114fff0bc22d310c7eb5aaae241111e4a01786187a5aa86d9",
+      "size_bytes": 7300
+    },
+    {
+      "path": "src/nexus_titan/virtual/microstructure.py",
+      "sha256": "4dfb844d24d5986cc0b278613de3d3cc074e1f7a5166f36fbf5cb1c52314417e",
+      "size_bytes": 16525
+    },
+    {
+      "path": "src/nexus_titan/virtual/order_manager.py",
+      "sha256": "ff1a91210abe0c1a045b6279005a2ffe3c9ef4423dc3384cbb8b6bfe1ca730da",
+      "size_bytes": 36715
+    },
+    {
+      "path": "tests/test_audit.py",
+      "sha256": "e8ab69ed7033a84566a0c5b7cb272b49303a9177adc912dd1c63a1eb33b526bd",
+      "size_bytes": 1968
+    },
+    {
+      "path": "tests/test_backtest_engine.py",
+      "sha256": "4957dbd209d7f1f9ec1dd9f2e81f4ce4fce8324cfef7d29e19f8bcee7a630355",
+      "size_bytes": 4452
+    },
+    {
+      "path": "tests/test_config.py",
+      "sha256": "58d21a71205510e5a2d804a974c52adfd966ea9ee6e0ffefd1a9cf9db82ed03c",
+      "size_bytes": 1344
+    },
+    {
+      "path": "tests/test_csv_import.py",
+      "sha256": "e000b23dfe220b4922255da6ff25239181a73df71213e0e6364f824d95821693",
+      "size_bytes": 3152
+    },
+    {
+      "path": "tests/test_data_provenance_gates.py",
+      "sha256": "26608ca9a875de7be783e0646c2359af6e12ad97f083c2caf6801081c970288c",
+      "size_bytes": 5697
+    },
+    {
+      "path": "tests/test_data_quality.py",
+      "sha256": "9aba0510756c6962cc5a826d4d8cb1eb86cb3b05617464f67faae8c92250abe6",
+      "size_bytes": 7623
+    },
+    {
+      "path": "tests/test_events.py",
+      "sha256": "a73506b0a837fc7f898554d16173e26118f47f49d6224a8a5b12aea892e12dfe",
+      "size_bytes": 1416
+    },
+    {
+      "path": "tests/test_evolve.py",
+      "sha256": "fe51821542b1601da60289768202e50aacc4d8ea35df1ddb08b8866d8a54399c",
+      "size_bytes": 2217
+    },
+    {
+      "path": "tests/test_market_data_service.py",
+      "sha256": "9de3392b21425bc11873ceaaff5f20e31478f61dde03af36aa19d28f4fe5bbb4",
+      "size_bytes": 3369
+    },
+    {
+      "path": "tests/test_market_state_tensor.py",
+      "sha256": "625a76bc3829348bf08c37745d2951e9cccdab4b69c52b0670c750757107129c",
+      "size_bytes": 2021
+    },
+    {
+      "path": "tests/test_master_integration.py",
+      "sha256": "45a86f800ec4079610e03d609eac3ebe33c2810f041021267fb4def6d6071d3d",
+      "size_bytes": 7059
+    },
+    {
+      "path": "tests/test_memory.py",
+      "sha256": "2a4625d4e65d51c98a7700ac3ad3c08bae768b2fef221134b4d65b5a7412af1e",
+      "size_bytes": 2247
+    },
+    {
+      "path": "tests/test_modules.py",
+      "sha256": "d5f3d594b86970b3c05d1eb3a41fa4778d5cb85767bc7f7d697c887754635bf9",
+      "size_bytes": 926
+    },
+    {
+      "path": "tests/test_moving_average_strategy.py",
+      "sha256": "df0a6e7fdfad9fb256d809be7e506efa212dfbf0b735efab1966d3c5e232ff20",
+      "size_bytes": 2973
+    },
+    {
+      "path": "tests/test_ohlcv.py",
+      "sha256": "d2a1cd62d62db50004773cbc986e0d1c60fe896b1540ea3b2ece52b9b3e13ba8",
+      "size_bytes": 2556
+    },
+    {
+      "path": "tests/test_out_of_sample_validation.py",
+      "sha256": "70e28eb25a629726048531df0d7648ca76668e4772343b7638a757e70b87fff4",
+      "size_bytes": 3732
+    },
+    {
+      "path": "tests/test_permissions.py",
+      "sha256": "dc7cf1c9142357203b336661294c20761303982ef900ec8a61e47fcca96779a9",
+      "size_bytes": 778
+    },
+    {
+      "path": "tests/test_phase6_advanced_backtest.py",
+      "sha256": "5a38256eaa0d4a343028704b59dff1380dc7eac1803bbbd4ec364a7933ba4552",
+      "size_bytes": 6572
+    },
+    {
+      "path": "tests/test_phase6_agent_runtime.py",
+      "sha256": "488898ab41ff4d14419a8e1b41d49aebf597e3ea0c4f99ab6011ba35fff639e0",
+      "size_bytes": 9777
+    },
+    {
+      "path": "tests/test_phase6_ai_agents.py",
+      "sha256": "8dd2bdb4470c54e821f31a8e87daa42cd4869a8ebe9765967b1b3c7883f6f22e",
+      "size_bytes": 2054
+    },
+    {
+      "path": "tests/test_phase6_canonical_data.py",
+      "sha256": "fb771a5d3dfec3f1ea838c5437a3144b12530790e18d467bc461cc38f1f66c54",
+      "size_bytes": 1895
+    },
+    {
+      "path": "tests/test_phase6_cli.py",
+      "sha256": "4074e56534ee0ca5bc28427280f2dbc171edb7cff3c05d89e9e188cfeaebcac9",
+      "size_bytes": 2369
+    },
+    {
+      "path": "tests/test_phase6_crypto_engine.py",
+      "sha256": "497a1d08a5c0f736d9ec317ff3494a87a0c228fa15974dafe7893d24e6bd224b",
+      "size_bytes": 2508
+    },
+    {
+      "path": "tests/test_phase6_dashboard.py",
+      "sha256": "27e21801a3791267ad8d73020561b28811c0cf6f9d81f1ac0ba9659b25e444b2",
+      "size_bytes": 2096
+    },
+    {
+      "path": "tests/test_phase6_evolve_services.py",
+      "sha256": "c313fe9a0be201cab2ce84701655dff035b74cf4fc9dcee0431d6d9fbe785808",
+      "size_bytes": 3684
+    },
+    {
+      "path": "tests/test_phase6_indicators.py",
+      "sha256": "b9b259974c96657011fbf0525a6d34067704df9b498d721edc1190066e9257fb",
+      "size_bytes": 2402
+    },
+    {
+      "path": "tests/test_phase6_json_ledger.py",
+      "sha256": "c9fd5e25466e308c5b85c752897900158247be061b6bf7d2bf283ff4030c252f",
+      "size_bytes": 1158
+    },
+    {
+      "path": "tests/test_phase6_options_greeks.py",
+      "sha256": "c20f4f344435fbde668510d0d0d75ea4caba62f0f3b56058582ce02e2858dc2c",
+      "size_bytes": 1045
+    },
+    {
+      "path": "tests/test_phase6_portfolio_risk.py",
+      "sha256": "c598ef24cb19307fd124482f88c26bb699bc337d3f5730dd94f7a8106ee07e83",
+      "size_bytes": 2457
+    },
+    {
+      "path": "tests/test_phase6_risk_facade.py",
+      "sha256": "6e8917fefd29e512f232c67d6a6a7e53a5777dea9a2f5c234f243a210d5ab97c",
+      "size_bytes": 1095
+    },
+    {
+      "path": "tests/test_phase6_sqlite_ledger.py",
+      "sha256": "0e3b329ad25a4e9b132d61e99da0e02faf21144a2f010c4d0b017f90cfc74165",
+      "size_bytes": 2328
+    },
+    {
+      "path": "tests/test_phase6_trading_decision.py",
+      "sha256": "93520a89d9bedb7f61e03a58948887e175e7a4dc94a18abd2fda7305834a9095",
+      "size_bytes": 1099
+    },
+    {
+      "path": "tests/test_phase6_validation.py",
+      "sha256": "045e51bfaea0dd0e0922f546d44fc76c4f7b1d5aa6ccb0423b8691c2b02aaff5",
+      "size_bytes": 4906
+    },
+    {
+      "path": "tests/test_phase6_virtual_order_manager.py",
+      "sha256": "0d31635283dc4d07926d58cd39914b0985f72bf34ba0f83cc351359a432b5aa4",
+      "size_bytes": 7810
+    },
+    {
+      "path": "tests/test_phase6_zip_compatibility.py",
+      "sha256": "8649db9c5744c3b3f03cb36bf338d1fbf4c2c0739ed58fa21e60ab804390c101",
+      "size_bytes": 3237
+    },
+    {
+      "path": "tests/test_phase7_advanced_roadmap.py",
+      "sha256": "ef3debd87f5cb301ecd326163b8a962389810279e87e25ffb58968b2f7626f1d",
+      "size_bytes": 15842
+    },
+    {
+      "path": "tests/test_phase7_hardening.py",
+      "sha256": "b08710e4b740fa956e210972208196ade8dea112fb383dfac144ad82dc34cee6",
+      "size_bytes": 18753
+    },
+    {
+      "path": "tests/test_probability_calibration.py",
+      "sha256": "85349e0d824607066b2ca29da34ee7cdc602812561164a6b41ae426d3fb750b3",
+      "size_bytes": 3952
+    },
+    {
+      "path": "tests/test_release_preflight.py",
+      "sha256": "f608a248416ca7c943af9c67f88507434cdddc02ef20a9be5eee9d6f6195d2f3",
+      "size_bytes": 959
+    },
+    {
+      "path": "tests/test_requirements.py",
+      "sha256": "ab960bf5480c77fb3bc5f446518ee749c460baba24cba2b690bdf7da8684e7cb",
+      "size_bytes": 2342
+    },
+    {
+      "path": "tests/test_runtime.py",
+      "sha256": "641c9950ac5b9945d1c542580976a8027ffe645d5ceb001afea33649ef4c6c54",
+      "size_bytes": 3994
+    },
+    {
+      "path": "tests/test_sandbox.py",
+      "sha256": "342ea7ff2ea1cbf0e6eb2fa584e214ca58bd85b88591be23528e921f91fe853b",
+      "size_bytes": 2373
+    },
+    {
+      "path": "tests/test_sessions.py",
+      "sha256": "ace24461092ec84d4b0ee7b9e21b38e4c9ebfa022eb1b6cebf93c1c2c749305c",
+      "size_bytes": 2528
+    },
+    {
+      "path": "tests/test_signal_consensus.py",
+      "sha256": "9ebd44af1b2c6687714f34ebb6a3c1e2ead6982a775eb1adc0a3586edd3aa0c6",
+      "size_bytes": 1772
+    },
+    {
+      "path": "tests/test_sqlite_store.py",
+      "sha256": "0a58d40d34ad34db20f2ec79156451fa1ce347295581488ea5114eb908066c43",
+      "size_bytes": 2349
+    },
+    {
+      "path": "tests/test_stage13_specialist_governance.py",
+      "sha256": "20df0895238a4372461d51ae799f9a9dc9b716112c65aa2cb0a5aac2e245cb4a",
+      "size_bytes": 4372
+    },
+    {
+      "path": "tests/test_stage15_evidence_integrity.py",
+      "sha256": "6acd882b7f490a387e3f27f7eda5f4c80904e35ea0c1d12a8b01661a4832e208",
+      "size_bytes": 3434
+    },
+    {
+      "path": "tests/test_stage15_safety_fix_regressions.py",
+      "sha256": "35e6655e985cd2fbac619775ec42b03972840a87841a01f0132de89cdea5279b",
+      "size_bytes": 4268
+    },
+    {
+      "path": "tests/test_stage4_market_intelligence.py",
+      "sha256": "771a0bf183617a03b2e4fa002b3b119bf33b23889aace51f9f0d5b3fe517925c",
+      "size_bytes": 2580
+    },
+    {
+      "path": "tests/test_stage6_red_team.py",
+      "sha256": "3fe53aab432e3a9811de69c8562e4809408ec1ada5328f577d796323a85cdfcf",
+      "size_bytes": 632
+    },
+    {
+      "path": "tests/test_stage6_strategy_lab.py",
+      "sha256": "df27474ff61cf2bd487bbb117d5e604f603938d126ce2b822f32bbcbb53e88d2",
+      "size_bytes": 2521
+    },
+    {
+      "path": "tests/test_stage7_simulation.py",
+      "sha256": "cef46a1dd189e57437af665b53b892fa5ecd3253396f2125290a823fc90bcad2",
+      "size_bytes": 1548
+    },
+    {
+      "path": "tests/test_stage8_operations.py",
+      "sha256": "abaebfaf1aa2bc7873985d773ae539aa121bde5528cc04a8c382590d0a55eacb",
+      "size_bytes": 2457
+    },
+    {
+      "path": "tests/test_stage8_post_mortem.py",
+      "sha256": "3bb6828ed7c3cfdc41ed6adca0b0a3845792cd2c0524737fd1197f677c74a5bb",
+      "size_bytes": 3140
+    },
+    {
+      "path": "tests/test_stage9_shadow_validation.py",
+      "sha256": "b8e1c2233018656458dc170b2566b039265193eab7a2139de112fd9e374fd4e6",
+      "size_bytes": 2867
+    },
+    {
+      "path": "tests/test_trading_intelligence_pipeline.py",
+      "sha256": "0c5d418a789ba30d6f7070d0aaa7bca4bb15ce02e3c72393581f7f23ba37df86",
+      "size_bytes": 2985
+    }
+  ]
+}

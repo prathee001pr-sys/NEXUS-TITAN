@@ -6,6 +6,7 @@ import csv
 import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
 
 
@@ -64,9 +65,21 @@ def load_canonical_data(
     path: str | Path,
     symbol: str = "NIFTY",
     interval: str = "1d",
+    source_timezone: str = "Asia/Kolkata",
 ) -> tuple[tuple[CanonicalCandle, ...], DataQualityReport]:
-    """Load, validate, and audit market data candles from CSV with strict data-quality checks."""
+    """Load canonical OHLCV data. Naive timestamps are interpreted in source_timezone.
+
+    Explicit offsets/Z are respected and converted to UTC. Naive timestamps are
+    never silently assumed to be UTC; the source timezone must be known by the caller.
+    """
     file_path = Path(path)
+    try:
+        source_tz = ZoneInfo(source_timezone)
+    except (ZoneInfoNotFoundError, TypeError) as exc:
+        return (), DataQualityReport(
+            total_rows_checked=0, valid_candles_count=0,
+            errors=(f"Unknown source timezone: {source_timezone}",),
+        )
     if not file_path.exists():
         report = DataQualityReport(
             total_rows_checked=0,
@@ -122,7 +135,29 @@ def load_canonical_data(
                 try:
                     ts = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
                     if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
+                        # ZoneInfo silently chooses fold=0 for ambiguous local
+                        # times and normalizes nonexistent local times. Require a
+                        # unique valid mapping to UTC instead of guessing.
+                        candidates = []
+                        for fold in (0, 1):
+                            candidate = ts.replace(tzinfo=source_tz, fold=fold)
+                            round_trip = candidate.astimezone(timezone.utc).astimezone(source_tz)
+                            if round_trip.replace(tzinfo=None) == ts:
+                                utc_candidate = candidate.astimezone(timezone.utc)
+                                if utc_candidate not in candidates:
+                                    candidates.append(utc_candidate)
+                        if not candidates:
+                            errors.append(
+                                f"Row {row_num}: Nonexistent local timestamp '{raw_ts}' in {source_timezone}."
+                            )
+                            continue
+                        if len(candidates) > 1:
+                            errors.append(
+                                f"Row {row_num}: Ambiguous local timestamp '{raw_ts}' in {source_timezone}; "
+                                "provide an explicit UTC offset."
+                            )
+                            continue
+                        ts = candidates[0]
                     else:
                         ts = ts.astimezone(timezone.utc)
                 except ValueError:

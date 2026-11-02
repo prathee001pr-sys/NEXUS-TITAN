@@ -41,13 +41,15 @@ class MovingAverageCrossover:
         return Signal(1 if fast_average > slow_average else 0)
 
 
-# V6 compatibility exports. The original V2 MovingAverageCrossover remains unchanged;
+# V6 & Phase 7 compatibility exports. The original V2 MovingAverageCrossover remains unchanged;
 # these classes operate on the V6 dictionary-candle research interface.
 from nexus_titan.research.v6_strategies import (
+    ATRChannelTrendStrategy,
     AVAILABLE_STRATEGIES,
     BollingerBreakoutStrategy,
     EMACrossoverStrategy,
     MACDTrendStrategy,
+    RegimeAdaptiveCompositeStrategy,
     RSIMeanReversionStrategy,
     RSIMomentumStrategy,
     SMACrossoverStrategy,
@@ -62,4 +64,6 @@ __all__ = [
     "RSIMomentumStrategy",
     "MACDTrendStrategy",
     "BollingerBreakoutStrategy",
+    "ATRChannelTrendStrategy",
+    "RegimeAdaptiveCompositeStrategy",
 ]

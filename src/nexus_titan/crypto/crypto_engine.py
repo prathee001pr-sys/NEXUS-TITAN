@@ -122,15 +122,27 @@ class CryptoVirtualAccount:
                 new_qty = round(pos["quantity"] + rounded_qty, 8)
                 pos["avg_price"] = (pos["avg_price"] * pos["quantity"] + price * rounded_qty) / new_qty
                 pos["quantity"] = new_qty
+                pos["unamortized_entry_fee"] = round(pos.get("unamortized_entry_fee", 0.0) + fee, 6)
             else:
-                self.positions[spec.symbol] = {"quantity": rounded_qty, "avg_price": price}
+                self.positions[spec.symbol] = {
+                    "quantity": rounded_qty,
+                    "avg_price": price,
+                    "unamortized_entry_fee": round(fee, 6),
+                }
         else:
             pos = self.positions.get(spec.symbol)
             if not pos or pos["quantity"] + 1e-10 < rounded_qty:
                 raise ValueError(f"Insufficient open crypto position for {spec.symbol}.")
-            entry_fee = calculate_crypto_trade_costs(
-                pos["avg_price"], rounded_qty, "BUY", is_maker, spec=spec
-            ).exchange_fee
+            if "unamortized_entry_fee" in pos:
+                total_unamort = pos["unamortized_entry_fee"]
+                entry_fee = total_unamort if abs(pos["quantity"] - rounded_qty) <= 1e-8 else round(
+                    total_unamort * (rounded_qty / pos["quantity"]), 6
+                )
+                pos["unamortized_entry_fee"] = round(max(0.0, total_unamort - entry_fee), 6)
+            else:
+                entry_fee = calculate_crypto_trade_costs(
+                    pos["avg_price"], rounded_qty, "BUY", is_maker, spec=spec
+                ).exchange_fee
             proceeds = notional - fee - tds
             net_pnl = (price - pos["avg_price"]) * rounded_qty - fee - entry_fee - tds
             self.cash_balance += proceeds
@@ -144,4 +156,23 @@ class CryptoVirtualAccount:
             "symbol": spec.symbol, "side": side.upper(), "filled_qty": rounded_qty,
             "fill_price": price, "fee": fee, "tds_withheld": tds,
             "cash_balance": round(self.cash_balance, 4),
+        }
+
+    def reconcile_crypto(self) -> dict[str, float | bool]:
+        """Reconcile crypto virtual cash balance against starting capital, realized P&L, and open cost basis."""
+        open_locked = sum(
+            pos["avg_price"] * pos["quantity"] + pos.get("unamortized_entry_fee", 0.0)
+            for pos in self.positions.values()
+        )
+        expected_cash = round(self.starting_capital + self.realized_pnl - open_locked, 4)
+        discrepancy = round(abs(self.cash_balance - expected_cash), 4)
+        return {
+            "starting_capital": round(self.starting_capital, 4),
+            "cash_balance": round(self.cash_balance, 4),
+            "realized_pnl": round(self.realized_pnl, 4),
+            "total_fees": round(self.total_fees, 4),
+            "total_tds_withheld": round(self.total_tds_withheld, 4),
+            "open_cost_locked": round(open_locked, 4),
+            "discrepancy": discrepancy,
+            "is_reconciled": discrepancy < 0.01,
         }
