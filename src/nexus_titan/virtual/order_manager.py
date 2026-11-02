@@ -257,6 +257,11 @@ class VirtualAccount:
             _now(), "INITIAL", self.initial_capital, 0.0, self.initial_capital,
             "Initial account setup", round(self.initial_capital * self.risk_per_trade_pct / 100, 2))]
         self._load_persistent_state()
+        # Persist a new strict policy at account creation, *before* any order.
+        # Restart must never silently fall back to an empty legacy account.
+        if (self.strict_paper_mode and self.durable_store
+                and self.durable_store.load_snapshot(self.account_id) is None):
+            self._sync_durable_store()
 
     @property
     def current_capital(self) -> float:
