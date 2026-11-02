@@ -13,7 +13,9 @@ from uuid import uuid4
 from nexus_titan.cost.charges import InstrumentType, calculate_indian_trade_costs
 from nexus_titan.risk.authoritative_risk import AuthoritativeRiskEngine
 from nexus_titan.risk.portfolio_risk import PortfolioRiskConfig
-from nexus_titan.virtual.durable_store import DurableAccountStore
+from nexus_titan.virtual.durable_store import (
+    DurableAccountStore, StaleAccountSnapshotError,
+)
 
 
 def _now() -> str:
@@ -227,6 +229,8 @@ class VirtualAccount:
         self.initial_margin_pct = float(initial_margin_pct)
         self.require_pretrade_risk_check = require_pretrade_risk_check
         self.approval_authorizer = approval_authorizer
+        self._snapshot_revision: int | None = None
+        self._stale_snapshot_detected = False
         self.risk_engine = AuthoritativeRiskEngine(PortfolioRiskConfig(
             max_risk_per_trade_pct=self.risk_per_trade_pct,
             max_portfolio_exposure_pct=self.max_portfolio_exposure_pct,
@@ -283,10 +287,26 @@ class VirtualAccount:
     def current_drawdown_pct(self) -> float:
         return max(0.0, (self.peak_equity - self.current_equity) / self.peak_equity * 100) if self.peak_equity > 0 else 0.0
 
+    def _assert_current_revision(self) -> None:
+        """Every mutation needs the latest account generation on this handle."""
+        if self._stale_snapshot_detected:
+            raise StaleAccountSnapshotError(
+                "Account handle is stale after a rejected write; reopen before retry"
+            )
+        if self.durable_store:
+            actual = self.durable_store.revision(self.account_id)
+            if actual != self._snapshot_revision:
+                self._stale_snapshot_detected = True
+                raise StaleAccountSnapshotError(
+                    "Account snapshot changed in another process; reopen before retry"
+                )
+
     def _sync_durable_store(self) -> None:
         if not self.durable_store:
             return
-        self.durable_store.save_snapshot(
+        self._assert_current_revision()
+        try:
+            self._snapshot_revision = self.durable_store.save_snapshot(
             account_id=self.account_id, initial_capital=self.initial_capital,
             added_capital=self.added_capital, withdrawn_capital=self.withdrawn_capital,
             cash_balance=self.cash_balance, blocked_margin=self.blocked_margin,
@@ -301,13 +321,18 @@ class VirtualAccount:
             orders_dict={k: v.to_dict() for k, v in self.orders.items()},
             positions_dict={k: asdict(v) for k, v in self.positions.items()},
             idem_keys=self.processed_fill_idempotency_keys,
-            capital_history=[asdict(v) for v in self.capital_history])
+            capital_history=[asdict(v) for v in self.capital_history],
+            expected_revision=self._snapshot_revision)
+        except StaleAccountSnapshotError:
+            self._stale_snapshot_detected = True
+            raise
 
     def _load_persistent_state(self) -> None:
         if self.durable_store:
             snap = self.durable_store.load_snapshot(self.account_id)
             if snap:
                 st = snap["state"]
+                self._snapshot_revision = int(st.get("revision", 0))
                 stored_initial_capital = float(st.get("initial_capital", 0.0))
                 if not math.isclose(stored_initial_capital, self.initial_capital, rel_tol=0.0, abs_tol=0.01):
                     raise ValueError(
@@ -404,6 +429,7 @@ class VirtualAccount:
 
     def adjust_capital(self, amount: float, event_type: Literal["TOP_UP", "WITHDRAWAL"],
                        reason: str = "User capital adjustment", user_confirmed: bool = True) -> CapitalAdjustment:
+        self._assert_current_revision()
         if isinstance(amount, bool) or not isinstance(amount, (int, float)) or not math.isfinite(amount) or amount <= 0:
             raise ValueError("Adjustment amount must be a finite positive number.")
         event = event_type.upper()
@@ -431,6 +457,7 @@ class VirtualAccount:
 
     def _assert_strict_paper_policy(self) -> None:
         """Check persisted policy before any paper order state mutation."""
+        self._assert_current_revision()
         saved_strict = bool(
             self.durable_store and self.durable_store.strict_mode(self.account_id)
         )
@@ -446,6 +473,7 @@ class VirtualAccount:
 
     def enable_strict_paper_mode(self) -> None:
         """Explicit opt-in migration for a flat account with durable state."""
+        self._assert_current_revision()
         if self.strict_paper_mode:
             self._assert_strict_paper_policy()
             return
@@ -593,6 +621,7 @@ class VirtualAccount:
         No arbitrary caller-supplied symbol/quantity/side is accepted here.
         This is an in-process safety boundary, NOT cryptographic authorization.
         """
+        self._assert_current_revision()
         if not isinstance(position, VirtualPosition) or position.quantity < 1:
             raise ValueError("Protective close requires an existing long position")
         current = self.positions.get(position.symbol)
@@ -789,6 +818,7 @@ class VirtualAccount:
         return order
 
     def cancel_order(self, order_id: str) -> VirtualOrder:
+        self._assert_current_revision()
         order = self.orders.get(order_id)
         if not order:
             raise ValueError("Unknown order.")
@@ -803,6 +833,7 @@ class VirtualAccount:
         return order
 
     def mark_to_market(self, prices: dict[str, float], *, trigger_exits: bool = True) -> list[VirtualOrder]:
+        self._assert_current_revision()
         if not isinstance(prices, dict):
             raise ValueError("prices must be a symbol-to-price dictionary.")
         triggered = []
@@ -826,6 +857,7 @@ class VirtualAccount:
 
     def activate_emergency_kill_switch(self, reason: str = "Manual emergency lockout",
                                        actor: str = "OPERATOR") -> None:
+        self._assert_current_revision()
         if self.kill_switched:
             return
         self.kill_switched = True
@@ -838,6 +870,7 @@ class VirtualAccount:
         self._persist_lock_state(reason, actor)
 
     def emergency_square_off(self, current_prices: dict[str, float]) -> list[VirtualOrder]:
+        self._assert_current_revision()
         self.activate_emergency_kill_switch("Emergency square-off triggered")
         exits = []
         for symbol in list(self.positions):
