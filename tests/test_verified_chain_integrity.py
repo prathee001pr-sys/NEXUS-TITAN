@@ -1,6 +1,5 @@
 """Focused fail-closed option-chain integrity regression tests (synthetic only)."""
-from dataclasses import replace
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 
 import pytest
 
@@ -38,9 +37,14 @@ def _observed():
     return datetime.fromisoformat("2026-11-02T09:16:00+05:30")
 
 
-def _check(*quotes, contract=None, observed_at=None, **settings):
+_MISSING = object()
+
+
+def _check(*quotes, contract=None, observed_at=_MISSING, **settings):
     return inspect_verified_option_chain(
-        list(quotes), contract or _contract(), observed_at=observed_at or _observed(), **settings
+        list(quotes), contract or _contract(),
+        observed_at=_observed() if observed_at is _MISSING else observed_at,
+        **settings
     )
 
 
