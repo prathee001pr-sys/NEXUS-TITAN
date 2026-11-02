@@ -107,3 +107,14 @@ Initial classifications:
 - BLOCKED: no code from Stages 2–15 has yet been copied into the audit branch; this checkpoint is inventory and local test evidence only.
 
 No application source files were modified. No merge to main, no PR merge, and no live trading changes.
+
+## Progress log
+### 2026-11-02 — checkpoint 2: Stage 15 clean-extraction test
+
+- Extracted Stage 15 into a fresh directory and ran its own test suite with the correct nested project root and `PYTHONPATH=src`.
+- Result: pytest completed successfully; `pytest --collect-only` independently counted 406 tests across 54 files.
+- The initial attempt from the ZIP wrapper directory failed during collection because `PYTHONPATH` pointed one directory too high. This was an invocation-path error, not a code failure; rerunning from the actual `NEXUS_TITAN/` project root passed.
+- Stage 15 SQLite database is 77,824 bytes but contains zero records in all inspected application tables (learnings, proposals, experiments, skills, audit_log, strategy_regime_evidence, code_change_proposals). Treat it as an empty schema artifact, not populated learning evidence.
+- Stage 15 archive hash independently calculated as `3948551a027deaa9e72484869b7f0ce429a5b9d5a79ff4409555c374f9746a34`, matching the previously recorded Stage 15 package fingerprint.
+- Stage 4→5 removal of `.github/workflows/tests.yml` is a packaging/CI regression candidate. Stage 11 adds a separate `.github/workflows/ci.yml`; verify the final Stage 15 workflow set and triggers before copying it.
+- No source code has been copied to the audit branch. The only GitHub change remains this audit record.
