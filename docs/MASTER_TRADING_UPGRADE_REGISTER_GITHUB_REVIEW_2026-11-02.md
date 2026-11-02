@@ -8,7 +8,8 @@ This document records an evidence-based status snapshot for the 15 Master Tradin
 - Canonical Stage 1–15 candidate ZIP: NEXUS_TITAN_Stage1-15_Canonical_Integrated_With_Register_2026-11-02.zip
 - SHA-256: 037eac0af43efbb3bce97e9708d7a190869ca64c0f41b057caae9307ba4a78f3
 - 95 Python source modules; 55 test modules.
-- Clean re-extraction: 412 tests passed; 5 subtests passed.
+- Clean re-extraction before confidence-calibration increment: 412 tests passed; 5 subtests passed.
+- Follow-up local candidate with OOS calibration module/tests: 426 tests passed; 5 subtests passed. Compile and offline project-validation runner passed.
 - Compile check and project validation runner passed.
 - Release preflight: BLOCKED_EXTERNAL_EVIDENCE; static secret-pattern scan: 0 findings.
 - Release archive excludes runtime SQLite databases, Python caches and bytecode.
@@ -26,7 +27,7 @@ BUILT + TESTED means local candidate code and tests exist; it does not mean prod
 | NT-ANL-03 | Approximately 30 analytics | Indicators, VWAP, ROC, volatility, ADX, opening range, imbalance, regime, OI, IV skew and gamma exposure | PARTIAL | Complete missing structure/pattern features; add point-in-time, warm-up, missing-data and leakage tests |
 | NT-OPT-04 | Options chain / Greeks / IV / expiry | Quote integrity checks, theoretical Greeks, bounded IV solving, indicative margin arithmetic and expiry settlement | BUILT + TESTED — offline analytics | Licensed chain history, verified expiry/contract master and official SPAN/ELM reconciliation |
 | NT-STR-05 | Strategy research and walk-forward | Historical backtest, chronological OOS, rolling walk-forward, Monte Carlo and promotion blockers | BUILT + TESTED — research framework | Licensed data, larger evidence samples and independent market fixtures |
-| NT-SIG-06 | Consensus and calibrated uncertainty | Evidence-based proposals, integrity checks and conservative WAIT / NO TRADE | PARTIAL | Empirical probability calibration and regime/sample-size reliability evidence |
+| NT-SIG-06 | Consensus and calibrated uncertainty | Evidence proposals plus standalone OOS calibrator computing Brier score, ECE and reliability bins; rejects in-sample, duplicate and invalid observations | PARTIAL + TESTED (calibration diagnostics); NOT yet connected to live consensus confidence | Define outcome contract, persist prediction lineage and connect calibrated evidence only after enough real OOS samples; retain UNCALIBRATED until verified |
 | NT-RSK-07 | Independent Risk & Veto | Authoritative risk engine, portfolio constraints, permission boundary, kill-switch and Stage 15 regressions | BUILT + TESTED — code level | Independent security assessment and deployment kill-switch drill |
 | NT-EXE-08 | Execution simulator and reconciliation | Virtual order lifecycle, partial fills, charges, microstructure simulation, persistence and reconciliation fixtures | PARTIAL | Exchange/broker calibration, queue position, official charges and multi-session reconciliation |
 | NT-TWIN-09 | Digital Twin / scenario lab | Deterministic OHLCV stress scenarios and repeatability tests | BUILT + TESTED — deterministic | Calibrate shocks, liquidity, spread and impact against actual observations |
@@ -42,6 +43,11 @@ BUILT + TESTED means local candidate code and tests exist; it does not mean prod
 Current evidence-backed subset: SMA, EMA, RSI, MACD, ATR, Bollinger bands, VWAP, rate of change, realized volatility, ADX, opening range, order-book imbalance, trend/range regime, OI summary, IV skew, gamma exposure, chain spread/integrity checks, Greeks, expiry settlement, consensus, cost-aware backtest, portfolio risk, fill simulation and post-mortem.
 
 Not yet proven complete/calibrated: dedicated candlestick taxonomy, swing structure, support/resistance, robust breakout/pullback/failure labelling, volatility expansion/compression, intraday time-of-day behaviour, reliable trade-flow classification, validated liquidity gaps, authenticated FII/DII and news/macro sources, empirical confidence calibration, correlation risk under real multi-asset data, execution fill probability and regime-specific performance attribution. The project must not claim 30/30 analytics are complete.
+
+## Follow-up implementation evidence — 02 November 2026
+- Standalone PR #3: `feature/oos-probability-calibration`, head `fa8c34eba862108d6cd333c59964c4e3cc6e6405`; exactly three changed files. Hosted GitHub Actions run #41393193730 on Python 3.11 completed successfully: 183 passed against the PR's `main`-based source head.
+- PR #3 remains draft and unmerged. The standalone module is not yet wired into `ConsensusEngine`; its output is diagnostic only, and current consensus confidence remains `UNCALIBRATED`.
+- PR #2 was closed because its Phase 6 base caused duplicate baseline files to appear in the diff. No changes from PR #2 were merged.
 
 ## Release gates
 - G0 Build reproducibility: PASSED — local candidate.
