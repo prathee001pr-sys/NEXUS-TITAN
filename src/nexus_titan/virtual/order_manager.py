@@ -216,6 +216,9 @@ class VirtualAccount:
             )
         self._strict_paper_requested = strict_paper_mode
         self.strict_paper_mode = strict_paper_mode
+        self.gateway_only_mode = False
+        # Ephemeral guard, never persisted or restored across processes.
+        self._gateway_submission_active = False
         self.account_id = account_id
         self.initial_capital = float(starting_capital)
         self.added_capital = 0.0
@@ -316,6 +319,7 @@ class VirtualAccount:
             initial_margin_pct=self.initial_margin_pct,
             require_pretrade_risk_check=self.require_pretrade_risk_check,
             strict_paper_mode=self.strict_paper_mode,
+            gateway_only_mode=self.gateway_only_mode,
             trading_mode=self.trading_mode.value, kill_switched=self.kill_switched,
             kill_metadata=self.kill_switch_metadata,
             orders_dict={k: v.to_dict() for k, v in self.orders.items()},
@@ -351,6 +355,10 @@ class VirtualAccount:
                         "Legacy account cannot silently upgrade to strict paper; use enable_strict_paper_mode on empty account"
                     )
                 self.strict_paper_mode = (saved_strict == 1)
+                saved_gateway = st.get("gateway_only_mode", 0)
+                if saved_gateway not in (0, 1) or (saved_gateway == 1 and not self.strict_paper_mode):
+                    raise PermissionError("Persisted gateway-only policy is invalid")
+                self.gateway_only_mode = (saved_gateway == 1)
                 self.require_pretrade_risk_check = bool(st["require_pretrade_risk_check"])
                 self.trading_mode = TradingMode(st["trading_mode"])
                 if self.strict_paper_mode and (
@@ -463,6 +471,10 @@ class VirtualAccount:
         )
         if saved_strict and self.strict_paper_mode is not True:
             raise PermissionError("Durable strict paper account cannot be downgraded in memory")
+        if self.durable_store and self.durable_store.gateway_only(self.account_id) and self.gateway_only_mode is not True:
+            raise PermissionError("Durable gateway-only routing cannot be downgraded in memory")
+        if self.gateway_only_mode and self.strict_paper_mode is not True:
+            raise PermissionError("Gateway-only account must remain strict")
         if self.strict_paper_mode and (
             not self.durable_store or
             self.trading_mode is not TradingMode.MANUAL_APPROVAL
@@ -494,6 +506,68 @@ class VirtualAccount:
             self.strict_paper_mode = False
             raise
         self._assert_strict_paper_policy()
+
+    def enable_gateway_only_mode(self, research: object) -> None:
+        """Irreversible *local* routing policy; explicitly opt into guarded gateway.
+
+        The research ledger remains a separate risk book. A process with Python
+        write access can still bypass application guards: never call this a
+        broker-side or globally unbypassable authorization service.
+        """
+        self._assert_strict_paper_policy()
+        if self.gateway_only_mode:
+            return
+        from nexus_titan.shadow.paper_safety_preflight import inspect_paper_safety_preflight
+        from nexus_titan.shadow.research_reservation_ledger import DurableResearchShadowLedger
+        if not self.strict_paper_mode or not isinstance(research, DurableResearchShadowLedger):
+            raise PermissionError("Gateway-only migration requires strict paper and durable guarded research ledger")
+        report = inspect_paper_safety_preflight(self, research)
+        if not report.flat_research_gate_passed:
+            raise PermissionError("Gateway-only migration requires flat verified preflight: " + "; ".join(report.blockers))
+        self.gateway_only_mode = True
+        try:
+            self._sync_durable_store()
+        except Exception:
+            self.gateway_only_mode = False
+            raise
+
+    def _submit_guarded_paper_intent(
+        self, research: object, *, paper_trading_enabled: bool, **order_fields,
+    ) -> VirtualOrder:
+        """Submit only after guarded research checks; cannot approve/fill.
+
+        This is an in-process adapter, not a cryptographic authorization token.
+        """
+        from nexus_titan.core.permissions import Action, Decision, decide
+        from nexus_titan.shadow.research_reservation_ledger import DurableResearchShadowLedger
+        from nexus_titan.shadow.paper_safety_preflight import inspect_paper_safety_preflight
+        self._assert_strict_paper_policy()
+        if not self.gateway_only_mode:
+            raise PermissionError("Gateway-only paper mode not enabled")
+        if (not isinstance(paper_trading_enabled, bool)
+                or decide(Action.PAPER_TRADE, paper_trading_enabled=paper_trading_enabled) is not Decision.ALLOW):
+            raise PermissionError("Explicit PAPER_TRADE permission required")
+        if (not isinstance(research, DurableResearchShadowLedger)
+                or research.account_id != self.account_id
+                or not research.guarded_paper_mode
+                or not research.verify_integrity()
+                or not self.reconcile().is_reconciled
+                or self.kill_switched):
+            raise PermissionError("Gateway-only guarded research/account integrity check denied")
+        side = order_fields.get("side")
+        if side in (OrderSide.BUY, "BUY"):
+            preflight = inspect_paper_safety_preflight(self, research)
+            if not preflight.flat_research_gate_passed:
+                raise PermissionError("Gateway-only BUY preflight denied")
+        elif side not in (OrderSide.SELL, "SELL"):
+            raise PermissionError("Gateway-only intent supports BUY and owned SELL only")
+        if self._gateway_submission_active:
+            raise PermissionError("Nested gateway submission rejected")
+        self._gateway_submission_active = True
+        try:
+            return self.submit_order(**order_fields)
+        finally:
+            self._gateway_submission_active = False
 
     def set_trading_mode(
         self, mode: TradingMode | str, *, actor: str | None = None,
@@ -544,6 +618,8 @@ class VirtualAccount:
                 "Public submit_order cannot grant emergency status; use monitored protective exit or emergency_square_off."
             )
         self._assert_strict_paper_policy()
+        if self.gateway_only_mode and not self._gateway_submission_active:
+            raise PermissionError("Gateway-only account denies direct submit_order; use guarded paper gateway")
         if not isinstance(symbol, str) or not symbol.strip():
             raise ValueError("A non-empty symbol is required.")
         try:
