@@ -1,0 +1,25 @@
+{
+  "workflow_id": "example-research-and-review",
+  "tasks": [
+    {
+      "task_id": "research-memory",
+      "agent_id": "APPROVED_RESEARCH_AGENT",
+      "inputs": {"topic": "sample"},
+      "tool_calls": [
+        {"tool": "knowledge_base_read", "args": {"query": "sample", "limit": 5}}
+      ]
+    },
+    {
+      "task_id": "qa-report",
+      "agent_id": "APPROVED_QA_AGENT",
+      "depends_on": ["research-memory"],
+      "inputs": {},
+      "tool_calls": [
+        {"tool": "report_writer", "args": {
+          "title": "Approved research review",
+          "body": {"note": "Use dependency output supplied to the QA agent."}
+        }}
+      ]
+    }
+  ]
+}

@@ -70,3 +70,33 @@ def evaluate_out_of_sample(
         raise TypeError("split must be a ChronologicalSplit")
     combined = split.in_sample + split.out_of_sample
     return engine.run(combined, strategy, start_index=len(split.in_sample) - 1)
+
+
+# V6 compatibility exports. These are kept alongside the original V2 chronological
+# OHLCV split/evaluation API above; no V2 validation entry point is replaced.
+from nexus_titan.research.v6_validation import (
+    MonteCarloReport,
+    PromotionStage,
+    StrategyPromotionDecision,
+    WalkForwardFoldResult,
+    WalkForwardReport,
+    evaluate_strategy_promotion,
+    rolling_walk_forward_validation,
+    run_monte_carlo_simulation,
+    walk_forward_validation,
+)
+
+__all__ = [
+    "ChronologicalSplit",
+    "split_chronologically",
+    "evaluate_out_of_sample",
+    "PromotionStage",
+    "WalkForwardFoldResult",
+    "WalkForwardReport",
+    "MonteCarloReport",
+    "StrategyPromotionDecision",
+    "walk_forward_validation",
+    "rolling_walk_forward_validation",
+    "run_monte_carlo_simulation",
+    "evaluate_strategy_promotion",
+]
