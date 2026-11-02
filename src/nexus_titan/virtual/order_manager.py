@@ -115,7 +115,7 @@ class VirtualOrder:
         raw = (f"{self.symbol}:{self.side.value}:{self.order_type.value}:{self.quantity}:"
                f"{self.instrument_type}:{self.lot_size}:{self.limit_price}:{self.stop_price}:"
                f"{self.target_price}:{self.is_emergency}")
-        return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict:
         data = asdict(self)
@@ -301,15 +301,12 @@ class VirtualAccount:
                 self.risk_engine = AuthoritativeRiskEngine(PortfolioRiskConfig(
                     max_risk_per_trade_pct=self.risk_per_trade_pct,
                     max_portfolio_exposure_pct=self.max_portfolio_exposure_pct))
+                # The filesystem lock marker is an independent, fail-closed safety
+                # record. It must override an older SQLite snapshot if the DB write
+                # failed after the marker was made durable.
+                self._restore_lock_file_fail_closed()
                 return
-        if self.lock_file and self.lock_file.exists():
-            import json
-            try:
-                state = json.loads(self.lock_file.read_text(encoding="utf-8"))
-                self.kill_switched = bool(state.get("kill_switched"))
-                self.kill_switch_metadata = state
-            except (OSError, ValueError, TypeError):
-                self.kill_switched = True
+        self._restore_lock_file_fail_closed()
         if self.idempotency_file and self.idempotency_file.exists():
             import json
             try:
@@ -318,6 +315,25 @@ class VirtualAccount:
                     self.processed_fill_idempotency_keys = set(keys)
             except (OSError, ValueError, TypeError):
                 pass
+
+    def _restore_lock_file_fail_closed(self) -> None:
+        """Restore the durable emergency marker; any unreadable marker locks trading."""
+        if not self.lock_file or not self.lock_file.exists():
+            return
+        import json
+        try:
+            state = json.loads(self.lock_file.read_text(encoding="utf-8"))
+            if not isinstance(state, dict) or state.get("kill_switched") is not True:
+                raise ValueError("Lock marker does not explicitly assert an active lockout.")
+            self.kill_switched = True
+            self.kill_switch_metadata = state
+        except (OSError, ValueError, TypeError, UnicodeError):
+            self.kill_switched = True
+            self.kill_switch_metadata = {
+                "kill_switched": True,
+                "reason": "Emergency lock marker is unreadable or invalid; trading remains locked.",
+                "recovery_required": True,
+            }
 
     def _persist_lock_state(self, reason: str, actor: str = "SYSTEM") -> None:
         self.kill_switch_metadata = {"kill_switched": True, "locked_at": _now(),
@@ -474,8 +490,41 @@ class VirtualAccount:
         order = self.orders.get(order_id)
         if not order:
             raise ValueError("Unknown order.")
-        if idempotency_key and idempotency_key in self.processed_fill_idempotency_keys:
-            return order
+        if (isinstance(fill_price, bool) or not isinstance(fill_price, (int, float))
+                or not math.isfinite(fill_price) or fill_price <= 0):
+            raise ValueError("Fill price must be finite and positive.")
+        if fill_qty is not None and (
+                isinstance(fill_qty, bool) or not isinstance(fill_qty, int) or fill_qty < 1):
+            raise ValueError("Fill quantity must be a positive integer.")
+        if idempotency_key is not None:
+            if (not isinstance(idempotency_key, str) or not idempotency_key.strip()
+                    or len(idempotency_key) > 200):
+                raise ValueError("Invalid idempotency key.")
+            prior = None
+            prior_order = None
+            for candidate_order in self.orders.values():
+                for candidate_fill in candidate_order.fills:
+                    if candidate_fill.idempotency_key == idempotency_key:
+                        prior, prior_order = candidate_fill, candidate_order
+                        break
+                if prior is not None:
+                    break
+            if prior is not None:
+                same_request = (
+                    prior_order.order_id == order_id
+                    and prior.order_id == order_id
+                    and prior.price == float(fill_price)
+                    and (fill_qty is None or prior.quantity == fill_qty)
+                )
+                if same_request:
+                    return prior_order
+                raise ValueError(
+                    "Idempotency key conflict: key is already bound to a different order or fill request."
+                )
+            if idempotency_key in self.processed_fill_idempotency_keys:
+                raise ValueError(
+                    "Idempotency key exists without a matching fill record; refusing unsafe replay."
+                )
         if order.state not in (OrderState.ACCEPTED, OrderState.PARTIALLY_FILLED):
             raise ValueError(f"Order cannot be filled in state {order.state.value}.")
         if order.approval is not None and order.compute_snapshot_hash() != order.approval.order_snapshot_hash:
@@ -484,9 +533,6 @@ class VirtualAccount:
             order.updated_at = _now()
             self._sync_durable_store()
             raise ValueError("Approval integrity violation: order was modified after approval.")
-        if (isinstance(fill_price, bool) or not isinstance(fill_price, (int, float))
-                or not math.isfinite(fill_price) or fill_price <= 0):
-            raise ValueError("Fill price must be finite and positive.")
         qty = order.remaining_qty if fill_qty is None else fill_qty
         if isinstance(qty, bool) or not isinstance(qty, int) or qty < 1 or qty > order.remaining_qty:
             raise ValueError("Fill quantity must be positive and cannot overfill the order.")
@@ -494,11 +540,6 @@ class VirtualAccount:
             raise ValueError(
                 f"Fill quantity ({qty}) must be a multiple of instrument lot_size ({order.lot_size})."
             )
-        if idempotency_key:
-            if idempotency_key in self.processed_fill_idempotency_keys:
-                return order
-            if not isinstance(idempotency_key, str) or len(idempotency_key) > 200:
-                raise ValueError("Invalid idempotency key.")
         if order.order_type == OrderType.LIMIT:
             if order.side == OrderSide.BUY and fill_price > (order.limit_price or 0):
                 raise ValueError("BUY limit fill price cannot exceed limit_price.")
