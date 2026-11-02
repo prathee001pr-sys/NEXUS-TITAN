@@ -187,6 +187,10 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
             cash_expected += net
             realized[key] = realized.get(key, 0) + pnl
             exit_count += 1
+        elif kind == "ENABLE_GUARDED_PAPER":
+            if (event.get("no_live_routing") is not True
+                    or not ledger._guarded_mode(con)):
+                raise ResearchLedgerError("Guarded-paper migration audit inconsistent")
         elif kind not in ("INITIAL", "RESERVE_BUY", "CANCEL"):
             raise ResearchLedgerError("Unknown research cash-affecting event; FIFO attribution blocked")
 
@@ -232,6 +236,31 @@ def report_research_long_portfolio(ledger: DurableResearchShadowLedger) -> Resea
             cumulative_realized_net_pnl=sum(realized.values()) / 100,
             completed_exit_count=count,
         )
+
+
+def _assert_guarded_exit_admission(
+    ledger: DurableResearchShadowLedger, con, *, paper_trading_enabled: bool,
+) -> None:
+    """Atomic SELL-to-close gate for accounts that opt into guarded mode.
+
+    No authorization for naked SELL, futures shorts, broker or live orders.
+    Legacy offline research accounts retain their old behavior.
+    """
+    if not ledger._guarded_mode(con):
+        return
+    if (not isinstance(paper_trading_enabled, bool) or decide(
+        Action.PAPER_TRADE, paper_trading_enabled=paper_trading_enabled,
+    ) is not Decision.ALLOW):
+        raise ResearchLedgerError("Atomic guarded SELL: paper research permission denied")
+    ledger._verify(con)
+    open_buy = con.execute(
+        "SELECT 1 FROM reservations WHERE account_id=? AND status='OPEN' LIMIT 1",
+        (ledger.account_id,),
+    ).fetchone()
+    if open_buy:
+        raise ResearchLedgerError("Atomic guarded SELL: pending BUY reservations must settle or cancel")
+    # Portfolio FIFO replay and exact per-instrument inventory checks follow
+    # in the same transaction. External risk identity/data remain unverified.
 
 
 def simulate_and_settle_long_exit(
@@ -292,6 +321,9 @@ def simulate_and_settle_long_exit(
     if fragment.filled_quantity == 0:
         # No fake SELL, no phantom fee, no replay ID consumed.
         with ledger._transaction() as con:
+            _assert_guarded_exit_admission(
+                ledger, con, paper_trading_enabled=paper_trading_enabled,
+            )
             fifo, _, _ = _replay_account(ledger, con)
             owned = sum(q for q, _ in fifo.get(key, []))
             if owned < requested:
@@ -308,6 +340,9 @@ def simulate_and_settle_long_exit(
 
     event = ResearchFillEvent(event_id=eid, observed_at=observed_at, fragment=fragment)
     with ledger._transaction() as con:
+        _assert_guarded_exit_admission(
+            ledger, con, paper_trading_enabled=paper_trading_enabled,
+        )
         fifo, _, _ = _replay_account(ledger, con)
         owned = sum(q for q, _ in fifo.get(key, []))
         if owned < requested:
@@ -379,6 +414,7 @@ def simulate_and_settle_long_exit(
             "net_proceeds_cents": net, "attributed_buy_cost_cents": used_basis,
             "realized_net_pnl_cents": realized, "event_ids": [eid],
             "as_of_utc": observed_at.astimezone(timezone.utc).isoformat(),
+            "atomic_guarded_exit_admission": ledger._guarded_mode(con),
         })
         # Before transaction commit, replay *every* buy/exit and prove cash,
         # remaining inventory, attributed basis and recorded P&L consistent.
