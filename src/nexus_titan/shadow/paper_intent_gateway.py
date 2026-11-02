@@ -82,11 +82,17 @@ class PaperIntentGateway:
         report=inspect_paper_safety_preflight(self.virtual,self.research)
         if not report.flat_research_gate_passed:
             raise PaperIntentDenied("Flat guarded research preflight denied: "+"; ".join(report.blockers))
-        order=self.virtual.submit_order(
-            symbol,OrderSide.BUY,quantity,entry_price=entry_price,
-            stop_price=stop_price,lot_size=lot_size,
-            instrument_type=instrument_type,
+        intent = dict(
+            symbol=symbol, side=OrderSide.BUY, quantity=quantity,
+            entry_price=entry_price, stop_price=stop_price,
+            lot_size=lot_size, instrument_type=instrument_type,
         )
+        if self.virtual.gateway_only_mode:
+            order=self.virtual._submit_guarded_paper_intent(
+                self.research,paper_trading_enabled=paper_trading_enabled,**intent
+            )
+        else:
+            order=self.virtual.submit_order(**intent)
         return self._as_result(order)
 
     def request_sell_to_close(
@@ -108,9 +114,14 @@ class PaperIntentGateway:
             OrderState.PARTIALLY_FILLED,
         ) for o in self.virtual.orders.values()):
             raise PaperIntentDenied("Existing unfinished SELL prevents double-close intent")
-        order=self.virtual.submit_order(
-            key,OrderSide.SELL,quantity,
-            instrument_type=pos.instrument_type,
-            lot_size=1,
+        intent = dict(
+            symbol=key,side=OrderSide.SELL,quantity=quantity,
+            instrument_type=pos.instrument_type,lot_size=1,
         )
+        if self.virtual.gateway_only_mode:
+            order=self.virtual._submit_guarded_paper_intent(
+                self.research,paper_trading_enabled=paper_trading_enabled,**intent
+            )
+        else:
+            order=self.virtual.submit_order(**intent)
         return self._as_result(order)

@@ -47,6 +47,7 @@ class DurableAccountStore:
                     initial_margin_pct REAL NOT NULL DEFAULT 20.0,
                     require_pretrade_risk_check INTEGER NOT NULL DEFAULT 1,
                     strict_paper_mode INTEGER NOT NULL DEFAULT 0,
+                    gateway_only_mode INTEGER NOT NULL DEFAULT 0,
                     revision INTEGER NOT NULL DEFAULT 0,
                     trading_mode TEXT NOT NULL, kill_switched INTEGER NOT NULL,
                     kill_metadata_json TEXT NOT NULL
@@ -74,6 +75,7 @@ class DurableAccountStore:
                 "initial_margin_pct": "REAL NOT NULL DEFAULT 20.0",
                 "require_pretrade_risk_check": "INTEGER NOT NULL DEFAULT 1",
                 "strict_paper_mode": "INTEGER NOT NULL DEFAULT 0",
+                "gateway_only_mode": "INTEGER NOT NULL DEFAULT 0",
                 "revision": "INTEGER NOT NULL DEFAULT 0",
             }
             for column, definition in migrations.items():
@@ -91,6 +93,7 @@ class DurableAccountStore:
         idem_keys: set[str], capital_history: list[Any],
         strict_paper_mode: bool = False,
         expected_revision: int | None = None,
+        gateway_only_mode: bool = False,
     ) -> int:
         """Atomically persist the entire virtual-account snapshot.
 
@@ -99,6 +102,10 @@ class DurableAccountStore:
         """
         if not isinstance(strict_paper_mode, bool):
             raise ValueError("strict_paper_mode must be boolean")
+        if not isinstance(gateway_only_mode, bool):
+            raise ValueError("gateway_only_mode must be boolean")
+        if gateway_only_mode and not strict_paper_mode:
+            raise PermissionError("Gateway-only paper account requires durable strict paper policy")
         if expected_revision is not None and (
             isinstance(expected_revision, bool) or not isinstance(expected_revision, int)
             or expected_revision < 0
@@ -111,7 +118,7 @@ class DurableAccountStore:
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE;")
             old = conn.execute(
-                "SELECT strict_paper_mode,revision FROM account_state WHERE account_id=?",
+                "SELECT strict_paper_mode,gateway_only_mode,revision FROM account_state WHERE account_id=?",
                 (account_id,),
             ).fetchone()
             previous = old["revision"] if old is not None else None
@@ -121,20 +128,23 @@ class DurableAccountStore:
                 )
             if old is not None and old["strict_paper_mode"] == 1 and not strict_paper_mode:
                 raise PermissionError("Durable strict paper mode cannot be downgraded")
+            if old is not None and old["gateway_only_mode"] == 1 and not gateway_only_mode:
+                raise PermissionError("Durable gateway-only paper routing cannot be downgraded")
             revision = (previous or 0) + 1
             conn.execute("""
                 INSERT OR REPLACE INTO account_state (
                     account_id, initial_capital, added_capital, withdrawn_capital,
                     cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                     risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
-                    require_pretrade_risk_check, strict_paper_mode, revision,
+                    require_pretrade_risk_check, strict_paper_mode, gateway_only_mode, revision,
                     trading_mode, kill_switched, kill_metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """, (account_id, initial_capital, added_capital, withdrawn_capital,
                   cash_balance, blocked_margin, realized_pnl, total_fees, peak_equity,
                   risk_per_trade_pct, max_portfolio_exposure_pct, initial_margin_pct,
                   1 if require_pretrade_risk_check else 0,
-                  1 if strict_paper_mode else 0, revision, trading_mode,
+                  1 if strict_paper_mode else 0,
+                  1 if gateway_only_mode else 0, revision, trading_mode,
                   1 if kill_switched else 0, json.dumps(kill_metadata)))
             conn.execute("DELETE FROM orders WHERE account_id = ?;", (account_id,))
             for oid, data in orders_dict.items():
@@ -157,6 +167,14 @@ class DurableAccountStore:
                 "SELECT revision FROM account_state WHERE account_id=?", (account_id,)
             ).fetchone()
             return None if row is None else int(row["revision"])
+
+    def gateway_only(self, account_id: str) -> bool:
+        with self._connect() as con:
+            row = con.execute(
+                "SELECT gateway_only_mode FROM account_state WHERE account_id=?",
+                (account_id,),
+            ).fetchone()
+            return bool(row and row["gateway_only_mode"] == 1)
 
     def strict_mode(self, account_id: str) -> bool:
         """Read persisted strict policy; this is not an external authority."""
