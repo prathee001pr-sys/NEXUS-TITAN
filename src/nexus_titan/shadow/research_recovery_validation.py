@@ -170,6 +170,7 @@ def inspect_multiday_shadow_evidence(
     previous_audit_count = 0
     previous_terminal_orders = 0
     previous_inventory: dict[str, int] = {}
+    previous_status: ResearchLedgerStatus | None = None
     total_delta = 0.0
     for index, item in enumerate(records):
         if not isinstance(item, DailyResearchShadowRecord):
@@ -228,7 +229,17 @@ def inspect_multiday_shadow_evidence(
         previous_initial = status.starting_capital
         if status.audit_event_count < previous_audit_count or status.audit_event_count < 1:
             issues.append(f"Day {index}: audit-event count regressed or vanished")
+        if previous_status is not None and (
+            status.cash_balance != previous_status.cash_balance
+            or status.reserved_cash != previous_status.reserved_cash
+            or status.open_order_count != previous_status.open_order_count
+            or status.closed_order_count != previous_status.closed_order_count
+            or status.cancelled_order_count != previous_status.cancelled_order_count
+            or status.option_inventory != previous_status.option_inventory
+        ) and status.audit_event_count <= previous_audit_count:
+            issues.append(f"Day {index}: state changed without advancing audit evidence")
         previous_audit_count = status.audit_event_count
+        previous_status = status
         terminal = status.closed_order_count + status.cancelled_order_count
         if terminal < previous_terminal_orders:
             issues.append(f"Day {index}: terminal order count regressed")
