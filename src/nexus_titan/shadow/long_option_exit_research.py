@@ -106,6 +106,7 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
     lots: dict[str, list[list[int]]] = {}
     realized: dict[str, int] = {}
     exit_count = 0
+    last_order_timestamp: datetime | None = None
     for row in con.execute(
         "SELECT payload_json FROM audit WHERE account_id=? ORDER BY sequence",
         (ledger.account_id,),
@@ -118,7 +119,7 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
         if kind == "SETTLE_BUY":
             oid = event.get("order_id")
             entry = con.execute(
-                "SELECT instrument_key,filled_quantity,status FROM reservations "
+                "SELECT instrument_key,filled_quantity,status,as_of_utc FROM reservations "
                 "WHERE account_id=? AND order_id=?", (ledger.account_id, oid),
             ).fetchone()
             if entry is None or entry["status"] != "CLOSED":
@@ -130,6 +131,15 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
                     or qty != entry["filled_quantity"] or (qty == 0 and debit != 0)
                     or (qty > 0 and debit == 0)):
                 raise ResearchLedgerError("BUY quantity/cost basis inconsistent")
+            try:
+                at = datetime.fromisoformat(entry["as_of_utc"])
+                if at.tzinfo is None or at.utcoffset() is None:
+                    raise ValueError
+            except (TypeError, ValueError) as exc:
+                raise ResearchLedgerError("BUY audit timestamp invalid") from exc
+            if last_order_timestamp is not None and at < last_order_timestamp:
+                raise ResearchLedgerError("BUY/SELL research executions out of chronological order")
+            last_order_timestamp = at
             cash_expected -= debit
             if qty:
                 lots.setdefault(entry["instrument_key"], []).append([qty, debit])
@@ -152,6 +162,15 @@ def _replay_account(ledger: DurableResearchShadowLedger, con) -> tuple[dict[str,
                     or any(isinstance(v, bool) or not isinstance(v, int) for v in (qty, gross, fee, net, charged_basis, pnl))
                     or qty <= 0 or gross <= 0 or fee < 0 or qty != exit_row["filled_quantity"]):
                 raise ResearchLedgerError("SELL research audit fields invalid")
+            try:
+                at = datetime.fromisoformat(event["as_of_utc"])
+                if at.tzinfo is None or at.utcoffset() is None:
+                    raise ValueError
+            except (TypeError, KeyError, ValueError) as exc:
+                raise ResearchLedgerError("SELL audit timestamp invalid") from exc
+            if last_order_timestamp is not None and at < last_order_timestamp:
+                raise ResearchLedgerError("BUY/SELL research executions out of chronological order")
+            last_order_timestamp = at
             replay_cost = _fifo_consume(lots.setdefault(key, []), qty)
             if charged_basis != replay_cost or gross - fee != net or net - replay_cost != pnl:
                 raise ResearchLedgerError("SELL FIFO cost / cash / net P&L does not reconcile")
