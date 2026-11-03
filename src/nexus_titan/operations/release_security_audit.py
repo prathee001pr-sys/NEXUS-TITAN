@@ -218,7 +218,7 @@ def inspect_stage52_security_sources(repo_root: Path) -> Stage52SecurityReview:
         "textContent", "Object.hasOwn", "file.size <= 256 * 1024",
         "LOCAL_SYNTHETIC_REVIEW_ONLY", "combined_cash_cents",
         "Green local presentation contradicts",
-        "Cash-match claim contradicts",
+        "Cash-match claim contradicts", "selectionGeneration",
     )
     missing_js = [mark for mark in js_required if mark not in js]
     findings.append(StaticSecurityCheck(
