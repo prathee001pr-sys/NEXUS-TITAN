@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from decimal import Decimal
 from typing import Callable
 import math
 import sqlite3
@@ -19,7 +20,9 @@ import sqlite3
 from nexus_titan.shadow.paper_intent_gateway import (
     PaperIntentDenied, PaperIntentGateway, PaperIntentResult,
 )
-from nexus_titan.shadow.research_reservation_ledger import DurableResearchShadowLedger
+from nexus_titan.shadow.research_reservation_ledger import (
+    DurableResearchShadowLedger, ResearchLedgerError,
+)
 from nexus_titan.virtual.order_manager import TradingMode, VirtualAccount
 
 
@@ -75,7 +78,7 @@ def _validate_config(config: PaperDeploymentConfig, callback: object) -> tuple[P
             or config.starting_capital <= 0):
         raise PaperDeploymentBlocked("Explicit positive finite paper capital required")
     # SQLite options ledger is cent-based. No implicit rounding/deposit.
-    if round(config.starting_capital * 100) != config.starting_capital * 100:
+    if Decimal(str(config.starting_capital)).as_tuple().exponent < -2:
         raise PaperDeploymentBlocked("Paper capital must have exact cent precision")
     if not isinstance(config.virtual_state_dir, Path) or not isinstance(config.research_db_path, Path):
         raise PaperDeploymentBlocked("Explicit pathlib.Path state and research paths required")
@@ -233,11 +236,16 @@ def open_paper_only_deployment(
         approval_authorizer=approval_authorizer,
         strict_paper_mode=not existing,
     )
-    research = DurableResearchShadowLedger(
-        research_path, account_id=config.account_id,
-        starting_capital=config.starting_capital,
-        guarded_paper_mode=True,
-    )
+    try:
+        research = DurableResearchShadowLedger(
+            research_path, account_id=config.account_id,
+            starting_capital=config.starting_capital,
+            guarded_paper_mode=True,
+        )
+    except (ResearchLedgerError, sqlite3.Error) as exc:
+        raise PaperDeploymentBlocked(
+            "Guarded research ledger startup/integrity failed; manual audit required"
+        ) from exc
     if not existing:
         virtual.enable_gateway_only_mode(research)
     # Restart is permitted with open virtual orders, positions or emergency
