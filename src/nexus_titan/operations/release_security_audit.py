@@ -41,6 +41,11 @@ _REVIEWED_CODE = {
     "src/nexus_titan/operations/multi_ledger_recovery_audit.py": {
         "Stage54ReadOnlyMultiLedgerAudit": ("inspect",),
     },
+    "src/nexus_titan/operations/isolated_atomic_execution_book.py": {
+        "Stage55IsolatedSyntheticExecutionBook": (
+            "inspect", "reserve_synthetic_buy", "record_simulated_fill", "cancel_unfilled"
+        ),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
