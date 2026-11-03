@@ -104,7 +104,8 @@ def test_main_protection_yes_is_only_snapshot_assertion():
     ("main_sha", "wrong"), ("main_ref", "master"),
     ("main_protected", 1), ("captured_at_utc", "not-a-date"),
     ("captured_at_utc", "2026-11-03T04:00:00+05:30"),
-    ("schema_version", 0), ("repository", "../attack"),
+    ("schema_version", 0), ("schema_version", True),
+    ("repository", "../attack"), ("repository", "owner/.."), ("repository", "./repo"),
 ])
 def test_invalid_top_level_claims_rejected(field, value):
     doc = _snapshot()
