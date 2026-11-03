@@ -138,7 +138,7 @@ async function main() {
     d => { d.admission_fence.first_synthetic_buy_preflight_passed = true; },
     d => { d.paper_orders.pending_manual_approval = 99; },
     d => { d.paper_orders.approved_unfilled = -1; },
-    d => { d.paper_orders.fill_fragments = Infinity; },
+    d => { d.paper_orders.fill_fragments = 1.5; },
   ]) {
     const item = baseline();
     mutate(item);
