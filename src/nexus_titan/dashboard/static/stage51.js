@@ -89,6 +89,51 @@
     assert(path(d, "paper_session", "paper_orders_enabled_in_config") === true ||
       path(d, "paper_session", "paper_orders_enabled_in_config") === false,
       "Paper session status missing.");
+    // Stage52: reject internally inconsistent *presentation* assertions.
+    // All values still come from an UNAUTHENTICATED local JSON file. These
+    // checks are NOT a cryptographic source-authenticity or trade admission.
+    const a = d.account, po = d.paper_orders, ps = d.paper_session;
+    const fence = d.admission_fence;
+    for (const field of ["total", "pending_manual_approval", "approved_unfilled",
+        "fill_fragments", "open_position_symbols"]) {
+      const v = po[field];
+      assert(v === null || (Number.isSafeInteger(v) && v >= 0),
+        "Paper order/position counts must be non-negative integers or unknown.");
+    }
+    if (po.total !== null && po.pending_manual_approval !== null &&
+        po.approved_unfilled !== null) {
+      assert(po.pending_manual_approval + po.approved_unfilled <= po.total,
+        "Paper order counts contradict reported totals.");
+    }
+    assert(Number.isSafeInteger(fence.attempt_count) && fence.attempt_count >= 0,
+      "Coordinator attempt count missing or invalid.");
+    assert(fence.attempt_count === 0
+      ? fence.latest_attempt_state === null
+      : ["PREPARING", "PENDING", "UNKNOWN"].includes(fence.latest_attempt_state),
+      "Coordinator marker state is inconsistent.");
+    assert(fence.first_synthetic_buy_preflight_passed !== true ||
+      fence.attempt_count === 0,
+      "Cannot claim first-entry preflight after durable attempted admission.");
+    const cashMatch = cents(a.virtual_cash_cents) !== null &&
+      cents(a.research_cash_cents) !== null &&
+      cents(a.initial_paper_capital_cents) !== null &&
+      a.virtual_cash_cents === a.research_cash_cents &&
+      a.virtual_cash_cents === a.initial_paper_capital_cents;
+    assert(a.two_book_cash_match_observed === cashMatch,
+      "Cash-match claim contradicts displayed separate balances.");
+    if (d.status === "LOCAL_SYNTHETIC_REVIEW_ONLY") {
+      assert(d.blockers.length === 0 && cashMatch &&
+        fence.attempt_count === 0 && fence.coordinator_bound === true &&
+        ps.paper_orders_enabled_in_config === true &&
+        ps.kill_switch_active === false &&
+        ps.strict_manual_account === true && ps.gateway_only === true &&
+        ps.pretrade_risk_enabled === true &&
+        d.signed_approval.configured_local_verifier === true,
+        "Green local presentation contradicts unresolved paper safety blockers.");
+    } else {
+      assert(d.blockers.length > 0,
+        "Local review warning must disclose an outstanding blocker.");
+    }
     return d;
   };
   const showBlockers = (items) => {
@@ -109,7 +154,12 @@
       list.appendChild(li);
     }
   };
+  // Discard any old File.text() completion after the user clears the
+  // screen or selects a newer file. Prevents an obsolete local snapshot
+  // from reappearing unexpectedly after a rejected or cancelled import.
+  let selectionGeneration = 0;
   const reset = () => {
+    selectionGeneration += 1;
     byId("error").hidden = true;
     put("snapshotStatus", "NO SNAPSHOT ATTACHED");
     put("observedAt", "Last observed: —");
@@ -159,14 +209,18 @@
   };
   const fileInput = byId("snapshotFile");
   fileInput.addEventListener("change", async () => {
+    const generation = ++selectionGeneration;
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
     try {
       assert(file.size > 0 && file.size <= 256 * 1024,
         "Only nonempty Stage50 JSON files up to 256 KiB are accepted.");
-      const data = JSON.parse(await file.text());
+      const raw = await file.text();
+      if (generation !== selectionGeneration) return;
+      const data = JSON.parse(raw);
       render(data);
     } catch (err) {
+      if (generation !== selectionGeneration) return;
       reset();
       put("error", "Snapshot rejected: " + (err instanceof Error ? err.message : "Invalid file"));
       byId("error").hidden = false;

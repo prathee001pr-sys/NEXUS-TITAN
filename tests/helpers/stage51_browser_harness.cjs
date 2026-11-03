@@ -45,7 +45,7 @@ function baseline() {
       combined_cash_cents: null, two_book_cash_match_observed: true,
     },
     paper_orders: { total: 1, pending_manual_approval: 1,
-      approved_unfilled: 0, fill_fragments: 0 },
+      approved_unfilled: 0, fill_fragments: 0, open_position_symbols: 0 },
     paper_session: {
       paper_orders_enabled_in_config: true,
       strict_manual_account: true, pretrade_risk_enabled: true,
@@ -125,6 +125,20 @@ async function main() {
     d => { d.data_source = "EXTERNAL_BROKER"; },
     d => { d.paper_orders.total = -1; },
     d => { d.schema_version = 2; },
+    // Stage52 adversarial semantic assertions: source untrusted, reject
+    // dangerous contradictions rather than creating a reassuring UI.
+    d => { d.status = "LOCAL_SYNTHETIC_REVIEW_ONLY"; },
+    d => { d.blockers = []; },
+    d => { d.account.two_book_cash_match_observed = false; },
+    d => { d.account.research_cash_cents = 5000100; },
+    d => { d.admission_fence.latest_attempt_state = null; },
+    d => { d.admission_fence.latest_attempt_state = "SUCCESS"; },
+    d => { d.admission_fence.attempt_count = 0; },
+    d => { d.admission_fence.attempt_count = true; },
+    d => { d.admission_fence.first_synthetic_buy_preflight_passed = true; },
+    d => { d.paper_orders.pending_manual_approval = 99; },
+    d => { d.paper_orders.approved_unfilled = -1; },
+    d => { d.paper_orders.fill_fragments = 1.5; },
   ]) {
     const item = baseline();
     mutate(item);
@@ -142,6 +156,32 @@ async function main() {
   assert.equal(e("virtualCash").textContent, "—");
   assert.equal(e("error").hidden, true);
   assert.equal(e("snapshotFile").value, "");
+  // A stale async File.text response cannot restore cleared screen.
+  let finishStale = null;
+  const slowText = new Promise(resolve => { finishStale = resolve; });
+  const slowJSON = JSON.stringify(good);
+  e("snapshotFile").files = [{ size: Buffer.byteLength(slowJSON),
+    text: () => slowText }];
+  const obsoleteRead = e("snapshotFile").handlers.change();
+  e("clearSnapshot").handlers.click();
+  finishStale(slowJSON);
+  await obsoleteRead;
+  assert.equal(e("snapshotStatus").textContent, "NO SNAPSHOT ATTACHED");
+  assert.equal(e("virtualCash").textContent, "—");
+
+  // A newer selection wins, even if the earlier File.text() completes later.
+  let resolveEarlier = null;
+  const pendingEarlier = new Promise(resolve => { resolveEarlier = resolve; });
+  e("snapshotFile").files = [{ size: Buffer.byteLength(slowJSON),
+    text: () => pendingEarlier }];
+  const oldSelection = e("snapshotFile").handlers.change();
+  await load(good);
+  assert.equal(e("virtualCash").textContent, "₹50,000.00");
+  resolveEarlier(JSON.stringify({ schema_version: 2 }));
+  await oldSelection;
+  assert.equal(e("virtualCash").textContent, "₹50,000.00");
+  assert.equal(e("error").hidden, true);
+
   process.stdout.write("STAGE51_NODE_BROWSER_SECURITY_CHECKS_PASSED\n");
 }
 main().catch(error => {
