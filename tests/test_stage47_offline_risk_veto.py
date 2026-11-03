@@ -265,3 +265,26 @@ def test_reject_unknown_wrapper_types(tmp_path):
         Stage47OfflineRiskVetoEntry(object())
     with pytest.raises(TypeError):
         inspect_stage47_risk_veto(object(), _proposal(), _quote(), now=NOW)
+
+
+def test_stage47_cli_synthetic_smoke():
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    process = subprocess.run([
+        sys.executable, str(repo / "scripts" / "run_stage47_offline_risk_veto_smoke.py"),
+    ], cwd=repo, capture_output=True, text=True, check=False)
+    assert process.returncode == 0, process.stderr
+    data = json.loads(process.stdout)
+    assert data["risk_and_red_team_local_gate_passed"]
+    assert data["stale_quote_blocked"]
+    assert data["manual_pending_intent_created"]
+    assert data["second_parallel_buy_blocked"]
+    assert data["paper_orders_filled"] == 0
+    assert data["broker_orders_transmitted"] == 0
+    assert not data["independent_global_risk_veto_enforced"]
+    assert not data["independent_human_identity_verified"]
+    assert not data["production_ready"]
