@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -293,7 +294,7 @@ def test_tampering_with_preflighted_history_timestamp_fails_closed(tmp_path):
 def test_stage59_inspected_lot_and_tick_are_bound_not_reloaded_from_today(tmp_path):
     h, c, cal = _fixture(tmp_path)
     assert h.inspected_contract_lot_size == 25
-    assert h.inspected_contract_tick_size == c.tick_size
+    assert h.inspected_contract_tick_size == Decimal(str(c.tick_size))
     for altered in (
         replace(h, inspected_contract_lot_size=30),
         replace(h, inspected_contract_tick_size=1),
