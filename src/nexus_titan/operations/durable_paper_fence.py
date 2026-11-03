@@ -108,6 +108,9 @@ class Stage49DurablePaperFence:
                 raise Stage49AdmissionBlocked("Coordinator DB must be independent of all ledgers")
             if db_path.exists() and not db_path.is_file():
                 raise Stage49AdmissionBlocked("Coordinator DB must be a regular file")
+        except Stage49AdmissionBlocked:
+            # PermissionError subclasses OSError; preserve intentional denials.
+            raise
         except (OSError, ValueError) as exc:
             raise Stage49AdmissionBlocked("Cannot validate coordinator DB path") from exc
         self._db_path = db_path
@@ -149,6 +152,8 @@ class Stage49DurablePaperFence:
                         "Coordinator belongs to a different account, capital or durable store layout"
                     )
                 conn.commit()
+        except Stage49AdmissionBlocked:
+            raise
         except (OSError, sqlite3.Error) as exc:
             raise Stage49AdmissionBlocked("Coordinator SQLite init/integrity failed") from exc
 
