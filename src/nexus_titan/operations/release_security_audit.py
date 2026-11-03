@@ -52,6 +52,9 @@ _REVIEWED_CODE = {
     "src/nexus_titan/operations/risk_boundary_inventory.py": {
         "Stage56BypassInventory": (),
     },
+    "src/nexus_titan/operations/local_approval_risk_review.py": {
+        "Stage57ApprovalRiskReview": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
@@ -59,7 +62,10 @@ _REVIEWED_CODE = {
         "DashboardBackendService": ("get_stage50_paper_safety",),
     },
     "src/nexus_titan/core/security_gates.py": {
-        "CryptographicApprovalVerifier": ("verify_and_consume",),
+        "CryptographicApprovalVerifier": (
+            "verify_and_consume", "revoke_token", "revoke_actor",
+            "local_revocation_status"
+        ),
     },
     "src/nexus_titan/virtual/order_manager.py": {
         "VirtualAccount": ("submit_order", "approve_order", "execute_fill"),
