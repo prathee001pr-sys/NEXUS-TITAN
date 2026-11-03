@@ -55,6 +55,9 @@ _REVIEWED_CODE = {
     "src/nexus_titan/operations/local_approval_risk_review.py": {
         "Stage57ApprovalRiskReview": (),
     },
+    "src/nexus_titan/simulation/stage58_execution_stress.py": {
+        "Stage58ExecutionScenario": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
