@@ -17,6 +17,7 @@
   const short = (x, max = 200) => typeof x === "string" && x.length > 0 &&
     x.length <= max && x.trim().length > 0;
   const sha = (x) => typeof x === "string" && /^[a-f0-9]{64}$/.test(x);
+  const gitSha = (x) => typeof x === "string" && /^[a-f0-9]{40}$/.test(x);
   const bool = (x) => x === true || x === false;
   const boundedStrings = (items, min = 0, max = 256) =>
     Array.isArray(items) && items.length >= min && items.length <= max &&
@@ -73,7 +74,7 @@
     check(d.merges_performed === 0 && d.broker_orders_transmitted === 0,
       "Stage62 cannot claim any merge or broker order.");
     check(integer(d.frozen_pr_count, 1, 100) &&
-      sha(d.frozen_main_sha) && sha(d.frozen_pr_snapshot_sha256),
+      gitSha(d.frozen_main_sha) && sha(d.frozen_pr_snapshot_sha256),
     "Invalid frozen PR metadata.");
     check(Array.isArray(d.frozen_root_prs) &&
       d.frozen_root_prs.length >= 1 && d.frozen_root_prs.length <= 100 &&
