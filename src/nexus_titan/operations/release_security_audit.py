@@ -65,6 +65,10 @@ _REVIEWED_CODE = {
         "Stage60OfflineResearchReport": (),
         "Stage60ResearchConfig": ("__post_init__",),
     },
+    "src/nexus_titan/research/stage61_evidence_scorecard.py": {
+        "Stage61FOMarketReadinessScorecard": (),
+        "Stage61EvidenceCheck": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
