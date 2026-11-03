@@ -35,6 +35,9 @@ _REVIEWED_CODE = {
     "src/nexus_titan/operations/durable_paper_fence.py": {
         "Stage49DurablePaperFence": ("inspect", "request_first_synthetic_buy"),
     },
+    "src/nexus_titan/operations/synthetic_capital_authority.py": {
+        "Stage53SyntheticCapitalAuthority": ("inspect", "hold_for_synthetic_research"),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
