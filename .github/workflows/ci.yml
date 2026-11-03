@@ -33,6 +33,8 @@ jobs:
         run: python scripts/run_stage64_shadow_trial_smoke.py
       - name: Stage65 final acceptance NO-GO and PR-overlap evidence smoke
         run: python scripts/run_stage65_final_acceptance.py
+      - name: Stage66 complete frozen PR filename inventory NO-MERGE smoke
+        run: python scripts/run_stage66_pr_inventory.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
