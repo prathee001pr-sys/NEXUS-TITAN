@@ -35,6 +35,8 @@ jobs:
         run: python scripts/run_stage65_final_acceptance.py
       - name: Stage66 complete frozen PR filename inventory NO-MERGE smoke
         run: python scripts/run_stage66_pr_inventory.py
+      - name: Stage67 PR3 PR5 calibration lineage exact-source NO-MERGE smoke
+        run: python scripts/run_stage67_calibration_reconciliation.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
