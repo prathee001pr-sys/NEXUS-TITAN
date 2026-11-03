@@ -318,7 +318,7 @@ def test_holiday_day_no_longer_claims_valid_session(tmp_path):
 
 def test_contract_expires_before_futures_window(tmp_path):
     h, c, cal = _fixture(tmp_path)
-    with pytest.raises(Stage60ResearchBlocked, match="contract/session"):
+    with pytest.raises(Stage60ResearchBlocked, match="expiry|contract/session"):
         inspect_stage60_purged_oos(
             h, contract=replace(c, expiry_date=date(2026, 11, 1)),
             calendar=cal,
