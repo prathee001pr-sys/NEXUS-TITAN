@@ -290,6 +290,20 @@ def test_tampering_with_preflighted_history_timestamp_fails_closed(tmp_path):
         inspect_stage60_purged_oos(damaged, contract=c, calendar=cal)
 
 
+def test_stage59_inspected_lot_and_tick_are_bound_not_reloaded_from_today(tmp_path):
+    h, c, cal = _fixture(tmp_path)
+    assert h.inspected_contract_lot_size == 25
+    assert h.inspected_contract_tick_size == c.tick_size
+    for altered in (
+        replace(h, inspected_contract_lot_size=30),
+        replace(h, inspected_contract_tick_size=1),
+    ):
+        with pytest.raises(Stage60ResearchBlocked, match="contract"):
+            inspect_stage60_purged_oos(
+                altered, contract=c, calendar=cal,
+            )
+
+
 def test_tampered_count_sha_or_authority_claim_rejected(tmp_path):
     h, c, cal = _fixture(tmp_path)
     variants = (
