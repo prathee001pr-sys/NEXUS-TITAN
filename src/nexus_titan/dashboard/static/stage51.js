@@ -154,7 +154,12 @@
       list.appendChild(li);
     }
   };
+  // Discard any old File.text() completion after the user clears the
+  // screen or selects a newer file. Prevents an obsolete local snapshot
+  // from reappearing unexpectedly after a rejected or cancelled import.
+  let selectionGeneration = 0;
   const reset = () => {
+    selectionGeneration += 1;
     byId("error").hidden = true;
     put("snapshotStatus", "NO SNAPSHOT ATTACHED");
     put("observedAt", "Last observed: —");
@@ -204,14 +209,18 @@
   };
   const fileInput = byId("snapshotFile");
   fileInput.addEventListener("change", async () => {
+    const generation = ++selectionGeneration;
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
     try {
       assert(file.size > 0 && file.size <= 256 * 1024,
         "Only nonempty Stage50 JSON files up to 256 KiB are accepted.");
-      const data = JSON.parse(await file.text());
+      const raw = await file.text();
+      if (generation !== selectionGeneration) return;
+      const data = JSON.parse(raw);
       render(data);
     } catch (err) {
+      if (generation !== selectionGeneration) return;
       reset();
       put("error", "Snapshot rejected: " + (err instanceof Error ? err.message : "Invalid file"));
       byId("error").hidden = false;
