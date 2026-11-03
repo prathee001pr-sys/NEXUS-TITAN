@@ -31,6 +31,8 @@ jobs:
         run: python scripts/run_stage62_integration_audit.py
       - name: Stage64 fabricated shadow trial governance NO-LIVE smoke
         run: python scripts/run_stage64_shadow_trial_smoke.py
+      - name: Stage65 final acceptance NO-GO and PR-overlap evidence smoke
+        run: python scripts/run_stage65_final_acceptance.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
