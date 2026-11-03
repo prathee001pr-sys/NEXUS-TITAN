@@ -254,9 +254,8 @@ def test_fabricated_trial_digest_can_be_recomputed_not_authenticated(context):
     original = _assess(snap, integration, fo, trial)
     altered = _assess(snap, integration, fo, replace(trial, local_trial_sha256="f" * 64))
     assert original.acceptance_packet_sha256 != altered.acceptance_packet_sha256
-    assert not altered.prospectively_signed_trial_plan_verified if hasattr(
-        altered, "prospectively_signed_trial_plan_verified"
-    ) else True
+    assert altered.safe_to_merge is False
+    assert altered.real_shadow_trading_performance_verified is False
     _always_no_go(altered)
 
 
