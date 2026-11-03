@@ -46,6 +46,12 @@ _REVIEWED_CODE = {
             "inspect", "reserve_synthetic_buy", "record_simulated_fill", "cancel_unfilled"
         ),
     },
+    "src/nexus_titan/operations/brokerless_risk_veto.py": {
+        "Stage56RiskPolicy": ("__post_init__",),
+    },
+    "src/nexus_titan/operations/risk_boundary_inventory.py": {
+        "Stage56BypassInventory": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
