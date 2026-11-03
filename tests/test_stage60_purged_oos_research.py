@@ -307,6 +307,14 @@ def test_tampered_count_sha_or_authority_claim_rejected(tmp_path):
             inspect_stage60_purged_oos(candidate, contract=c, calendar=cal)
 
 
+def test_mismatched_candle_vendor_label_fails_before_oos(tmp_path):
+    h, c, cal = _fixture(tmp_path)
+    forged = replace(h.candles[18], source="qa/other-provider")
+    altered = replace(h, candles=h.candles[:18] + (forged,) + h.candles[19:])
+    with pytest.raises(Stage60ResearchBlocked, match="grid"):
+        inspect_stage60_purged_oos(altered, contract=c, calendar=cal)
+
+
 def test_holiday_day_no_longer_claims_valid_session(tmp_path):
     h, c, _ = _fixture(tmp_path)
     closed = nse_equity_derivatives_baseline(
@@ -362,6 +370,24 @@ def test_claimed_external_option_authentication_rejected(tmp_path):
     with pytest.raises(Stage60ResearchBlocked, match="claims external authority"):
         inspect_stage60_purged_oos(
             h, contract=c, calendar=cal, option_catalog=_fake_catalog(h, auth=True),
+        )
+
+
+def test_claimed_full_market_options_coverage_rejected(tmp_path):
+    h, c, cal = _fixture(tmp_path)
+    fake = replace(_fake_catalog(h), full_market_history_coverage_verified=True)
+    with pytest.raises(Stage60ResearchBlocked, match="external authority"):
+        inspect_stage60_purged_oos(
+            h, contract=c, calendar=cal, option_catalog=fake,
+        )
+
+
+def test_missing_partition_preflight_fails_explicitly(tmp_path):
+    h, c, cal = _fixture(tmp_path)
+    malformed = replace(_fake_catalog(h), partitions=(object(),))
+    with pytest.raises(Stage60ResearchBlocked, match="Invalid declared options"):
+        inspect_stage60_purged_oos(
+            h, contract=c, calendar=cal, option_catalog=malformed,
         )
 
 
