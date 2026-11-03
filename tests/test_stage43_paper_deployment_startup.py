@@ -6,6 +6,7 @@ broker API, or asserted real identity verification.
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import date, datetime
 import sqlite3
 import pytest
 
@@ -13,7 +14,11 @@ from nexus_titan.operations.paper_deployment import (
     PaperDeploymentBlocked, PaperDeploymentConfig, open_paper_only_deployment,
 )
 from nexus_titan.shadow.paper_intent_gateway import PaperIntentDenied
-from nexus_titan.shadow.research_reservation_ledger import DurableResearchShadowLedger
+from nexus_titan.shadow.research_reservation_ledger import (
+    DurableResearchShadowLedger, GuardedBuyAdmission, ResearchLedgerError,
+)
+from nexus_titan.data.instrument_master import PointInTimeContractSpec
+from nexus_titan.risk.portfolio_risk import PortfolioRiskConfig
 from nexus_titan.virtual.order_manager import VirtualAccount, TradingMode, OrderState
 
 
@@ -229,18 +234,41 @@ def test_research_ledger_integrity_failure_rejects_startup(tmp_path):
     d=_open(cfg)
     with sqlite3.connect(cfg.research_db_path) as con:
         con.execute("DELETE FROM account_safety WHERE account_id='S43'")
-    with pytest.raises((PaperDeploymentBlocked,ValueError)):
+    with pytest.raises(PaperDeploymentBlocked,match="research ledger startup/integrity"):
         _open(cfg)
-    assert d.research_ledger.verify_integrity() is False
+    with pytest.raises(ResearchLedgerError,match="state does not match audit"):
+        d.research_ledger.verify_integrity()
 
 
 def test_research_outstanding_reservation_blocks_new_intents(tmp_path):
-    # The independent ledger must not be treated as a shared cash book.
+    # A valid, synthetic guarded options reservation blocks new deployment
+    # requests even when VirtualAccount's balance itself looks reconciled.
     d=_open(_cfg(tmp_path,enabled=True))
-    # Without a real point-in-time contract there is no valid research BUY
-    # to reserve. A deliberately unknown event must fail local audit.
-    d.research_ledger.enable_guarded_paper_mode()
-    assert d.status().paper_intents_enabled
+    contract=PointInTimeContractSpec(
+        symbol="NIFTYOPT",underlying="NIFTY",exchange="NSE",segment="OPTIONS",
+        lot_size=25,tick_size=0.05,freeze_quantity=1000,max_lots_per_trade=10,
+        strike_step=50.0,expiry_date=date(2026,11,5),
+        effective_from=date(2026,11,1),effective_to=date(2026,11,5),
+        source_reference="synthetic/not-licensed-real-data",source_verified=True,
+    )
+    d.research_ledger.reserve_buy_guarded(
+        order_id="S43-PENDING",contract=contract,strike=100.0,
+        option_type="CE",lots=2,
+        as_of=datetime.fromisoformat("2026-11-03T09:16:00+05:30"),
+        max_unit_premium=6.0,fee_buffer=25.0,
+        admission=GuardedBuyAdmission(
+            paper_trading_enabled=True,risk_config=PortfolioRiskConfig(),
+            stop_price=5.0,bid=5.0,ask=5.5,ask_quantity=400,
+            expected_edge_bps=2000.0,slippage_bps=1.0,
+            realized_daily_loss_pct=0.0,consecutive_losses=0,
+            current_drawdown_pct=0.0,
+        ),
+    )
+    assert d.research_ledger.status().open_order_count==1
+    assert d.research_ledger.verify_integrity()
+    assert d.status().read_only
+    with pytest.raises(PaperDeploymentBlocked,match="outstanding reservations"):
+        d.request_buy(symbol="ABC",quantity=1,entry_price=100,stop_price=95)
 
 
 def test_durable_gateway_policy_cannot_be_switched_off_after_startup(tmp_path):
