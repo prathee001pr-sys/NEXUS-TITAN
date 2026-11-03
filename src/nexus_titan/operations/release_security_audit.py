@@ -228,7 +228,13 @@ def inspect_stage52_security_sources(repo_root: Path) -> Stage52SecurityReview:
         if js and not bad_js and not missing_js
         else "Unsafe or incomplete static frontend: " + ", ".join(bad_js + missing_js),
     ))
-    required_css = ("#080b0f", "#151a20", "#b9c2cd", "#54c5d5", "#32af79", "#d65464")
+    # Compare the actual root theme declarations, not arbitrary color
+    # strings in gradients: otherwise a changed --cyan token can be masked
+    # by stale color references elsewhere in the stylesheet.
+    required_css = (
+        "--black:#080b0f", "--panel:#151a20", "--silver:#b9c2cd",
+        "--cyan:#54c5d5", "--green:#32af79", "--red:#d65464",
+    )
     missing_css = [mark for mark in required_css if mark not in css.lower()]
     findings.append(StaticSecurityCheck(
         "S52-LOCKED-THEME",
