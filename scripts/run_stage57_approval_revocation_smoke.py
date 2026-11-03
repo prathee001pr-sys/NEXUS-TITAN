@@ -75,7 +75,10 @@ def main() -> int:
         except PermissionError:
             token_refused = True
 
-        second_id, second_challenge = pending("DEF")
+        # Stage45 intentionally permits only one virgin-flat paper BUY.
+        # Evaluate independent actor denial on the SAME untouched pending
+        # order with a different signed token; never open a second BUY.
+        second_id, second_challenge = first_id, first_challenge
         second_token = verifier.issue_token(
             token_id="STAGE57-REVOKE-ACTOR", actor="LOCAL-LABEL-HUMAN",
             role="HUMAN_APPROVER", target_entity_id=second_challenge.target_entity_id,
