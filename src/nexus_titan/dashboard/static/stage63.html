@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>NEXUS TITAN | Offline Operator Audit</title>
+  <link rel="stylesheet" href="stage51.css">
+  <link rel="stylesheet" href="stage63.css">
+  <script defer src="stage63.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="TITAN operator areas">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">N</div>
+        <div><strong>NEXUS <span>TITAN</span></strong><small>TRADING INTELLIGENCE</small></div>
+      </div>
+      <div class="side-label">OFFLINE REVIEW</div>
+      <div class="side-item current">◈ &nbsp; Integration audit</div>
+      <div class="side-item">▤ &nbsp; Evidence status</div>
+      <div class="side-item">◇ &nbsp; Security blockers</div>
+      <div class="side-item">⌑ &nbsp; Human review</div>
+      <div class="sidebar-foot"><span class="small-dot"></span> LOCAL JSON VIEW ONLY
+        <small>No network · no orders · no production authority</small>
+      </div>
+    </aside>
+    <main id="operatorReview">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">NEXUS TITAN / GOVERNANCE / STAGE 63</div>
+          <h1>Operator audit overview</h1>
+          <p class="lead">Two independent, untrusted local exports · no live monitoring</p>
+        </div>
+        <div class="top-right">
+          <span class="pill muted">RELEASE NO-GO</span>
+          <span class="pill neutral">OFFLINE</span>
+          <span class="pill neutral">READ ONLY</span>
+        </div>
+      </header>
+      <section class="upload-row operator-intro" aria-label="Offline report scope">
+        <div>
+          <strong>Local security and research evidence only</strong>
+          <p>Choose the JSON output of Stage 62's audit CLI and Stage 61's synthetic smoke script.
+             A file loaded here is not an authenticated GitHub or NSE source. No server, refresh,
+             credential, market data, order, approval or strategy promotion is available.</p>
+        </div>
+        <button type="button" class="quiet" id="clearAll">Clear both reports</button>
+      </section>
+      <div class="warning-copy operator-warning">
+        PRODUCTION AND LIVE TRADING BLOCKED · A green-looking local structural check cannot
+        authorize a merge, independent risk approval or real-money order.
+      </div>
+      <div class="statusline" aria-live="polite">
+        <span class="status-symbol" aria-hidden="true">●</span>
+        <span id="overallStatus">NO REPORTS ATTACHED · NOT VERIFIED</span>
+        <span class="small">No automatic source refresh; the selected JSON is an untrusted snapshot</span>
+      </div>
+      <section class="hero-grid" aria-label="Architecture identity and integration">
+        <article class="hero">
+          <div class="section-overline">TITAN / LOCKED VISUAL IDENTITY</div>
+          <div class="face-frame" role="img" aria-label="Reserved for the exact previously approved TITAN face image; original artwork not connected">
+            <div class="face-orbit"><span class="face-text">APPROVED TITAN FACE<br>ASSET NOT CONNECTED</span></div>
+          </div>
+          <div class="hero-caption">
+            <strong>NEXUS TITAN</strong><span>Black / silver · Risk-first · Human-governed</span>
+          </div>
+          <p class="fine">Original approved cybernetic face asset is not available here. No substituted artwork.</p>
+        </article>
+        <article class="primary-panel">
+          <div class="section-overline">STAGE 62 / PR INTEGRATION</div>
+          <h2>Source and branch audit</h2>
+          <div class="upload-row mini-upload">
+            <div><strong>Integration audit JSON</strong><p>Generated using Stage62 CLI; stale or modified files remain untrusted.</p></div>
+            <div class="actions">
+              <label for="auditFile" class="file-label">Choose Stage 62 JSON</label>
+              <input type="file" id="auditFile" accept=".json,application/json" aria-label="Select local Stage62 audit JSON">
+              <button type="button" id="clearAudit" class="quiet">Clear</button>
+            </div>
+          </div>
+          <div id="auditError" class="error" role="alert" hidden></div>
+          <div class="data-line"><span>File status</span><strong id="auditStatus">NOT ATTACHED</strong></div>
+          <div class="data-line"><span>PR count (frozen)</span><strong id="prCount">—</strong></div>
+          <div class="data-line"><span>Independent main roots</span><strong id="prRoots">—</strong></div>
+          <div class="data-line"><span>Main protection (reported)</span><strong id="mainProtection">UNKNOWN</strong></div>
+          <div class="data-line"><span>File-diff coverage</span><strong id="diffCoverage">UNKNOWN</strong></div>
+          <div class="data-line"><span>Local static checks</span><strong id="staticChecks">UNVERIFIED</strong></div>
+          <div class="data-line"><span>Merge clearance</span><strong class="critical">NOT AUTHORIZED</strong></div>
+          <p class="fine">GitHub state is frozen in the file, not verified at view time. Files and base branches may have changed.</p>
+        </article>
+      </section>
+      <section class="card-grid operator-card-grid" aria-label="TITAN release restrictions">
+        <article class="card">
+          <div class="section-overline">INTEGRATION</div><h2>Branch evidence</h2>
+          <div class="data-line"><span>Source audit</span><strong id="sourceChecks">—</strong></div>
+          <div class="data-line"><span>Cross-module imports</span><strong id="importChecks">—</strong></div>
+          <div class="data-line"><span>CI source markers</span><strong id="ciChecks">—</strong></div>
+          <p class="fine">Source-level checks cannot prove merged-tree CI or runtime behavior.</p>
+        </article>
+        <article class="card">
+          <div class="section-overline">DATA EVIDENCE</div><h2>Market integrity</h2>
+          <div class="data-line"><span>Real F&amp;O licensing</span><b class="critical">NOT AUTHENTICATED</b></div>
+          <div class="data-line"><span>Actual executable depth</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>True F&amp;O P&amp;L</span><b class="critical">NOT VERIFIED</b></div>
+          <p class="fine">Synthetic candle volume and indicative fees are not authenticated fills.</p>
+        </article>
+        <article class="card">
+          <div class="section-overline">SAFETY</div><h2>Risk &amp; approvals</h2>
+          <div class="data-line"><span>Mandatory independent risk</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Independent human identity</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Atomic shared capital</span><b class="critical">NOT VERIFIED</b></div>
+          <p class="fine">Existing direct Python order/fill APIs remain a security and design blocker.</p>
+        </article>
+        <article class="card">
+          <div class="section-overline">OPERATIONS</div><h2>Release status</h2>
+          <div class="data-line"><span>Owner-approved merge</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Prospective merged-tree CI</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Live broker execution</span><b class="critical">DISABLED</b></div>
+          <p class="fine">No controls on this page can authorize, place, cancel or square off an order.</p>
+        </article>
+      </section>
+      <section class="operator-evidence card" aria-label="Stage61 research evidence">
+        <div class="section-overline">STAGE 61 / SYNTHETIC RESEARCH</div>
+        <h2>Evidence scorecard</h2>
+        <div class="upload-row mini-upload">
+          <div><strong>Local synthetic research JSON</strong><p>Use Stage61 smoke script output. No real market data or verified trade results.</p></div>
+          <div class="actions">
+            <label for="researchFile" class="file-label">Choose Stage 61 JSON</label>
+            <input type="file" id="researchFile" accept=".json,application/json" aria-label="Select local Stage61 synthetic research JSON">
+            <button type="button" id="clearResearch" class="quiet">Clear</button>
+          </div>
+        </div>
+        <div id="researchError" class="error" role="alert" hidden></div>
+        <div class="data-line"><span>File status</span><strong id="researchStatus">NOT ATTACHED</strong></div>
+        <div class="operator-markets">
+          <article class="mini-metric">
+            <span>NIFTY / synthetic only</span>
+            <strong id="niftyCandles">—</strong>
+            <p class="fine">Inspected candles</p>
+            <div class="data-line"><span>OOS folds</span><strong id="niftyFolds">—</strong></div>
+            <div class="data-line"><span>Signals</span><strong id="niftyPredictions">—</strong></div>
+            <div class="data-line"><span>Missing evidence</span><strong id="niftyMissing">—</strong></div>
+          </article>
+          <article class="mini-metric">
+            <span>BANKNIFTY / synthetic only</span>
+            <strong id="bankniftyCandles">—</strong>
+            <p class="fine">Inspected candles</p>
+            <div class="data-line"><span>OOS folds</span><strong id="bankniftyFolds">—</strong></div>
+            <div class="data-line"><span>Signals</span><strong id="bankniftyPredictions">—</strong></div>
+            <div class="data-line"><span>Missing evidence</span><strong id="bankniftyMissing">—</strong></div>
+          </article>
+        </div>
+        <p class="fine">Stage61's synthetic execution fee reserve is separate from future-direction predictions. It cannot be converted to net ₹ profit.</p>
+      </section>
+      <section class="bottom-grid" aria-label="Local audit findings">
+        <article class="card">
+          <div class="section-overline">SOURCE &amp; PR BLOCKERS</div><h2>Integration review findings</h2>
+          <ul id="auditBlockers" class="blockers operator-blockers">
+            <li>No Stage62 audit attached. Branch review not verified.</li>
+          </ul>
+          <p class="fine">A list in a local file may be incomplete or forged. Current GitHub status is not fetched.</p>
+        </article>
+        <article class="card">
+          <div class="section-overline">OUT-OF-SAMPLE &amp; MARKET BLOCKERS</div><h2>Research evidence missing</h2>
+          <ul id="researchBlockers" class="blockers operator-blockers">
+            <li>No Stage61 synthetic evidence attached. No market-performance claim.</li>
+          </ul>
+          <p class="fine">Even a locally consistent report cannot clear licensed data, official contract master, execution or owner review.</p>
+        </article>
+      </section>
+      <footer>STAGE 63 · OFFLINE UNTRUSTED LOCAL JSON VIEW · NO DATA FEED · NO SIGNING · NO TRADING · NOT PRODUCTION READY</footer>
+    </main>
+  </div>
+</body>
+</html>
