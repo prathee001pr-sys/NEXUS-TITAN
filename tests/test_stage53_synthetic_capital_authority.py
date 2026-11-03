@@ -178,8 +178,11 @@ def test_existing_hold_persists_across_new_instance_and_restart(tmp_path):
 
 
 def test_two_objects_same_sqlite_file_cannot_double_spend_limit(tmp_path):
-    a = _authority(tmp_path)
-    b = _authority(tmp_path)
+    # Each request is individually within 30%, but 2x 30% exceeds the
+    # aggregate 50% cap. One of two same-DB concurrent writers must lose.
+    policy = Stage53BudgetPolicy(3000, 5000)
+    a = _authority(tmp_path, policy=policy)
+    b = _authority(tmp_path, policy=policy)
 
     def attempt(instance, rid):
         try:
