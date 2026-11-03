@@ -190,7 +190,8 @@ def inspect_stage60_purged_oos(
         raise Stage60ResearchBlocked("Futures history endpoint drift")
     if not all(
         bar.symbol == history.symbol and bar.timeframe == history.timeframe
-        and bar.source and bar.timestamp == rows[0].timestamp + i * step
+        and bar.source == rows[0].source
+        and bar.timestamp == rows[0].timestamp + i * step
         for i, bar in enumerate(rows)
     ):
         raise Stage60ResearchBlocked("Futures timestamps/identity are not an unbroken grid")
@@ -216,6 +217,7 @@ def inspect_stage60_purged_oos(
                 or option_catalog.point_in_time_exchange_metadata_authenticated
                 or option_catalog.exchange_calendar_authenticated
                 or option_catalog.realistic_fo_backtest_verified
+                or option_catalog.full_market_history_coverage_verified
                 or option_catalog.strategy_promotion_allowed
                 or option_catalog.live_orders_transmitted != 0):
             raise Stage60ResearchBlocked("Untrusted options catalog claims external authority")
@@ -223,13 +225,16 @@ def inspect_stage60_purged_oos(
                 or option_catalog.first_observed_at > rows[0].timestamp
                 or option_catalog.last_observed_at < rows[-1].timestamp):
             raise Stage60ResearchBlocked("No structural options timeline coverage across futures window")
-        matching = [
-            p for p in option_catalog.partitions
-            if p.preflight.underlying == history.underlying
-        ]
-        if not matching:
+        try:
+            matching = [
+                p for p in option_catalog.partitions
+                if p.preflight.underlying == history.underlying
+            ]
+            option_count = sum(x.preflight.snapshot_count for x in matching)
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise Stage60ResearchBlocked("Invalid declared options partition metadata") from exc
+        if not matching or option_count < 1 or option_count > 20000:
             raise Stage60ResearchBlocked("Options catalog does not cover futures underlying")
-        option_count = sum(x.preflight.snapshot_count for x in matching)
         option_coverage = True  # ONLY time-window/source-declared metadata
 
     folds = []
