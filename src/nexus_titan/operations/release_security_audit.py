@@ -58,6 +58,9 @@ _REVIEWED_CODE = {
     "src/nexus_titan/simulation/stage58_execution_stress.py": {
         "Stage58ExecutionScenario": (),
     },
+    "src/nexus_titan/data/stage59_futures_history.py": {
+        "Stage59FuturesHistory": ("fetch_candles",),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
