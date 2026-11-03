@@ -126,7 +126,7 @@ def test_tampered_stage59_file_hash_does_not_match_oos_report(tmp_path):
 ])
 def test_oos_report_must_match_exact_stage59_history_identity(tmp_path, field, update):
     h, o, e = _inputs(tmp_path)
-    r = inspect_stage61_fo_evidence(h, replace(o, **{field if field != "file_sha256" else "source_file_sha256": update}), execution=e)
+    r = inspect_stage61_fo_evidence(h, replace(o, **{{"file_sha256": "source_file_sha256", "expiry_date": "contract_expiry_date"}.get(field, field): update}), execution=e)
     assert not r.local_inputs_structurally_consistent
     assert "S61-STAGE60-HISTORY-BINDING" in r.structural_conflicts
     _never_authorized(r)
