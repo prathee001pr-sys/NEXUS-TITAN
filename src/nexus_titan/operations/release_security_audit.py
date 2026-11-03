@@ -77,6 +77,10 @@ _REVIEWED_CODE = {
         "Stage64TrialPlan": ("__post_init__",),
         "Stage64ShadowTrialGovernanceReport": (),
     },
+    "src/nexus_titan/operations/stage65_release_acceptance.py": {
+        "Stage65FinalAcceptanceReport": (),
+        "Stage65AcceptanceCheck": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
