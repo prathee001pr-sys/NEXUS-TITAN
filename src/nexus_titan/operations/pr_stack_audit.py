@@ -96,7 +96,8 @@ def inspect_pr_dependency_snapshot(snapshot: dict[str, Any]) -> PRStackAudit:
     repo = snapshot.get("repository")
     if (not isinstance(repo, str)
             or re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is None
-            or len(repo) > 200):
+            or len(repo) > 200
+            or any(segment in (".", "..") for segment in repo.split("/"))):
         raise StackAuditError("Valid repository owner/name required")
     captured = _snapshot_time(snapshot.get("captured_at_utc"))
     if snapshot.get("main_ref") != "main":
