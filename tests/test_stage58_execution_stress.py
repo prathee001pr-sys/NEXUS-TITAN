@@ -208,7 +208,7 @@ def test_resting_limit_without_queue_evidence_not_assumed_filled():
 
 
 def test_resting_limit_with_synthetic_queue_evidence_is_lot_aligned():
-    r = _run((_obs(queue_traded_volume=100),),
+    r = _run((_obs(queue_traded_volume=200),),
              order_type="LIMIT", limit_price=5.45)
     assert r.status == "FILLED"
     assert r.filled_quantity == 50
