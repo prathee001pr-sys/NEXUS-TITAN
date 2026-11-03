@@ -45,7 +45,7 @@ function baseline() {
       combined_cash_cents: null, two_book_cash_match_observed: true,
     },
     paper_orders: { total: 1, pending_manual_approval: 1,
-      approved_unfilled: 0, fill_fragments: 0 },
+      approved_unfilled: 0, fill_fragments: 0, open_position_symbols: 0 },
     paper_session: {
       paper_orders_enabled_in_config: true,
       strict_manual_account: true, pretrade_risk_enabled: true,
