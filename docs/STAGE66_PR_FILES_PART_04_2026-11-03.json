@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "source": "GitHub REST open PR list plus paginated changed-file lists; operator snapshot, unsigned and non-atomic",
+  "captured_at_utc": "2026-11-03T13:18:25.548Z",
+  "expected_open_count": 56,
+  "part": 4,
+  "parts": 6,
+  "pull_requests": [
+    {
+      "number": 32,
+      "head_ref": "feature/stage40-gateway-only-paper-enforcement-2026-11-02",
+      "base_ref": "feature/stage39-strict-paper-adversarial-e2e-2026-11-02",
+      "head_sha": "3ca13fbeaf114c655daf81d9aec0a919cecc5bf7",
+      "base_sha": "2434c20e07fc047dab19d58b3f4b078450ee8aba",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE40_GATEWAY_ONLY_PAPER_POLICY_2026-11-02.md",
+        "src/nexus_titan/shadow/paper_intent_gateway.py",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage40_gateway_only_paper.py"
+      ]
+    },
+    {
+      "number": 33,
+      "head_ref": "feature/stage41-risk-policy-drift-gate-2026-11-02",
+      "base_ref": "feature/stage40-gateway-only-paper-enforcement-2026-11-02",
+      "head_sha": "c59e177ad853548fdc432aefa2d20ffa83d62f8b",
+      "base_sha": "3ca13fbeaf114c655daf81d9aec0a919cecc5bf7",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE41_PENDING_BUY_RISK_POLICY_DRIFT_2026-11-02.md",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage41_paper_risk_policy_drift.py"
+      ]
+    },
+    {
+      "number": 34,
+      "head_ref": "feature/stage42-gateway-risk-e2e-validation-2026-11-02",
+      "base_ref": "feature/stage41-risk-policy-drift-gate-2026-11-02",
+      "head_sha": "e10418e3a38e10a6da9f64a53d7bfa960d02db98",
+      "base_sha": "c59e177ad853548fdc432aefa2d20ffa83d62f8b",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGES40_42_SEQUENTIAL_GATEWAY_RISK_REVIEW_2026-11-02.md",
+        "scripts/run_stage42_gateway_risk_e2e.py",
+        "tests/test_stage42_gateway_risk_e2e.py"
+      ]
+    },
+    {
+      "number": 35,
+      "head_ref": "feature/stage43-paper-deployment-startup-gate-2026-11-03",
+      "base_ref": "feature/stage42-gateway-risk-e2e-validation-2026-11-02",
+      "head_sha": "b1383bbfb71fbd84dd0f8ecee1c48040d286db9b",
+      "base_sha": "e10418e3a38e10a6da9f64a53d7bfa960d02db98",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE43_PAPER_DEPLOYMENT_INTEGRATION_GATE_2026-11-03.md",
+        "scripts/run_stage43_paper_deployment_smoke.py",
+        "src/nexus_titan/operations/paper_deployment.py",
+        "tests/test_stage43_paper_deployment_startup.py"
+      ]
+    },
+    {
+      "number": 36,
+      "head_ref": "feature/stage44-historical-fo-catalog-preflight-2026-11-03",
+      "base_ref": "feature/stage43-paper-deployment-startup-gate-2026-11-03",
+      "head_sha": "f46471a449a9832e269f975ba92dbe0aa9eafdfd",
+      "base_sha": "b1383bbfb71fbd84dd0f8ecee1c48040d286db9b",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE44_HISTORICAL_FO_CATALOG_PREFLIGHT_2026-11-03.md",
+        "scripts/run_stage44_historical_fo_catalog.py",
+        "src/nexus_titan/data/historical_fo_catalog.py",
+        "tests/test_stage44_historical_fo_catalog.py"
+      ]
+    },
+    {
+      "number": 37,
+      "head_ref": "feature/stage45-offline-paper-entry-readiness-2026-11-03",
+      "base_ref": "feature/stage44-historical-fo-catalog-preflight-2026-11-03",
+      "head_sha": "62a83cc0d4ff64366f1f83f10be74c6e3297476c",
+      "base_sha": "f46471a449a9832e269f975ba92dbe0aa9eafdfd",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE45_OFFLINE_PAPER_ENTRY_READINESS_2026-11-03.md",
+        "scripts/run_stage45_paper_entry_smoke.py",
+        "src/nexus_titan/operations/offline_entry_readiness.py",
+        "tests/test_stage45_offline_entry_readiness.py"
+      ]
+    },
+    {
+      "number": 38,
+      "head_ref": "feature/stage46-pr-stack-integration-audit-2026-11-03",
+      "base_ref": "feature/stage45-offline-paper-entry-readiness-2026-11-03",
+      "head_sha": "119d663bdc96e9793ad04108bfad2df23461a993",
+      "base_sha": "62a83cc0d4ff64366f1f83f10be74c6e3297476c",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE46_PR_STACK_INTEGRATION_AUDIT_2026-11-03.md",
+        "docs/STAGE46_PR_STACK_SNAPSHOT_2026-11-03.json",
+        "scripts/run_stage46_pr_stack_audit.py",
+        "src/nexus_titan/operations/pr_stack_audit.py",
+        "tests/test_stage46_pr_stack_audit.py"
+      ]
+    },
+    {
+      "number": 39,
+      "head_ref": "feature/stage47-offline-risk-veto-boundary-2026-11-03",
+      "base_ref": "feature/stage46-pr-stack-integration-audit-2026-11-03",
+      "head_sha": "e64146bea7b04ba868811192625f6ab4ce2a8d1e",
+      "base_sha": "119d663bdc96e9793ad04108bfad2df23461a993",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE47_OFFLINE_RISK_VETO_GATE_2026-11-03.md",
+        "scripts/run_stage47_offline_risk_veto_smoke.py",
+        "src/nexus_titan/operations/offline_risk_veto.py",
+        "tests/test_stage47_offline_risk_veto.py"
+      ]
+    },
+    {
+      "number": 40,
+      "head_ref": "feature/stage48-signed-paper-approval-2026-11-03",
+      "base_ref": "feature/stage47-offline-risk-veto-boundary-2026-11-03",
+      "head_sha": "f875f705eda3c568521b7e32d5a5761b7c7f701d",
+      "base_sha": "e64146bea7b04ba868811192625f6ab4ce2a8d1e",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE48_SIGNED_SYNTHETIC_PAPER_APPROVAL_2026-11-03.md",
+        "scripts/run_stage48_signed_paper_smoke.py",
+        "src/nexus_titan/operations/signed_paper_approval.py",
+        "tests/test_stage48_signed_paper_approval.py"
+      ]
+    },
+    {
+      "number": 41,
+      "head_ref": "feature/stage49-durable-paper-entry-fence-2026-11-03",
+      "base_ref": "feature/stage48-signed-paper-approval-2026-11-03",
+      "head_sha": "9c74e2f1630e7eca4032891c27f6fb97c0e6a25b",
+      "base_sha": "f875f705eda3c568521b7e32d5a5761b7c7f701d",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE49_DURABLE_PAPER_ENTRY_FENCE_2026-11-03.md",
+        "scripts/run_stage49_paper_fence_smoke.py",
+        "src/nexus_titan/operations/durable_paper_fence.py",
+        "tests/test_stage49_durable_paper_fence.py"
+      ]
+    }
+  ]
+}
