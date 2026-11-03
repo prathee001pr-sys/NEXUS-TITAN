@@ -125,6 +125,20 @@ async function main() {
     d => { d.data_source = "EXTERNAL_BROKER"; },
     d => { d.paper_orders.total = -1; },
     d => { d.schema_version = 2; },
+    // Stage52 adversarial semantic assertions: source untrusted, reject
+    // dangerous contradictions rather than creating a reassuring UI.
+    d => { d.status = "LOCAL_SYNTHETIC_REVIEW_ONLY"; },
+    d => { d.blockers = []; },
+    d => { d.account.two_book_cash_match_observed = false; },
+    d => { d.account.research_cash_cents = 5000100; },
+    d => { d.admission_fence.latest_attempt_state = null; },
+    d => { d.admission_fence.latest_attempt_state = "SUCCESS"; },
+    d => { d.admission_fence.attempt_count = 0; },
+    d => { d.admission_fence.attempt_count = true; },
+    d => { d.admission_fence.first_synthetic_buy_preflight_passed = true; },
+    d => { d.paper_orders.pending_manual_approval = 99; },
+    d => { d.paper_orders.approved_unfilled = -1; },
+    d => { d.paper_orders.fill_fragments = Infinity; },
   ]) {
     const item = baseline();
     mutate(item);
