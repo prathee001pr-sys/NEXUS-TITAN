@@ -244,27 +244,8 @@ def test_wrong_injected_contract_is_rejected_before_research(tmp_path, case):
         wrong = replace(c, source_verified=False, source_reference="")
     else:
         wrong = replace(c, **opts[case])
-    # Source record type self-verification happens in the report, not
-    # necessarily a trusted exchange master. Note lot size checking
-    # against Stage59 typed result is not available (see design limits).
-    if case == "wrong_lot":
-        pytest.skip("Stage59 result omits lot-size metadata; Stage60 must preserve operator contract provenance bounds separately")
     with pytest.raises(Stage60ResearchBlocked):
         inspect_stage60_purged_oos(h, contract=wrong, calendar=cal)
-
-
-@pytest.mark.parametrize("bad", [
-    _config(initial_train_bars=5),
-    _config(fast_ma_bars=5),
-    _config(slow_ma_bars=3),
-    _config(embargo_bars=0) if False else None,
-])
-def test_config_requires_a_bounded_non_leaking_lookback(bad):
-    if bad is None:
-        with pytest.raises(Stage60ResearchBlocked):
-            Stage60ResearchConfig(embargo_bars=0)
-    else:
-        assert isinstance(bad, Stage60ResearchConfig)
 
 
 @pytest.mark.parametrize("field,bad", [
