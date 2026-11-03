@@ -145,7 +145,7 @@ def test_bounded_per_session_futures_data_with_vendor_independent_adapter(
     _assert_not_authoritative(result)
 
 
-@pytest.mark.parametrize("interval,rows", [(1, 375), (5, 75), (15, 25), (30, 13)])
+@pytest.mark.parametrize("interval,rows", [(1, 375), (5, 75), (15, 25)])
 def test_declared_single_full_session_grid_counts_are_exact(tmp_path, interval, rows):
     manifest, _ = _fixture(tmp_path, count=rows, interval=interval,
                            coverage="FULL_SESSION")
@@ -154,6 +154,16 @@ def test_declared_single_full_session_grid_counts_are_exact(tmp_path, interval, 
     assert result.count == rows
     assert result.expected_slots == rows
     _assert_not_authoritative(result)
+
+
+def test_thirty_minute_grid_must_not_misclaim_regular_full_session(tmp_path):
+    # Regular NSE session is 09:15–15:30 (375 minutes), not divisible
+    # by 30. A 30m bar at 15:15 would incorrectly extend past close.
+    manifest, _ = _fixture(
+        tmp_path, count=13, interval=30, coverage="FULL_SESSION",
+    )
+    with pytest.raises(Stage59HistoryBlocked, match="session|FULL_SESSION"):
+        _run(tmp_path, manifest)
 
 
 def test_partial_history_cannot_claim_full_session(tmp_path):
