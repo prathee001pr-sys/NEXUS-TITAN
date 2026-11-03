@@ -136,6 +136,12 @@ def simulate_stage58_synthetic_execution(
         raise Stage58ExecutionBlocked("Explicit Indian cost schedule required")
     if not isinstance(microstructure, MicrostructureConfig):
         raise Stage58ExecutionBlocked("Explicit microstructure settings required")
+    # Validate the *entire* indicative tariff even when no depth is
+    # available and no simulated fragments will incur a fee.
+    try:
+        calculate_indian_trade_costs("BUY", 1.0, 1, contract.segment, costs)
+    except (ValueError, TypeError, OverflowError) as exc:
+        raise Stage58ExecutionBlocked("Invalid explicit transaction cost tariff") from exc
     if (side not in ("BUY", "SELL") or order_type not in ("MARKET", "LIMIT")
             or type(requested_lots) is not int or not 1 <= requested_lots
             or requested_lots > contract.max_lots_per_trade
@@ -185,6 +191,10 @@ def simulate_stage58_synthetic_execution(
         if (item.book.symbol != contract.symbol
                 or item.book.tick_size != contract.tick_size):
             raise Stage58ExecutionBlocked("Displayed book symbol/tick mismatch with contract")
+        if (max(item.book.bid_price, item.book.ask_price) > 1_000_000_000
+                or item.book.volatility_annualized > 10.0
+                or contract.lot_size * requested_lots > 1_000_000):
+            raise Stage58ExecutionBlocked("Displayed quote or scenario bounds exceeded")
         day = item.observed_at.astimezone(calendar.zone).date()
         if (not contract.effective_from <= day <= contract.effective_to
                 or contract.expiry_date is None or day > contract.expiry_date):
