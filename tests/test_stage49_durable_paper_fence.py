@@ -290,7 +290,7 @@ def test_separate_ledgers_cash_drift_blocks_admission(tmp_path):
 def test_manual_capital_adjustment_is_not_silently_reconciled(tmp_path):
     session, fence = _new(tmp_path)
     # Changes in only one account are incompatible with virgin/flat Stage45.
-    session._deployment.virtual_account.deposit_capital(100, reason="test", user_confirmed=True)
+    session._deployment.virtual_account.adjust_capital(100, "TOP_UP", reason="test", user_confirmed=True)
     assert not fence.inspect().can_request_first_synthetic_buy
     assert fence.inspect().attempt_count == 0
 
