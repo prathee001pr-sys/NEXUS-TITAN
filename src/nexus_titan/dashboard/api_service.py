@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from nexus_titan.dashboard.paper_read_model import (
+    Stage50ReadOnlyPaperDashboard, unattached_stage50_dashboard,
+)
 from nexus_titan.derivatives.options_engine import calculate_option_greeks
 from nexus_titan.research.backtest import compute_file_sha256, load_candles, run_backtest
 from nexus_titan.research.post_mortem import generate_post_mortem
@@ -25,6 +28,7 @@ class DashboardBackendService:
         starting_capital: float | None = None,
         options_spot_price: float | None = None,
         master_orchestrator: Any | None = None,
+        stage50_paper_dashboard: Stage50ReadOnlyPaperDashboard | None = None,
     ) -> None:
         if account is None:
             if starting_capital is None:
@@ -43,6 +47,20 @@ class DashboardBackendService:
         )
         self.options_spot_price = float(options_spot_price) if options_spot_price is not None else None
         self.master_orchestrator = master_orchestrator
+        if stage50_paper_dashboard is not None and (
+            not isinstance(stage50_paper_dashboard, Stage50ReadOnlyPaperDashboard)
+            or stage50_paper_dashboard.account is not account
+        ):
+            raise ValueError(
+                "Stage50 paper read model must use the same explicit VirtualAccount instance"
+            )
+        self.stage50_paper_dashboard = stage50_paper_dashboard
+
+    def get_stage50_paper_safety(self) -> dict[str, Any]:
+        """Read-only optional Stage50 data contract, never a command endpoint."""
+        if self.stage50_paper_dashboard is None:
+            return unattached_stage50_dashboard()
+        return self.stage50_paper_dashboard.snapshot()
 
     def get_system_telemetry(self) -> dict[str, Any]:
         reconcile = self.account.reconcile()
@@ -99,6 +117,7 @@ class DashboardBackendService:
             "recent_orders": [o.to_dict() for o in list(self.account.orders.values())[-10:]],
             "options_analytics": options,
             "master_integration": self.get_master_integration_status(),
+            "paper_safety": self.get_stage50_paper_safety(),
             "market_data": {"status": "NO_PROVIDER_CONNECTED", "live_prices": False},
             "safety": {"broker_connected": False, "live_trading_enabled": False,
                        "generated_code_execution_enabled": False},
