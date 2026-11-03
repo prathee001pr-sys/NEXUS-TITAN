@@ -174,3 +174,84 @@ def test_original_snapshot_files_are_never_modified(tmp_path):
     b = preflight_historical_fo_catalog((item,))
     assert a == b
     assert original == {p.name: p.read_bytes() for p in item.root.iterdir()}
+
+
+def test_stage44_cli_accepts_synthetic_catalog_but_no_source_authority(tmp_path):
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    item = _fixture(tmp_path / "contract_a", "synthetic-catalog")
+    contract = item.contract
+    decl = item.declaration
+    manifest = {
+        "dataset_id": decl.dataset_id,
+        "underlying": decl.underlying,
+        "provider_reference": decl.provider_reference,
+        "licence_reference": decl.licence_reference,
+        "calendar_reference": decl.calendar_reference,
+        "contract_reference": decl.contract_reference,
+        "declared_start": decl.declared_start.isoformat(),
+        "declared_end": decl.declared_end.isoformat(),
+        "dataset_class_claim": decl.dataset_class_claim,
+        "declared_holidays": [],
+        "snapshots": [
+            {
+                "filename": s.filename,
+                "observed_at": s.observed_at.isoformat(),
+                "sha256": s.sha256,
+            } for s in decl.snapshots
+        ],
+        "contract": {
+            "symbol": contract.symbol, "underlying": contract.underlying,
+            "exchange": contract.exchange, "segment": contract.segment,
+            "lot_size": contract.lot_size, "tick_size": contract.tick_size,
+            "freeze_quantity": contract.freeze_quantity,
+            "effective_from": contract.effective_from.isoformat(),
+            "effective_to": contract.effective_to.isoformat(),
+            "expiry_date": contract.expiry_date.isoformat(),
+            "strike_step": contract.strike_step,
+            "max_lots_per_trade": contract.max_lots_per_trade,
+            "source_reference": contract.source_reference,
+            "source_verified": contract.source_verified,
+        },
+    }
+    (tmp_path / "contract_a.json").write_text(json.dumps(manifest), encoding="utf-8")
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(json.dumps({
+        "partitions": [{"directory": "contract_a", "manifest": "contract_a.json"}]
+    }), encoding="utf-8")
+    repo = Path(__file__).resolve().parents[1]
+    command = [
+        sys.executable, str(repo / "scripts" / "run_stage44_historical_fo_catalog.py"),
+        "--catalog-root", str(tmp_path), "--catalog", str(catalog),
+    ]
+    proc = subprocess.run(command, cwd=repo, text=True, capture_output=True, check=False)
+    assert proc.returncode == 0, proc.stderr
+    out = json.loads(proc.stdout)
+    assert out["dataset_count"] == 1
+    assert out["snapshot_count"] == 3
+    assert out["strategy_promotion_allowed"] is False
+    assert out["external_source_authenticated"] is False
+    assert out["realistic_fo_backtest_verified"] is False
+    assert out["live_orders_transmitted"] == 0
+
+
+def test_stage44_cli_rejects_path_escape_without_reading_files(tmp_path):
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    catalog = tmp_path / "catalog.json"
+    catalog.write_text(json.dumps({
+        "partitions": [{"directory": "../outside", "manifest": "manifest.json"}]
+    }), encoding="utf-8")
+    repo = Path(__file__).resolve().parents[1]
+    proc = subprocess.run([
+        sys.executable, str(repo / "scripts" / "run_stage44_historical_fo_catalog.py"),
+        "--catalog-root", str(tmp_path), "--catalog", str(catalog),
+    ], cwd=repo, text=True, capture_output=True, check=False)
+    assert proc.returncode == 2
+    assert "plain basename" in proc.stderr
