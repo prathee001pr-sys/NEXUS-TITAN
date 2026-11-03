@@ -69,6 +69,10 @@ _REVIEWED_CODE = {
         "Stage61FOMarketReadinessScorecard": (),
         "Stage61EvidenceCheck": (),
     },
+    "src/nexus_titan/operations/integration_candidate_audit.py": {
+        "Stage62IntegrationReview": (),
+        "Stage62Check": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
