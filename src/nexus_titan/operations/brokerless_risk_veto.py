@@ -16,7 +16,7 @@ import hashlib
 import json
 import re
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 _MAX_CENTS = 900_000_000_000_000
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}\Z", re.ASCII)
@@ -212,8 +212,10 @@ def inspect_stage56_synthetic_risk(
     if not isinstance(clock, datetime) or clock.tzinfo is None or clock.utcoffset() is None:
         issues.append("REFERENCE_CLOCK_UNVERIFIED")
     elif quote_valid:
-        age_ms = int((clock.astimezone(timezone.utc) - quote.observed_at.astimezone(timezone.utc)).total_seconds() * 1000)
-        if age_ms < 0 or age_ms > policy.max_quote_age_seconds * 1000:
+        # Use the exact timedelta rather than truncating milliseconds.
+        # A quote even 1 microsecond in the future must never pass.
+        age = clock.astimezone(timezone.utc) - quote.observed_at.astimezone(timezone.utc)
+        if age < timedelta(0) or age > timedelta(seconds=policy.max_quote_age_seconds):
             issues.append("QUOTE_STALE_OR_FUTURE_DATED")
 
     if quote_valid:
