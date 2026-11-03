@@ -73,6 +73,11 @@ class Stage59FuturesHistory:
     expected_slots: int
     declared_full_session: bool
     candles: tuple[OHLCVCandle, ...]
+    # Carry the operator-declared spec used to validate each row so a
+    # later OOS caller cannot accidentally substitute a different lot/tick.
+    # These values are STILL not independently authenticated exchange data.
+    inspected_contract_lot_size: int = 0
+    inspected_contract_tick_size: Decimal = Decimal("0")
     # No operator-supplied name, digest, claimed licence or flag can set these.
     vendor_identity_authenticated: bool = False
     licence_authenticated: bool = False
@@ -334,4 +339,6 @@ def preflight_stage59_futures_csv(
         file_sha256=checksum, count=len(bars), expected_slots=expected_slots,
         declared_full_session=(declaration.coverage_mode == "FULL_SESSION"),
         candles=tuple(bars),
+        inspected_contract_lot_size=contract.lot_size,
+        inspected_contract_tick_size=tick,
     )
