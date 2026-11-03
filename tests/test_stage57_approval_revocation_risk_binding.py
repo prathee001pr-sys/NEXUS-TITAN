@@ -388,8 +388,8 @@ def test_risk_drift_or_changed_evidence_fails_local_binding(tmp_path, change):
     original = inspect_stage56_synthetic_risk(intent, quote, account, now=now)
     kw = {}
     if change == "quote":
-        quote = replace(quote, expected_edge_bps=original.observed_spread_bps.__class__(41))
-        # A float is malformed for integer-bps Stage56 evidence.
+        quote = replace(quote, expected_edge_bps=41)
+        # The new quote is still valid locally, but its original binding differs.
     if change == "policy":
         from nexus_titan.operations.brokerless_risk_veto import Stage56RiskPolicy
         kw["policy"] = Stage56RiskPolicy(max_quote_age_seconds=10)
