@@ -16,7 +16,7 @@ import hmac
 import io
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Literal
@@ -33,6 +33,7 @@ _COLUMNS = (
 _CSV_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\.csv\Z", re.ASCII)
 _SHA = re.compile(r"[0-9a-fA-F]{64}\Z", re.ASCII)
 _INTEGER = re.compile(r"(0|[1-9][0-9]*)\Z", re.ASCII)
+_PRICE = re.compile(r"(0|[1-9][0-9]*)(\\.[0-9]{1,8})?\\Z", re.ASCII)
 _MAX_PRICE = Decimal("1000000000")
 _MAX_VOLUME = 1_000_000_000_000
 _ALLOWED_INTERVALS = (1, 5, 15, 30)
@@ -124,7 +125,8 @@ def _aware(value: object, name: str) -> datetime:
 
 
 def _integer(raw: str, label: str, *, upper: int, positive: bool = False) -> int:
-    if not isinstance(raw, str) or _INTEGER.fullmatch(raw) is None:
+    if (not isinstance(raw, str) or len(raw) > 16
+            or _INTEGER.fullmatch(raw) is None):
         raise Stage59HistoryBlocked(label + " must be a nonnegative decimal integer")
     n = int(raw)
     if n > upper or (positive and n == 0):
@@ -133,7 +135,8 @@ def _integer(raw: str, label: str, *, upper: int, positive: bool = False) -> int
 
 
 def _price(raw: str, label: str, tick: Decimal) -> Decimal:
-    if not isinstance(raw, str) or len(raw) > 60:
+    if (not isinstance(raw, str) or len(raw) > 60
+            or _PRICE.fullmatch(raw) is None):
         raise Stage59HistoryBlocked("Invalid " + label + " price")
     try:
         v = Decimal(raw)
@@ -186,7 +189,7 @@ def preflight_stage59_futures_csv(
         raise Stage59HistoryBlocked("Supported intraday intervals are 1, 5, 15, 30 minutes")
     if (contract.exchange.upper() != "NSE" or contract.segment != "FUTURES"
             or contract.underlying not in ("NIFTY", "BANKNIFTY")
-            or not isinstance(contract.expiry_date, __import__("datetime").date)
+            or not isinstance(contract.expiry_date, date)
             or contract.source_verified is not True
             or contract.source_reference != declaration.contract_reference
             or type(contract.lot_size) is not int or contract.lot_size < 1):
