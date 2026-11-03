@@ -50,6 +50,20 @@ def _exact_dict(value: object, keys: frozenset[str], kind: str) -> dict:
     return value
 
 
+def _strict_pairs(pairs: list[tuple[str, object]]) -> dict:
+    """Never silently let a later duplicate JSON field override veto evidence."""
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Repeated JSON property")
+        result[key] = value
+    return result
+
+
+def _reject_nonfinite_token(token: str):
+    raise ValueError("NaN/Infinity not permitted in synthetic risk input")
+
+
 def _deny_json(reason: str) -> dict:
     # Do not echo unsafe user-provided bytes, account identifiers or secrets.
     return {
@@ -74,7 +88,11 @@ def main() -> int:
         raw = sys.stdin.buffer.read(_MAX_INPUT + 1)
         if not 0 < len(raw) <= _MAX_INPUT:
             raise ValueError("Input must be one nonempty JSON document <= 16 KiB")
-        request = json.loads(raw.decode("utf-8"))
+        request = json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=_strict_pairs,
+            parse_constant=_reject_nonfinite_token,
+        )
         _exact_dict(request, frozenset({
             "schema_version", "intent", "quote", "account",
         }), "top-level")
