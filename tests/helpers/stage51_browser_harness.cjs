@@ -156,6 +156,32 @@ async function main() {
   assert.equal(e("virtualCash").textContent, "—");
   assert.equal(e("error").hidden, true);
   assert.equal(e("snapshotFile").value, "");
+  // A stale async File.text response cannot restore cleared screen.
+  let finishStale = null;
+  const slowText = new Promise(resolve => { finishStale = resolve; });
+  const slowJSON = JSON.stringify(good);
+  e("snapshotFile").files = [{ size: Buffer.byteLength(slowJSON),
+    text: () => slowText }];
+  const obsoleteRead = e("snapshotFile").handlers.change();
+  e("clearSnapshot").handlers.click();
+  finishStale(slowJSON);
+  await obsoleteRead;
+  assert.equal(e("snapshotStatus").textContent, "NO SNAPSHOT ATTACHED");
+  assert.equal(e("virtualCash").textContent, "—");
+
+  // A newer selection wins, even if the earlier File.text() completes later.
+  let resolveEarlier = null;
+  const pendingEarlier = new Promise(resolve => { resolveEarlier = resolve; });
+  e("snapshotFile").files = [{ size: Buffer.byteLength(slowJSON),
+    text: () => pendingEarlier }];
+  const oldSelection = e("snapshotFile").handlers.change();
+  await load(good);
+  assert.equal(e("virtualCash").textContent, "₹50,000.00");
+  resolveEarlier(JSON.stringify({ schema_version: 2 }));
+  await oldSelection;
+  assert.equal(e("virtualCash").textContent, "₹50,000.00");
+  assert.equal(e("error").hidden, true);
+
   process.stdout.write("STAGE51_NODE_BROWSER_SECURITY_CHECKS_PASSED\n");
 }
 main().catch(error => {
