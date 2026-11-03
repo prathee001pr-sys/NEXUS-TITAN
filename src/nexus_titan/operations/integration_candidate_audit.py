@@ -42,6 +42,9 @@ _IMPORT_EDGES = (
     ("research/stage61_evidence_scorecard", "data/stage59_futures_history", "Stage59FuturesHistory"),
     ("research/stage61_evidence_scorecard", "research/stage60_purged_oos", "Stage60OfflineResearchReport"),
     ("research/stage61_evidence_scorecard", "simulation/stage58_execution_stress", "Stage58ExecutionScenario"),
+    ("operations/stage65_release_acceptance", "operations/integration_candidate_audit", "Stage62IntegrationReview"),
+    ("operations/stage65_release_acceptance", "research/stage61_evidence_scorecard", "Stage61FOMarketReadinessScorecard"),
+    ("operations/stage65_release_acceptance", "shadow/stage64_trial_governance", "Stage64ShadowTrialGovernanceReport"),
 )
 
 _WORKFLOW_REQUIREMENTS = (
