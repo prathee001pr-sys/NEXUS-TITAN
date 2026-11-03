@@ -125,8 +125,9 @@ Do not call its digest cryptographic risk attestation.
   the review function.
 - `scripts/run_stage57_approval_revocation_smoke.py` creates
   disposable synthetic Stage48 paper account and HMAC key. It creates
-  two pending paper BUY intents, revokes one token ID and a second
-  signer label, checks both approvals denied, demonstrates a
+  one pending paper BUY intent (Stage45's virgin-flat rule), revokes
+  one token ID and a second signer label for that same untouched order
+  using a separate token, checks both approvals denied, demonstrates a
   non-authoritative Stage56 QA binding review and confirms **no
   orders filled or broker orders sent**.
 - Stage52's no-write source inventory now expects the Stage57
