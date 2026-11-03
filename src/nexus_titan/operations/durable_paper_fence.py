@@ -16,6 +16,7 @@ import hashlib
 import json
 import math
 import sqlite3
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -151,16 +152,18 @@ class Stage49DurablePaperFence:
         except (OSError, sqlite3.Error) as exc:
             raise Stage49AdmissionBlocked("Coordinator SQLite init/integrity failed") from exc
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         conn = sqlite3.connect(self._db_path, timeout=5.0, isolation_level=None)
         try:
             conn.execute("PRAGMA busy_timeout=5000")
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
-            return conn
-        except Exception:
+            yield conn
+        finally:
+            # SQLite's own context manager does not close handles.
+            # Leaving a transaction uncommitted rolls it back here.
             conn.close()
-            raise
 
     def _verify_scope(self, conn: sqlite3.Connection) -> None:
         row = conn.execute(
@@ -169,7 +172,7 @@ class Stage49DurablePaperFence:
         if row != (self._account_id, self._starting_cents, self._scope_hash):
             raise Stage49AdmissionBlocked("Coordinator scope mismatch or corrupted")
 
-    def _flat_cash(self) -> tuple[int, int, tuple[str, ...]]:
+    def _flat_cash(self) -> tuple[int | None, int | None, tuple[str, ...]]:
         deployment = self._deployment
         blockers: list[str] = []
         v_cash: int | None = None
