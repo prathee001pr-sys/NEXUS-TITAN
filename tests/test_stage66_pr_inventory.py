@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def copied(tmp_path: Path) -> Path:
     dest = tmp_path / "docs"
-    dest.mkdir()
+    dest.mkdir(parents=True)
     for part in range(1, 7):
         src = ROOT / "docs" / f"STAGE66_PR_FILES_PART_{part:02d}_2026-11-03.json"
         shutil.copy2(src, dest / src.name)
