@@ -8,6 +8,9 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import date, datetime
 import sqlite3
+import json
+import subprocess
+import sys
 import pytest
 
 from nexus_titan.operations.paper_deployment import (
@@ -277,3 +280,19 @@ def test_durable_gateway_policy_cannot_be_switched_off_after_startup(tmp_path):
     assert d.status().read_only
     with pytest.raises(PaperDeploymentBlocked):
         d.request_buy(symbol="ABC",quantity=1,entry_price=100,stop_price=95)
+
+
+def test_stage43_cli_smoke_outputs_only_bounded_synthetic_evidence():
+    root=Path(__file__).resolve().parents[1]
+    proc=subprocess.run(
+        [sys.executable,str(root/"scripts"/"run_stage43_paper_deployment_smoke.py")],
+        text=True,capture_output=True,check=False,cwd=root,timeout=45,
+    )
+    assert proc.returncode==0,proc.stderr
+    report=json.loads(proc.stdout)
+    assert report["all_checks_passed"]
+    assert report["checks_passed"]==report["checks_total"]==10
+    assert report["live_orders_transmitted"]==0
+    assert report["production_ready"] is False
+    assert report["cross_ledger_atomicity_verified"] is False
+    assert report["externally_authenticated_identity"] is False
