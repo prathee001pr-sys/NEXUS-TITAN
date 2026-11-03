@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "source": "GitHub REST open PR list plus paginated changed-file lists; operator snapshot, unsigned and non-atomic",
+  "captured_at_utc": "2026-11-03T13:19:02.204Z",
+  "expected_open_count": 56,
+  "part": 6,
+  "parts": 6,
+  "pull_requests": [
+    {
+      "number": 52,
+      "head_ref": "feature/stage60-purged-fo-oos-research-2026-11-03",
+      "base_ref": "feature/stage59-futures-history-quality-preflight-2026-11-03",
+      "head_sha": "1d08f9cb00ba516ef29bd427009e61162d370340",
+      "base_sha": "6ff296c5ebef60872004722214fb97dc8b6247c5",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE60_PURGED_FO_OOS_DIRECTIONAL_RESEARCH_2026-11-03.md",
+        "scripts/run_stage60_purged_oos_smoke.py",
+        "src/nexus_titan/data/stage59_futures_history.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/research/stage60_purged_oos.py",
+        "tests/test_stage60_purged_oos_research.py"
+      ]
+    },
+    {
+      "number": 53,
+      "head_ref": "feature/stage61-unified-fo-evidence-no-go-scorecard-2026-11-03",
+      "base_ref": "feature/stage60-purged-fo-oos-research-2026-11-03",
+      "head_sha": "287e9336b128f029bc9884959e253457742a255f",
+      "base_sha": "1d08f9cb00ba516ef29bd427009e61162d370340",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE61_UNIFIED_FO_RESEARCH_EVIDENCE_SCORECARD_2026-11-03.md",
+        "scripts/run_stage61_fo_evidence_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/research/stage61_evidence_scorecard.py",
+        "tests/test_stage61_fo_evidence_scorecard.py"
+      ]
+    },
+    {
+      "number": 54,
+      "head_ref": "feature/stage62-no-merge-integrated-audit-2026-11-03",
+      "base_ref": "feature/stage61-unified-fo-evidence-no-go-scorecard-2026-11-03",
+      "head_sha": "7eef2890950781f638a337a32884762b429e7718",
+      "base_sha": "287e9336b128f029bc9884959e253457742a255f",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE62_PR_DEPENDENCY_SNAPSHOT_2026-11-03.json",
+        "docs/STAGE62_PR_STACK_SOURCE_AND_CI_INTEGRATION_AUDIT_2026-11-03.md",
+        "scripts/run_stage62_integration_audit.py",
+        "src/nexus_titan/operations/integration_candidate_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage62_integration_candidate_audit.py"
+      ]
+    },
+    {
+      "number": 55,
+      "head_ref": "feature/stage63-offline-operator-status-view-2026-11-03",
+      "base_ref": "feature/stage62-no-merge-integrated-audit-2026-11-03",
+      "head_sha": "7adda76b6c2a0427bdec21019788c94765b64df0",
+      "base_sha": "7eef2890950781f638a337a32884762b429e7718",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE63_OFFLINE_OPERATOR_AUDIT_DASHBOARD_2026-11-03.md",
+        "src/nexus_titan/dashboard/static/stage63.css",
+        "src/nexus_titan/dashboard/static/stage63.html",
+        "src/nexus_titan/dashboard/static/stage63.js",
+        "tests/helpers/stage63_browser_harness.cjs",
+        "tests/test_stage63_operator_dashboard.py"
+      ]
+    },
+    {
+      "number": 56,
+      "head_ref": "feature/stage64-prospective-shadow-trial-governance-2026-11-03",
+      "base_ref": "feature/stage63-offline-operator-status-view-2026-11-03",
+      "head_sha": "24e5249d2d42c0a3cd50c6ddad6f0a70146e0580",
+      "base_sha": "7adda76b6c2a0427bdec21019788c94765b64df0",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE64_PROSPECTIVE_SHADOW_TRIAL_GOVERNANCE_2026-11-03.md",
+        "scripts/run_stage64_shadow_trial_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/shadow/stage64_trial_governance.py",
+        "tests/test_stage64_shadow_trial_governance.py"
+      ]
+    },
+    {
+      "number": 57,
+      "head_ref": "feature/stage65-final-acceptance-no-go-2026-11-03",
+      "base_ref": "feature/stage64-prospective-shadow-trial-governance-2026-11-03",
+      "head_sha": "5500f6833fefb46b016068d1a94b81fdb3fa497b",
+      "base_sha": "24e5249d2d42c0a3cd50c6ddad6f0a70146e0580",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE65_FINAL_ACCEPTANCE_NO_GO_HANDOFF_2026-11-03.md",
+        "docs/STAGE65_FINAL_PR_REVIEW_SNAPSHOT_2026-11-03.json",
+        "scripts/run_stage65_final_acceptance.py",
+        "src/nexus_titan/operations/integration_candidate_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/stage65_release_acceptance.py",
+        "tests/test_stage65_final_release_acceptance.py"
+      ]
+    }
+  ]
+}
