@@ -61,6 +61,10 @@ _REVIEWED_CODE = {
     "src/nexus_titan/data/stage59_futures_history.py": {
         "Stage59FuturesHistory": ("fetch_candles",),
     },
+    "src/nexus_titan/research/stage60_purged_oos.py": {
+        "Stage60OfflineResearchReport": (),
+        "Stage60ResearchConfig": ("__post_init__",),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
