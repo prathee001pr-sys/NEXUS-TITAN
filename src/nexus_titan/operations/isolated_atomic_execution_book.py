@@ -208,6 +208,13 @@ class Stage55IsolatedSyntheticExecutionBook:
             self.account_id, self.starting_cents, self._scope,
         ):
             raise Stage55SyntheticBookBlocked("Synthetic book scope/head changed")
+        derived = self._derive(conn)
+        if (head[3] != derived[1] or head[4] != derived[2]
+                or head[5] != derived[5] or head[6] != derived[6]):
+            raise Stage55SyntheticBookBlocked("Synthetic event/head balances disagree")
+        return derived
+
+    def _derive(self, conn):
         events = conn.execute(
             "SELECT seq,operation_id,kind,order_id,symbol,qty,price_cents,"
             "fee_cents,fee_buffer_cents,previous_sha,event_sha "
@@ -284,9 +291,6 @@ class Stage55IsolatedSyntheticExecutionBook:
                     or paid_notional + paid_fees + cash != self.starting_cents):
                 raise Stage55SyntheticBookBlocked("Synthetic cash conservation failed")
             previous = hashed
-        if (head[3] != cash or head[4] != reserved
-                or head[5] != len(events) or head[6] != previous):
-            raise Stage55SyntheticBookBlocked("Synthetic event/head balances disagree")
         recomputed = sum(
             (o["qty"] - o["filled"]) * o["limit"]
             + o["fee_budget"] - o["fee_spent"]
@@ -346,7 +350,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 # Derive all balances in this SAME transaction from the
                 # immutable event history. The head is the second committed
                 # half of the same SQLite transaction, not another DB.
-                calculated = self._replay_without_head(conn)
+                calculated = self._derive(conn)
                 updated = conn.execute(
                     "UPDATE execution_head SET cash_cents=?,reserved_cents=?,"
                     "revision=?,event_sha=? WHERE singleton=1 AND revision=? AND event_sha=?",
@@ -371,62 +375,6 @@ class Stage55IsolatedSyntheticExecutionBook:
             raise
         except (OSError, sqlite3.Error, OverflowError, TypeError, ValueError) as exc:
             raise Stage55SyntheticBookBlocked("Local synthetic transaction failed") from exc
-
-    def _replay_without_head(self, conn):
-        """Check an appended event against a provisional matching head.
-
-        The existing persisted head remains unchanged until the append
-        passes a full derived-accounting replay inside the transaction.
-        """
-        last = conn.execute(
-            "SELECT seq,event_sha FROM execution_events ORDER BY seq DESC LIMIT 1"
-        ).fetchone()
-        # SQLite SAVEPOINT allows updating the head for a complete replay
-        # and restoring it before real CAS, without any separate commit.
-        conn.execute("SAVEPOINT stage55_provisional")
-        try:
-            old = conn.execute(
-                "SELECT cash_cents,reserved_cents,revision,event_sha FROM execution_head"
-            ).fetchone()
-            # Compute the incremental price/fees/reserve effect only for
-            # the last appended event; full replay afterwards validates it.
-            evt = conn.execute(
-                "SELECT kind,order_id,qty,price_cents,fee_cents,"
-                "fee_buffer_cents FROM execution_events ORDER BY seq DESC LIMIT 1"
-            ).fetchone()
-            kind, oid, qty, price, fee, buffer = evt
-            # Read predecessor state using a provisional replay of events
-            # after temporarily excluding the newly appended row.
-            seq = last[0]
-            conn.execute("DELETE FROM execution_events WHERE seq=?", (seq,))
-            prev_orders, _, _, _, _, _, _ = self._replay_checked(conn)
-            prev_order = prev_orders.get(oid)
-            conn.execute(
-                "INSERT INTO execution_events SELECT ?,operation_id,kind,order_id,symbol,"
-                "qty,price_cents,fee_cents,fee_buffer_cents,previous_sha,event_sha "
-                "FROM (SELECT * FROM execution_events WHERE 0)", (seq,)
-            ) if False else None
-            # SAVEPOINT rollback restores the event; compute the head
-            # deltas using predecessor order data preserved in memory.
-        finally:
-            conn.execute("ROLLBACK TO stage55_provisional")
-            conn.execute("RELEASE stage55_provisional")
-        cash, reserved = old[0], old[1]
-        if kind == "OPEN":
-            reserved += qty * price + buffer
-        elif kind == "FILL":
-            cash -= qty * price + fee
-            reserved -= qty * prev_order["limit"] + fee
-            if prev_order["filled"] + qty == prev_order["qty"]:
-                reserved -= prev_order["fee_budget"] - prev_order["fee_spent"] - fee
-        else:
-            reserved -= (
-                (prev_order["qty"] - prev_order["filled"]) * prev_order["limit"]
-                + prev_order["fee_budget"] - prev_order["fee_spent"]
-            )
-        if cash < 0 or reserved < 0 or cash < reserved:
-            raise Stage55SyntheticBookBlocked("Synthetic provisional cash accounting failed")
-        return (None, cash, reserved)
 
     def reserve_synthetic_buy(self, *, request_id: str, symbol: str,
                               quantity: int, limit_price_cents: int,
