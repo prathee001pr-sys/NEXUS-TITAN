@@ -51,6 +51,7 @@ _WORKFLOW_REQUIREMENTS = (
     ("CI-PYTHON-3-VERSIONS", r"python-version: \['3\.11', '3\.12', '3\.13'\]"),
     ("CI-FULL-VALIDATION", r"run:\s*python scripts/run_project_validation\.py"),
     ("CI-SYNTHETIC-E2E", r"run:\s*python scripts/run_stage25_full_research_audit\.py"),
+    ("CI-STAGE62-NO-MERGE", r"run:\s*python scripts/run_stage62_integration_audit\.py"),
 )
 
 
