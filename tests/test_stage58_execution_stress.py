@@ -390,6 +390,28 @@ def test_future_period_cost_schedule_rejected_when_no_fills_too():
         _run((_obs(ask_qty=0),), costs=replace(COSTS, effective_date="2027-01-01"))
 
 
+def test_cost_tariff_invalid_even_when_no_displayed_depth():
+    with pytest.raises(Stage58ExecutionBlocked, match="transaction cost tariff"):
+        _run((_obs(ask_qty=0),), costs=replace(COSTS, brokerage_pct=float("nan")))
+
+
+def test_extreme_book_and_contract_size_are_bounded_without_fee_overflow():
+    with pytest.raises(Stage58ExecutionBlocked, match="bounds exceeded"):
+        _run((_obs(bid=1_100_000_000, ask=1_100_000_000),))
+    giant = _contract(lot_size=1_000_001, freeze_quantity=10_000_000)
+    with pytest.raises(Stage58ExecutionBlocked, match="bounds exceeded"):
+        _run((_obs(),), contract=giant, requested_lots=1)
+
+
+def test_invalid_late_snapshot_rejects_whole_trajectory_before_any_fill():
+    late = _obs(
+        event="Q-LATE", at=AT + timedelta(seconds=1),
+        declared=False,
+    )
+    with pytest.raises(Stage58ExecutionBlocked, match="displayed-depth source"):
+        _run((_obs(), late), requested_lots=4)
+
+
 def test_stage58_offline_script_smoke_only_research():
     import json
     import subprocess
