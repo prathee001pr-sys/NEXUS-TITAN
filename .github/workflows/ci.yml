@@ -39,6 +39,8 @@ jobs:
         run: python scripts/run_stage67_calibration_reconciliation.py
       - name: Stage68 selected combined candidate offline NO-GO integration smoke
         run: python scripts/run_stage68_combined_candidate.py
+      - name: Stage69 synthetic Risk Veto and budget crosscheck NO-LIVE smoke
+        run: python scripts/run_stage69_synthetic_risk_budget_smoke.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
