@@ -279,6 +279,9 @@ def open_stage48_signed_paper_session(
                     durable_db.resolve(), config.research_db_path.resolve()
                 )):
             raise Stage48ApprovalBlocked("Approval replay DB must be separate and not symlinked")
+    except Stage48ApprovalBlocked:
+        # PermissionError inherits OSError: preserve deliberate policy denials.
+        raise
     except (OSError, TypeError, ValueError) as exc:
         raise Stage48ApprovalBlocked("Approval replay DB path is invalid") from exc
 
