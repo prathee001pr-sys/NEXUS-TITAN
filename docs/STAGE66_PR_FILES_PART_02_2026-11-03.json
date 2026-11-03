@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "source": "GitHub REST open PR list plus paginated changed-file lists; operator snapshot, unsigned and non-atomic",
+  "captured_at_utc": "2026-11-03T13:17:38.014Z",
+  "expected_open_count": 56,
+  "part": 2,
+  "parts": 6,
+  "pull_requests": [
+    {
+      "number": 12,
+      "head_ref": "feature/stage20-recovery-multiday-evidence-2026-11-02",
+      "base_ref": "feature/stage19-durable-research-shadow-ledger-2026-11-02",
+      "head_sha": "94a295a083d2340f44ef9ec4fcad0296db1699cd",
+      "base_sha": "c0404b04d548dbe689166d99c0b974c0b73d8d52",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE20_SHADOW_MULTIDAY_RECOVERY_2026-11-02.md",
+        "src/nexus_titan/shadow/research_recovery_validation.py",
+        "tests/test_stage20_research_recovery_validation.py"
+      ]
+    },
+    {
+      "number": 13,
+      "head_ref": "feature/stage21-unified-evidence-readiness-2026-11-02",
+      "base_ref": "feature/stage20-recovery-multiday-evidence-2026-11-02",
+      "head_sha": "d548495f364f5102b6060a3e45cf83c8866b1f35",
+      "base_sha": "94a295a083d2340f44ef9ec4fcad0296db1699cd",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE21_UNIFIED_SHADOW_EVIDENCE_REVIEW_2026-11-02.md",
+        "src/nexus_titan/shadow/unified_readiness.py",
+        "tests/test_stage21_unified_readiness.py"
+      ]
+    },
+    {
+      "number": 14,
+      "head_ref": "feature/stage22-offline-integration-smoke-2026-11-02",
+      "base_ref": "feature/stage21-unified-evidence-readiness-2026-11-02",
+      "head_sha": "e17ff1213f2daa9049fef1f71e0acd4c302cb0dc",
+      "base_sha": "d548495f364f5102b6060a3e45cf83c8866b1f35",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE22_INTEGRATION_AUDIT_AND_OFFLINE_SMOKE_2026-11-02.md",
+        "scripts/run_stage22_research_smoke.py",
+        "tests/test_stage22_offline_integration.py"
+      ]
+    },
+    {
+      "number": 15,
+      "head_ref": "feature/stage23-guarded-options-paper-research-2026-11-02",
+      "base_ref": "feature/stage22-offline-integration-smoke-2026-11-02",
+      "head_sha": "b12c688b94815f87350b630b008eb7e2b51b5146",
+      "base_sha": "e17ff1213f2daa9049fef1f71e0acd4c302cb0dc",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE23_GUARDED_OPTIONS_PAPER_RESEARCH_2026-11-02.md",
+        "src/nexus_titan/shadow/guarded_options_research.py",
+        "tests/test_stage23_guarded_options_research.py"
+      ]
+    },
+    {
+      "number": 16,
+      "head_ref": "feature/stage24-long-options-exit-fifo-2026-11-02",
+      "base_ref": "feature/stage23-guarded-options-paper-research-2026-11-02",
+      "head_sha": "b118a218327bccd2862a55a55e694a58dcf29fe4",
+      "base_sha": "b12c688b94815f87350b630b008eb7e2b51b5146",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE24_LONG_OPTIONS_EXIT_FIFO_2026-11-02.md",
+        "src/nexus_titan/shadow/long_option_exit_research.py",
+        "tests/test_stage24_long_option_exit_research.py"
+      ]
+    },
+    {
+      "number": 17,
+      "head_ref": "feature/stage25-sell-aware-multiday-e2e-audit-2026-11-02",
+      "base_ref": "feature/stage24-long-options-exit-fifo-2026-11-02",
+      "head_sha": "104eb267767df8d9ca968a17ea25131b6faffb97",
+      "base_sha": "b118a218327bccd2862a55a55e694a58dcf29fe4",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE25_FINAL_E2E_SYNTHETIC_BACKTEST_AUDIT_2026-11-02.md",
+        "docs/STAGE25_SELL_AWARE_MULTIDAY_AND_BACKTEST_2026-11-02.md",
+        "scripts/run_stage25_full_research_audit.py",
+        "src/nexus_titan/shadow/research_reservation_ledger.py",
+        "src/nexus_titan/shadow/sell_aware_multiday.py",
+        "tests/test_stage25_sell_aware_multiday.py"
+      ]
+    },
+    {
+      "number": 18,
+      "head_ref": "feature/stage26-historical-fo-bundle-preflight-2026-11-02",
+      "base_ref": "feature/stage25-sell-aware-multiday-e2e-audit-2026-11-02",
+      "head_sha": "74aea563f0b62e14d6320dbd8d4c0f18905942a8",
+      "base_sha": "104eb267767df8d9ca968a17ea25131b6faffb97",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE26_HISTORICAL_FO_SOURCE_PREFLIGHT_AND_RISK_AUDIT_2026-11-02.md",
+        "scripts/run_stage26_fo_bundle_preflight.py",
+        "src/nexus_titan/data/historical_fo_bundle.py",
+        "tests/test_stage26_historical_fo_bundle.py"
+      ]
+    },
+    {
+      "number": 19,
+      "head_ref": "feature/stage27-nifty-spot-daily-ingest-2026-11-02",
+      "base_ref": "feature/stage26-historical-fo-bundle-preflight-2026-11-02",
+      "head_sha": "6dfe8fec99a921888691414a35df096e01e78c20",
+      "base_sha": "74aea563f0b62e14d6320dbd8d4c0f18905942a8",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE27_NIFTY_SPOT_DAILY_IMPORT_2026-11-02.md",
+        "scripts/import_nifty_spot_daily.py",
+        "src/nexus_titan/data/nifty_spot_daily.py",
+        "tests/test_stage27_nifty_spot_daily.py"
+      ]
+    },
+    {
+      "number": 20,
+      "head_ref": "feature/stage28-guarded-paper-ledger-admission-2026-11-02",
+      "base_ref": "feature/stage27-nifty-spot-daily-ingest-2026-11-02",
+      "head_sha": "ca4f2a1c9c94d1d354c1f1602fb4d56bf49a9f4c",
+      "base_sha": "6dfe8fec99a921888691414a35df096e01e78c20",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE28_ATOMIC_GUARDED_PAPER_RESEARCH_ADMISSION_2026-11-02.md",
+        "src/nexus_titan/shadow/guarded_options_research.py",
+        "src/nexus_titan/shadow/research_reservation_ledger.py",
+        "tests/test_stage28_guarded_paper_ledger_admission.py"
+      ]
+    },
+    {
+      "number": 21,
+      "head_ref": "feature/stage29-emergency-exit-admission-2026-11-02",
+      "base_ref": "feature/stage28-guarded-paper-ledger-admission-2026-11-02",
+      "head_sha": "a70b3c1711a33b7bf0aad97bce829caf60977b8a",
+      "base_sha": "ca4f2a1c9c94d1d354c1f1602fb4d56bf49a9f4c",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage29_emergency_exit_admission.py"
+      ]
+    }
+  ]
+}
