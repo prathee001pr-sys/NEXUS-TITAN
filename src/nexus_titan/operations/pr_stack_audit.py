@@ -91,7 +91,8 @@ def inspect_pr_dependency_snapshot(snapshot: dict[str, Any]) -> PRStackAudit:
     they are not proof of a Git merge conflict. Missing file lists never
     establish non-overlap or successful integration.
     """
-    if not isinstance(snapshot, dict) or snapshot.get("schema_version") != 1:
+    if (not isinstance(snapshot, dict) or isinstance(snapshot.get("schema_version"), bool)
+            or snapshot.get("schema_version") != 1):
         raise StackAuditError("Versioned PR snapshot object required")
     repo = snapshot.get("repository")
     if (not isinstance(repo, str)
