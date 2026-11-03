@@ -315,6 +315,8 @@ def test_json_cli_strict_schema_and_bad_evidence(alter):
 @pytest.mark.parametrize("raw", [
     b"", b"not-json", b"{}", b"[]" ,
     b'{"schema_version":NaN}', b"x" * 16385,
+    b'{"schema_version":1,"schema_version":1}',
+    b'{"schema_version":Infinity}',
 ])
 def test_cli_malformed_or_oversized_payload_fails_closed(raw):
     run, data = _run(payload=raw)
@@ -322,6 +324,24 @@ def test_cli_malformed_or_oversized_payload_fails_closed(raw):
     assert not data["local_synthetic_screen_passed"]
     assert not data["order_submission_authorized"]
     assert not data["live_trading_enabled"]
+
+
+def test_invalid_nan_caller_balance_returns_veto_without_hashing_or_exception():
+    result = _check(account=_account(available_cents=float("nan")))
+    assert not result.local_synthetic_screen_passed
+    assert "UNTRUSTED_OR_INVALID_ACCOUNT_RISK_STATE" in result.blockers
+    assert result.input_sha256 is None
+    _release_permanently_blocked(result)
+
+
+def test_exact_quote_age_boundary_and_one_microsecond_overage():
+    allowed = _check(quote=_quote(observed_at=CURRENT - timedelta(seconds=20)))
+    denied = _check(quote=_quote(
+        observed_at=CURRENT - timedelta(seconds=20, microseconds=1),
+    ))
+    assert allowed.local_synthetic_screen_passed
+    assert not denied.local_synthetic_screen_passed
+    assert "QUOTE_STALE_OR_FUTURE_DATED" in denied.blockers
 
 
 def test_audit_reports_existing_public_legacy_bypasses_without_claiming_security():
