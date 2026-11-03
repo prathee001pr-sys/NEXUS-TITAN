@@ -34,7 +34,7 @@ def test_visual_assets_exist_and_keep_approved_theme_contract():
     assert "NO LIVE PRICE" in html
     assert "APPROVED TITAN FACE" in html
     assert "ASSET NOT CONNECTED" in html
-    assert "stage51" in js
+    assert "Stage51" in js
     for name in ("surface", "panel", "silver", "text", "cyan_activity",
                  "positive_market", "negative_market"):
         assert _LOCKED_THEME[name].lower() in css.lower()
