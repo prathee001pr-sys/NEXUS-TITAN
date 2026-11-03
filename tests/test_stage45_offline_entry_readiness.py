@@ -180,3 +180,26 @@ def test_bad_type_fails_and_cannot_create_account():
         Stage45ConservativePaperEntry(object())
     with pytest.raises(TypeError):
         inspect_stage45_offline_entry(None)
+
+
+def test_cli_brokerless_synthetic_stage45_smoke():
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    done = subprocess.run(
+        [sys.executable, str(root / "scripts" / "run_stage45_paper_entry_smoke.py")],
+        cwd=root, text=True, capture_output=True, check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    state = json.loads(done.stdout)
+    assert state["default_denied"]
+    assert state["fresh_flat_opt_in_passed"]
+    assert state["first_intent_pending_manual_approval"]
+    assert state["second_parallel_intent_blocked"]
+    assert state["no_paper_fills"]
+    assert state["live_orders_transmitted"] == 0
+    assert state["production_ready"] is False
+    assert state["cross_ledger_atomicity_verified"] is False
