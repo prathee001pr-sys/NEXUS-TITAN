@@ -73,6 +73,10 @@ _REVIEWED_CODE = {
         "Stage62IntegrationReview": (),
         "Stage62Check": (),
     },
+    "src/nexus_titan/shadow/stage64_trial_governance.py": {
+        "Stage64TrialPlan": ("__post_init__",),
+        "Stage64ShadowTrialGovernanceReport": (),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
