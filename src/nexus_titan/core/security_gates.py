@@ -57,6 +57,18 @@ class CryptographicApprovalVerifier:
                 snapshot_hash TEXT NOT NULL,
                 consumed_at_epoch INTEGER NOT NULL
             )""")
+            # Stage57: negative-only persistent revocation. This never grants
+            # approval or authenticates a human actor. Share this SAME SQLite
+            # transaction domain with consumed nonces to prevent revocation /
+            # consumption races between cooperating verifier instances.
+            db.execute("""CREATE TABLE IF NOT EXISTS revoked_approval_tokens (
+                token_id TEXT PRIMARY KEY,
+                revoked_at_epoch INTEGER NOT NULL
+            )""")
+            db.execute("""CREATE TABLE IF NOT EXISTS revoked_approval_actors (
+                actor TEXT PRIMARY KEY,
+                revoked_at_epoch INTEGER NOT NULL
+            )""")
         # Approval replay metadata should not be readable by other local users.
         # The parent directory must also be protected by the deployment operator.
         if os.name == "posix" and self.db_path.exists():
@@ -99,6 +111,79 @@ class CryptographicApprovalVerifier:
         mac = self._compute_mac(token_id, actor, role, target_entity_id, snapshot_hash, issued, expires)
         return SignedApprovalToken(token_id, actor, role, target_entity_id, snapshot_hash, issued, expires, mac)
 
+    @staticmethod
+    def _revocation_subject(value: str, kind: str) -> str:
+        # Same max-length bound as existing signed tokens. A revoked identity
+        # cannot be reinstated using a different in-process verifier instance.
+        if not isinstance(value, str) or not value.strip() or len(value) > 512:
+            raise PermissionError(kind + " must be a nonempty bounded string")
+        return value
+
+    def revoke_token(self, token_id: str, *, now_epoch: int | None = None) -> bool:
+        """Permanently deny a token ID in the replay DB. Idempotent, deny-only.
+
+        This is NOT authenticated administration; a real deployment needs an
+        independent operator/control-plane boundary before exposing it.
+        """
+        subject = self._revocation_subject(token_id, "Token ID")
+        if now_epoch is not None and (type(now_epoch) is not int or now_epoch < 0):
+            raise PermissionError("Invalid revocation timestamp")
+        current = int(time.time()) if now_epoch is None else now_epoch
+        db = self._connect()
+        try:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute(
+                "INSERT OR IGNORE INTO revoked_approval_tokens VALUES (?,?)",
+                (subject, current),
+            )
+            db.commit()
+        finally:
+            db.close()
+        return True
+
+    def revoke_actor(self, actor: str, *, now_epoch: int | None = None) -> bool:
+        """Permanently deny every current/future signed token for this label.
+
+        A self-claimed 'actor' is only an HMAC field, NOT verified human ID.
+        Does NOT recall already accepted paper orders or fill history.
+        """
+        subject = self._revocation_subject(actor, "Actor label")
+        if now_epoch is not None and (type(now_epoch) is not int or now_epoch < 0):
+            raise PermissionError("Invalid revocation timestamp")
+        current = int(time.time()) if now_epoch is None else now_epoch
+        db = self._connect()
+        try:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute(
+                "INSERT OR IGNORE INTO revoked_approval_actors VALUES (?,?)",
+                (subject, current),
+            )
+            db.commit()
+        finally:
+            db.close()
+        return True
+
+    def local_revocation_status(self, *, token_id: str, actor: str) -> dict[str, bool]:
+        """Read-only local labels; not signer identity or token validity."""
+        token_key = self._revocation_subject(token_id, "Token ID")
+        actor_key = self._revocation_subject(actor, "Actor label")
+        db = self._connect()
+        try:
+            token_revoked = db.execute(
+                "SELECT 1 FROM revoked_approval_tokens WHERE token_id=?",
+                (token_key,),
+            ).fetchone() is not None
+            actor_revoked = db.execute(
+                "SELECT 1 FROM revoked_approval_actors WHERE actor=?",
+                (actor_key,),
+            ).fetchone() is not None
+        finally:
+            db.close()
+        return {
+            "token_revoked": token_revoked,
+            "actor_revoked": actor_revoked,
+        }
+
     def verify_and_consume(
         self, token: SignedApprovalToken, *, expected_target_id: str,
         expected_snapshot_hash: str, now_epoch: int | None = None,
@@ -136,6 +221,16 @@ class CryptographicApprovalVerifier:
         db = self._connect()
         try:
             db.execute("BEGIN IMMEDIATE")
+            if db.execute(
+                "SELECT 1 FROM revoked_approval_tokens WHERE token_id=?",
+                (token.token_id,),
+            ).fetchone() is not None:
+                raise PermissionError("Approval token ID was revoked")
+            if db.execute(
+                "SELECT 1 FROM revoked_approval_actors WHERE actor=?",
+                (token.actor,),
+            ).fetchone() is not None:
+                raise PermissionError("Approval actor label was revoked")
             try:
                 db.execute(
                     "INSERT INTO consumed_approval_tokens VALUES (?,?,?,?,?,?)",
