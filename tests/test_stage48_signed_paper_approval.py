@@ -363,3 +363,25 @@ def test_simulated_fill_never_occurs_from_signed_approval(tmp_path):
     assert not v.orders[oid].fills
     assert v.orders[oid].state is OrderState.ACCEPTED
     assert session.status().approved_for_live_trading is False
+
+
+def test_stage48_cli_local_demo_no_live_orders():
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    done = subprocess.run(
+        [sys.executable, str(root / "scripts" / "run_stage48_signed_paper_smoke.py")],
+        cwd=root, capture_output=True, text=True, check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    evidence = json.loads(done.stdout)
+    assert evidence["unsigned_manual_approval_denied"]
+    assert evidence["signed_order_accepted_not_filled"]
+    assert evidence["durable_token_replay_denied"]
+    assert evidence["virtual_fill_count"] == 0
+    assert evidence["live_orders_transmitted"] == 0
+    assert not evidence["external_human_identity_verified"]
+    assert not evidence["production_ready"]
