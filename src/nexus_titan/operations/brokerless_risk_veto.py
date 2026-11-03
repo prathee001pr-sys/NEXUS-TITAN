@@ -157,7 +157,7 @@ def inspect_stage56_synthetic_risk(
     stop_risk: int | None = None
     fingerprint = None
 
-    if not isinstance(account, Stage56SyntheticRiskState) or not (
+    account_valid = isinstance(account, Stage56SyntheticRiskState) and (
         isinstance(account.account_id, str) and _ID.fullmatch(account.account_id)
         and _cent(account.initial_cents)
         and _cent(account.available_cents, allow_zero=True)
@@ -169,7 +169,8 @@ def inspect_stage56_synthetic_risk(
         and 0 <= account.consecutive_losses <= 10000
         and type(account.kill_switch_active) is bool
         and type(account.risk_module_healthy) is bool
-    ):
+    )
+    if not account_valid:
         issues.append("UNTRUSTED_OR_INVALID_ACCOUNT_RISK_STATE")
     else:
         if account.kill_switch_active:
@@ -260,8 +261,7 @@ def inspect_stage56_synthetic_risk(
         if stop_risk * 10000 > account.initial_cents * policy.max_stop_risk_bps:
             issues.append("STOP_RISK_CAP_VETO")
 
-    if (valid_intent and quote_valid
-            and isinstance(account, Stage56SyntheticRiskState)
+    if (valid_intent and quote_valid and account_valid
             and isinstance(clock, datetime) and clock.tzinfo is not None
             and clock.utcoffset() is not None):
         fingerprint = _sha({
