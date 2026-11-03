@@ -38,6 +38,9 @@ _REVIEWED_CODE = {
     "src/nexus_titan/operations/synthetic_capital_authority.py": {
         "Stage53SyntheticCapitalAuthority": ("inspect", "hold_for_synthetic_research"),
     },
+    "src/nexus_titan/operations/multi_ledger_recovery_audit.py": {
+        "Stage54ReadOnlyMultiLedgerAudit": ("inspect",),
+    },
     "src/nexus_titan/dashboard/paper_read_model.py": {
         "Stage50ReadOnlyPaperDashboard": ("snapshot",),
     },
