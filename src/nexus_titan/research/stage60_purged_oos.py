@@ -152,7 +152,9 @@ def inspect_stage60_purged_oos(
             or not contract.source_verified or not contract.source_reference
             or contract.symbol != history.symbol or contract.underlying != history.underlying
             or contract.expiry_date is None
-            or contract.expiry_date.isoformat() != history.expiry_date):
+            or contract.expiry_date.isoformat() != history.expiry_date
+            or contract.lot_size != history.inspected_contract_lot_size
+            or Decimal(str(contract.tick_size)) != history.inspected_contract_tick_size):
         raise Stage60ResearchBlocked("NSE futures contract, expiry and source claim mismatch")
     if not isinstance(calendar, MarketCalendar) or calendar.timezone_name != "Asia/Kolkata":
         raise Stage60ResearchBlocked("Asia/Kolkata market calendar required")
