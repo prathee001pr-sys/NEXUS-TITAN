@@ -134,6 +134,7 @@ def inspect_stage66_inventory(repo_root: Path) -> Stage66InventoryReview:
         raise Stage66InventoryError("capture time sequence is out of order")
     numbers = [row.get("number") for row in entries]
     if (len(entries) != RECORDED_OPEN_PRS
+            or any(type(number) is not int for number in numbers)
             or numbers != sorted(numbers)
             or len(set(numbers)) != RECORDED_OPEN_PRS):
         raise Stage66InventoryError("PR identifiers/coverage incomplete or duplicated")
