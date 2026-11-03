@@ -235,6 +235,20 @@ def test_semantic_ohlcv_tick_lot_and_contract_identity_gate_after_valid_hash(tmp
         _run(tmp_path, m)
 
 
+@pytest.mark.parametrize("field,bad", [
+    ("close", "1e2"), ("close", " 100.05"),
+    ("close", "100.050000000"),
+    ("volume", "12345678901234567890"),
+    ("open_interest", "12345678901234567890"),
+])
+def test_non_normalized_numeric_text_never_bypasses_csv_gate(tmp_path, field, bad):
+    manifest, rows = _fixture(tmp_path)
+    rows[1][field] = bad
+    manifest = _replace_rows(tmp_path, manifest, rows)
+    with pytest.raises(Stage59HistoryBlocked):
+        _run(tmp_path, manifest)
+
+
 @pytest.mark.parametrize("kind", ["duplicate", "reverse", "missing", "extra", "shifted"])
 def test_duplicate_out_of_order_missing_extra_or_off_grid_candles_rejected(tmp_path, kind):
     manifest, rows = _fixture(tmp_path, count=3)
