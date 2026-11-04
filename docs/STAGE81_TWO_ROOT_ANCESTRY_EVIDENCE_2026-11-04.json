@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "candidate_sha": "6dc2bb95c283511a60865417d0f4ee2ff3c5188e",
+  "main_sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+  "main_protected": false,
+  "root_ancestry": [
+    {
+      "root_pr": 1,
+      "base_ref": "integration/phase6-zip-baseline",
+      "base_sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "head_sha": "6dc2bb95c283511a60865417d0f4ee2ff3c5188e",
+      "merge_base_sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "status": "ahead",
+      "ahead_by": 389,
+      "behind_by": 0
+    },
+    {
+      "root_pr": 3,
+      "base_ref": "feature/oos-probability-calibration",
+      "base_sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+      "head_sha": "6dc2bb95c283511a60865417d0f4ee2ff3c5188e",
+      "merge_base_sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+      "status": "ahead",
+      "ahead_by": 507,
+      "behind_by": 0
+    }
+  ],
+  "captured_date_utc": "2026-11-04",
+  "source": "GitHub compare_commits (snapshot only, not signed)"
+}
