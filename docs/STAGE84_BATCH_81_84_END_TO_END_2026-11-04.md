@@ -1,0 +1,7 @@
+# Stage84 — Sequential Stage81–84 Combined E2E Audit (NO-LIVE)
+
+2026-11-04. This **test-only** stage exercises actual source calls over generated NIFTY and BANKNIFTY futures/options CSV fixtures, Stage59/44/71–74 point-in-time IV/Greeks/EVOLVE, Stage75 shadow readiness, Stage76 portfolio research, Stage77 synthetic orders, Stage82 same-SQLite kill switch, and Stage83 one-account capital reconciliation. One test also demonstrates local stop blocks fill even with a healthy caller-provided telemetry pulse; cancellations release simulated holds, while the stop stays active.
+
+**Not production integration:** No real NSE market data, verified expiry master, independently signed strategies/outcomes, option P&L, broker execution, real shadow fills, authenticated kill signal, unified global capital authority, human trade approval or live trading. Stage81 only establishes both root PR branches appear in development ancestry; it doesn't prove a reviewed and protected-main merge. Stage82 local stop is SQLite-only and untrusted; Stage83 reconciles one local DB, not all legacy or crypto books. Stage84 passes only if multi-Python full CI and tests succeed, and keeps all release flags NO-GO.
+
+**Required future work:** owner-reviewed PR stack candidate and branch protection, verified cross-ledger Risk & Veto + atomic reservations, real-data licensed F&O backtesting and signed prospective supervised shadow trials before any separate paper/live authorization. `main` must remain unchanged for this draft.
