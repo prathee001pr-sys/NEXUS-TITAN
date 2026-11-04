@@ -71,6 +71,8 @@ jobs:
         run: python scripts/run_stage83_fo_capital_smoke.py
       - name: Stage84 combined 81-84 synthetic integration and NO-GO smoke
         run: python scripts/run_stage84_batch_smoke.py
+      - name: Stage85 whole-package dependency and calibration candidate audit
+        run: python scripts/run_stage85_candidate_audit.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
