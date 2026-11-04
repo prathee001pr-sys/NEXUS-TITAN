@@ -248,7 +248,7 @@ def inspect_stage80_integration_candidate(
             or tuple(graph.root_pr_numbers) != _REQUIRED_SNAPSHOT_ROOTS
             or graph.branch_graph_consistent is not True
             or graph.complete_changed_file_coverage is not False):
-        raise Stage80CutoverBlocked("Unexpected frozen candidate PR graph / false protection claim")
+        raise Stage80CutoverBlocked("Unexpected frozen candidate PR graph topology / false protection claim")
     if (not stage78.local_source_inventory_complete
             or not stage78.local_stage77_expected_calls_observed
             or stage78.all_legacy_order_fill_paths_fenced is not False
