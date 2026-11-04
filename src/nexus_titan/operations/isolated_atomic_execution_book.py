@@ -732,6 +732,16 @@ class Stage55IsolatedSyntheticExecutionBook:
         """Configuration identity only; never exports the verification key."""
         return self._fo_boundary.digest if self._fo_boundary is not None else None
 
+    def selected_fo_source_contract(self, symbol: str) -> tuple[str, str, str]:
+        """Public research provenance hashes only, with no key or authority."""
+        packets = [] if self._fo_boundary is None else [
+            p for p in self._fo_boundary.packets if p.option_symbol == symbol
+        ]
+        if len(packets) != 1:
+            raise Stage55SyntheticBookBlocked("Unknown selected F&O research contract")
+        p = packets[0]
+        return p.source_stage71_sha256, p.source_stage72_sha256, p.stage73_review_sha256
+
     def set_local_synthetic_kill_switch(
         self, *, active: bool, operation_id: str,
     ) -> Stage82LocalSyntheticRiskState:

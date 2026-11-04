@@ -78,7 +78,7 @@ def _contract(underlying: str, segment: str) -> PointInTimeContractSpec:
     )
 
 
-def _source_files(root: Path, underlying: str):
+def _source_files(root: Path, underlying: str, history_bars=4, option_start_minute=1):
     """Generate strictly synthetic but truly ingested CSV files on disk."""
     root.mkdir(parents=True, exist_ok=True)
     froot, oroot = root / "futures", root / "options"
@@ -87,7 +87,7 @@ def _source_files(root: Path, underlying: str):
     fc, oc = _contract(underlying, "FUTURES"), _contract(underlying, "OPTIONS")
     calendar = nse_equity_derivatives_baseline()
     futures_lines = [",".join(FUT_COLS)]
-    for i in range(4):
+    for i in range(history_bars):
         values = {
             "timestamp": (START + timedelta(minutes=i)).isoformat(),
             "symbol": fc.symbol, "exchange": "NSE", "segment": "FUTURES",
@@ -105,7 +105,7 @@ def _source_files(root: Path, underlying: str):
         licence_reference="unverified-synthetic-licence",
         calendar_reference="unverified-synthetic-calendar",
         contract_reference=fc.source_reference,
-        expected_first=START, expected_last=START + timedelta(minutes=3),
+        expected_first=START, expected_last=START + timedelta(minutes=history_bars-1),
         interval_minutes=1, dataset_class_claim="SYNTHETIC_SMOKE_FIXTURE",
     )
     futures = preflight_stage59_futures_csv(
@@ -113,7 +113,7 @@ def _source_files(root: Path, underlying: str):
     )
     declared = []
     for i in range(2):
-        when = START + timedelta(minutes=i+1)
+        when = START + timedelta(minutes=i+option_start_minute)
         filename = f"chain{i}.csv"
         lines = [",".join(COLUMNS)]
         for side in ("CE", "PE"):
@@ -151,8 +151,8 @@ def _source_files(root: Path, underlying: str):
     return futures, catalog, oc
 
 
-def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS):
-    futures, catalog, contract = _source_files(tmp_path, underlying)
+def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS, history_bars=4, option_start_minute=1):
+    futures, catalog, contract = _source_files(tmp_path, underlying, history_bars, option_start_minute)
     stage71 = align_stage71_fo_research_inputs(futures, catalog)
     snapshot = catalog.partitions[0].history.snapshots[0]
     stage72 = analyse_stage72_options_snapshot(
@@ -209,6 +209,7 @@ def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS):
         telemetry=pulse,
     )
     return {
+        "futures": futures, "catalog": catalog,
         "71": stage71, "72": stage72, "73": stage73, "74": stage74,
         "75": stage75, "76": stage76,
         "pulse": pulse, "contract": contract,

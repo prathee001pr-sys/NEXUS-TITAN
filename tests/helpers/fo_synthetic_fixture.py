@@ -17,8 +17,9 @@ ROOT = Path(__file__).resolve().parents[2]
 chain_fixture = runpy.run_path(str(ROOT / "tests/test_full_chain_fo_data_to_sandbox_e2e.py"))["integrated_chain"]
 
 
-def environment(tmp_path, *, capital=10_000_000, policy=None):
-    chains = {name: chain_fixture(tmp_path / name, name, capital) for name in ("NIFTY", "BANKNIFTY")}
+def environment(tmp_path, *, capital=10_000_000, policy=None, history_bars=4, option_start_minute=1):
+    chains = {name: chain_fixture(tmp_path / name, name, capital, history_bars, option_start_minute)
+              for name in ("NIFTY", "BANKNIFTY")}
     key = secrets.token_bytes(32)
     specs = []
     for name, c in chains.items():
