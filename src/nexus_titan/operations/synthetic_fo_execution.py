@@ -6,10 +6,39 @@ readable; each new OPEN/FILL still requires current independent test evidence.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+from nexus_titan.intelligence.pipeline import PipelineStatus
+
 from nexus_titan.operations.fo_risk_boundary import SyntheticFOOperation, SyntheticFORiskPermit
 from nexus_titan.operations.isolated_atomic_execution_book import (
     Stage55IsolatedSyntheticExecutionBook, Stage55SyntheticBookBlocked,
 )
+from nexus_titan.operations.synthetic_fo_research import SyntheticFOAssessment
+
+
+@dataclass(frozen=True, slots=True)
+class SyntheticFOPerformanceReport:
+    account_id: str
+    journal_revision: int
+    journal_sha256: str
+    initial_cents: int
+    cash_cents: int
+    reserved_cents: int
+    available_cents: int
+    paid_premium_cents: int
+    execution_fees_cents: int
+    gross_committed_cents: int
+    filled_units: int
+    net_pnl_cents: int | None = None
+    profit_factor: float | None = None
+    expectancy_cents: float | None = None
+    max_drawdown_percent: float | None = None
+    unavailable_reason: str = 'No selected-account exits, realized P&L or independently marked equity curve'
+    real_market_evidence_verified: bool = False
+    live_trading_enabled: bool = False
+    broker_orders_transmitted: int = 0
+    verdict: str = 'SYNTHETIC_ACCOUNTING_ONLY_REAL_FO_SHADOW_NO_GO'
 
 
 class SyntheticFOExecutionGateway:
@@ -41,4 +70,36 @@ class SyntheticFOExecutionGateway:
         return self._book.cancel_unfilled(
             order_id=operation.order_id, cancel_id=operation.operation_id,
             evidence_source='LOCAL_SYNTHETIC_TEST_ONLY',
+        )
+
+    def apply_assessed_open(self, operation, *, assessment, risk_permit):
+        """Connect the actual research assessment to the selected risk path.
+
+        This facade is not a process boundary. The mandatory ledger risk check
+        remains authoritative even for callers using the lower-level API.
+        """
+        if (not isinstance(operation,SyntheticFOOperation) or operation.kind != 'OPEN'
+                or not isinstance(assessment,SyntheticFOAssessment)
+                or not assessment.state.quality.valid
+                or assessment.state.symbol != operation.symbol
+                or assessment.pipeline.status != PipelineStatus.SHADOW_CANDIDATE
+                or assessment.pipeline.consensus.action != 'BUY'
+                or assessment.pipeline.risk_approved is not True
+                or assessment.pipeline.risk_quantity < operation.quantity
+                or 'UNKNOWN' in (assessment.regime.trend,assessment.regime.volatility)):
+            raise Stage55SyntheticBookBlocked('Combined synthetic market/signal/risk assessment denied')
+        if self._book.selected_fo_source_contract(operation.symbol) != (
+            assessment.source_stage71_sha256,assessment.source_stage72_sha256,
+            assessment.stage73_review_sha256,
+        ):
+            raise Stage55SyntheticBookBlocked('Combined research differs from pinned F&O contract')
+        return self.apply(operation,risk_permit=risk_permit)
+
+    def performance_report(self) -> SyntheticFOPerformanceReport:
+        s = self.snapshot()
+        return SyntheticFOPerformanceReport(
+            s.account_id,s.journal_revision,s.journal_tip,s.initial_cents,s.cash_cents,
+            s.reserved_cents,s.available_cents,s.paid_notional_cents,s.paid_fees_cents,
+            s.initial_cents-s.cash_cents+s.reserved_cents,
+            sum(o.filled_quantity for o in s.orders),
         )
