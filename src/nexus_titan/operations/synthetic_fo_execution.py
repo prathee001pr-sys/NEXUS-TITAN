@@ -15,6 +15,7 @@ from nexus_titan.operations.isolated_atomic_execution_book import (
     Stage55IsolatedSyntheticExecutionBook, Stage55SyntheticBookBlocked,
 )
 from nexus_titan.operations.synthetic_fo_research import SyntheticFOAssessment
+from nexus_titan.operations.synthetic_option_positions import SyntheticCloseRequest, SyntheticCloseAuthorization
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +40,15 @@ class SyntheticFOPerformanceReport:
     live_trading_enabled: bool = False
     broker_orders_transmitted: int = 0
     verdict: str = 'SYNTHETIC_ACCOUNTING_ONLY_REAL_FO_SHADOW_NO_GO'
+    gross_realized_pnl_cents: int = 0
+    realized_net_pnl_cents: int = 0
+    open_unrealized_pnl_cents: int | None = None
+    current_synthetic_equity_cents: int | None = None
+    closed_trade_count: int = 0
+    win_count: int = 0
+    loss_count: int = 0
+    breakeven_count: int = 0
+    remaining_cost_basis_cents: int = 0
 
 
 class SyntheticFOExecutionGateway:
@@ -67,10 +77,18 @@ class SyntheticFOExecutionGateway:
                 fee_cents=operation.fee_cents, risk_permit=risk_permit,
                 evidence_source='LOCAL_SYNTHETIC_TEST_ONLY',
             )
+        if operation.kind != 'CANCEL':
+            raise Stage55SyntheticBookBlocked('Unknown lifecycle operation; SELL requires explicit close authorization')
         return self._book.cancel_unfilled(
             order_id=operation.order_id, cancel_id=operation.operation_id,
             evidence_source='LOCAL_SYNTHETIC_TEST_ONLY',
         )
+
+    def close_position(self, request: SyntheticCloseRequest, *, authorization: SyntheticCloseAuthorization):
+        return self._book.record_synthetic_close(request,authorization=authorization)
+
+    def mark_to_market(self, quotes):
+        return self._book.synthetic_mark_to_market(quotes)
 
     def apply_assessed_open(self, operation, *, assessment, risk_permit):
         """Connect the actual research assessment to the selected risk path.
@@ -95,11 +113,32 @@ class SyntheticFOExecutionGateway:
             raise Stage55SyntheticBookBlocked('Combined research differs from pinned F&O contract')
         return self.apply(operation,risk_permit=risk_permit)
 
-    def performance_report(self) -> SyntheticFOPerformanceReport:
-        s = self.snapshot()
+    def performance_report(self, *, quotes=None) -> SyntheticFOPerformanceReport:
+        # One snapshot for the accounting and valuation view, even with concurrent writers.
+        if quotes is not None:
+            snapshot,valuation=self._book.synthetic_valued_snapshot(quotes)
+            return self._performance(snapshot,valuation)
+        return self._performance(self.snapshot())
+
+    @staticmethod
+    def _performance(s,valuation=None):
+        closed=[o for o in s.orders if o.filled_quantity>0 and o.open_quantity==0 and o.open_hold_cents==0]
+        has_close=any(o.closed_quantity for o in s.orders)
+        flat=not any(o.open_quantity for o in s.orders)
+        unrealized=valuation.unrealized_net_pnl_cents if valuation is not None else (0 if flat else None)
+        equity=valuation.total_hypothetical_equity_cents if valuation is not None else (s.cash_cents if flat else None)
         return SyntheticFOPerformanceReport(
             s.account_id,s.journal_revision,s.journal_tip,s.initial_cents,s.cash_cents,
             s.reserved_cents,s.available_cents,s.paid_notional_cents,s.paid_fees_cents,
-            s.initial_cents-s.cash_cents+s.reserved_cents,
+            s.gross_entry_commitment_cents,
             sum(o.filled_quantity for o in s.orders),
+            net_pnl_cents=s.realized_net_pnl_cents+unrealized if has_close and unrealized is not None else None,
+            gross_realized_pnl_cents=s.realized_gross_pnl_cents,
+            realized_net_pnl_cents=s.realized_net_pnl_cents,
+            open_unrealized_pnl_cents=unrealized,current_synthetic_equity_cents=equity,
+            closed_trade_count=len(closed),win_count=sum(o.realized_net_pnl_cents>0 for o in closed),
+            loss_count=sum(o.realized_net_pnl_cents<0 for o in closed),
+            breakeven_count=sum(o.realized_net_pnl_cents==0 for o in closed),
+            remaining_cost_basis_cents=s.remaining_cost_basis_cents,
+            unavailable_reason='Profit factor/expectancy/drawdown require an approved lifecycle and valuation-history protocol; open MTM requires signed quotes',
         )
