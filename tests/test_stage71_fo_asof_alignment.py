@@ -209,12 +209,12 @@ def test_duplicate_or_out_of_order_option_snapshots_rejected(tmp_path):
 
 def test_no_partial_output_for_missing_completed_data(tmp_path):
     future, catalog = fixtures(tmp_path, option_start_minute=1, option_count=3)
-    # One snapshot at 09:18 has no 09:18 completed candle: latest is 09:18.
-    # Tight zero-age requirement forces entire dataset rejection when last
-    # candle source is removed.
-    shorter = replace(future, candles=future.candles[:-1],
-                      count=3, expected_slots=3,
-                      last_observed_at=future.candles[-2].timestamp)
+    # Remove the last two future candles. At option observation 09:18,
+    # the latest closed candle will be 09:17: 60 seconds stale, so the
+    # entire as-of alignment must fail under zero-lag policy.
+    shorter = replace(future, candles=future.candles[:-2],
+                      count=2, expected_slots=2,
+                      last_observed_at=future.candles[-3].timestamp)
     with pytest.raises(Stage71AlignmentBlocked, match="stale"):
         align_stage71_fo_research_inputs(shorter, catalog, max_futures_age_seconds=0)
 
