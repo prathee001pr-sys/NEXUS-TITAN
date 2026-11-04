@@ -132,8 +132,9 @@ def test_signed_request_cannot_be_replayed_or_reused_for_another_db(tmp_path):
     with pytest.raises(Stage55SyntheticBookBlocked, match='mismatched'):
         execute(a, op, wrong_scope)
     execute(a, op, permit)
-    with pytest.raises(Stage55SyntheticBookBlocked, match='Repeated operation'):
-        execute(a, op, permit)
+    replay = execute(a, op, permit)
+    assert replay.replayed and replay.revision == 1
+    assert a['book'].inspect().total_orders == 1
 
 
 def test_cancellation_releases_only_unfilled_hold_under_kill_and_expired_data(tmp_path):
