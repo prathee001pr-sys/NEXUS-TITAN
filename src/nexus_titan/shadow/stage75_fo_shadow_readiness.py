@@ -270,11 +270,12 @@ def inspect_stage75_fo_shadow_readiness(
         net = _rupee_cents(abs(row.hypothetical_round_trip_net_rupees), "Magnitude of model net")
         entry_fee = _rupee_cents(row.indicative_entry_charges_rupees, "Entry fee")
         exit_fee = _rupee_cents(row.indicative_exit_charges_rupees, "Exit fee")
-        exit_unit_price = _rupee_cents(
-            row.hypothetical_exit_price_after_friction, "Hypothetical exit unit price",
+        gross_exit_cents = _rupee_cents(
+            row.hypothetical_exit_price_after_friction * row.quantity,
+            "Hypothetical gross exit proceeds",
         )
         expected_entry = ask_cents * row.quantity + entry_fee
-        expected_exit = max(0, exit_unit_price * row.quantity - exit_fee)
+        expected_exit = max(0, gross_exit_cents - exit_fee)
         if (abs(entry - expected_entry) > 1 or abs(proceeds - expected_exit) > 2):
             raise Stage75ReadinessBlocked("Scenario prices, quantities and fees fail cashflow reconciliation")
         if (entry == 0 or entry != premium
