@@ -11,7 +11,7 @@ import json
 import math
 import re
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from nexus_titan.cost.charges import IndianCostConfig, calculate_indian_trade_costs
@@ -185,9 +185,12 @@ def simulate_stage74_long_option_scenarios(
         calculate_indian_trade_costs("BUY", 1.0, 1, "OPTIONS", tariff)
         calculate_indian_trade_costs("SELL", 1.0, 1, "OPTIONS", tariff)
     except (TypeError, ValueError, OverflowError) as exc:
-        raise Stage74ScenarioBlocked("Invalid indicative statutory cost inputs") from exc
+        raise Stage74ScenarioBlocked("Invalid indicative statutory cost tariff inputs") from exc
     observed = _utc(report.observation_time, "Stage72 observation")
     expiry = _utc(report.declared_expiry_cutoff, "Expiry cutoff")
+    local_observed = observed.astimezone(_IST)
+    if not time(9, 15) <= local_observed.time() < time(15, 30):
+        raise Stage74ScenarioBlocked("Outside regular Indian options research session")
     years_now = (expiry - observed).total_seconds() / (365.0 * 86400.0)
     rate = _finite(report.risk_free_rate_assumption, "Assumed rate", -0.1, 0.5)
     dividend = _finite(report.dividend_yield_assumption, "Assumed dividend yield", 0.0, 0.5)
@@ -229,7 +232,9 @@ def simulate_stage74_long_option_scenarios(
         remaining = (expiry - stressed_at).total_seconds()
         if remaining <= min_minutes_to_expiry * 60:
             raise Stage74ScenarioBlocked("Too close to expiry for BSM scenario approximation")
-        if stressed_at.astimezone(_IST).date() != observed.astimezone(_IST).date():
+        local_stressed = stressed_at.astimezone(_IST)
+        if (local_stressed.date() != local_observed.date()
+                or not time(9, 15) <= local_stressed.time() < time(15, 30)):
             raise Stage74ScenarioBlocked("Cross-session stress requires independent scenario data")
         stressed_spot = spot * (1.0 + move / 100.0)
         stressed_vol = vol + shift / 100.0
@@ -250,6 +255,10 @@ def simulate_stage74_long_option_scenarios(
             exit_fees = calculate_indian_trade_costs(
                 "SELL", sell_proxy, quantity, "OPTIONS", tariff,
             ).total_charges
+            # Rational research choice: do not invent a loss-making sale whose
+            # fees exceed its modeled gross proceeds; no fill is asserted.
+            if sell_proxy * quantity <= exit_fees:
+                sell_proxy, exit_fees = 0.0, 0.0
         debit = ask * quantity + entry_fees
         exit_proceeds = sell_proxy * quantity - exit_fees
         outcomes.append(Stage74StressOutcome(
