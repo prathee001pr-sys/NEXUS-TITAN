@@ -57,6 +57,9 @@ class Stage83LocalSyntheticOrder:
     filled_quantity: int
     unfilled_quantity: int
     open_hold_cents: int
+    limit_price_cents: int = 0
+    paid_notional_cents: int = 0
+    paid_fees_cents: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +120,7 @@ class Stage55SyntheticReceipt:
     synthetic_only: bool = True
     trading_authority: bool = False
     live_orders_transmitted: int = 0
+    replayed: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -381,6 +385,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 orders[oid] = dict(
                     symbol=sym, qty=qty, filled=0, limit=price,
                     fee_budget=buffer, fee_spent=0, state="PENDING_SYNTHETIC",
+                    paid_notional=0,
                 )
                 reserved += held
             elif kind == "FILL":
@@ -397,6 +402,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 reserved -= qty * order["limit"] + fee
                 order["filled"] += qty
                 order["fee_spent"] += fee
+                order["paid_notional"] += qty * price
                 if order["filled"] == order["qty"]:
                     reserved -= order["fee_budget"] - order["fee_spent"]
                     order["state"] = "FILLED_SYNTHETIC"
@@ -420,6 +426,7 @@ class Stage55IsolatedSyntheticExecutionBook:
             if (cash < 0 or reserved < 0 or reserved > cash or cash > self.starting_cents
                     or paid_notional + paid_fees + cash != self.starting_cents):
                 raise Stage55SyntheticBookBlocked("Synthetic cash conservation failed")
+            self._check_fo_capital(orders, cash, reserved)
             previous = hashed
         recomputed = sum(
             (o["qty"] - o["filled"]) * o["limit"]
@@ -430,6 +437,35 @@ class Stage55IsolatedSyntheticExecutionBook:
         if recomputed != reserved:
             raise Stage55SyntheticBookBlocked("Synthetic open-order reserves disagree")
         return orders, cash, reserved, paid_notional, paid_fees, len(events), previous
+
+    def _check_fo_capital(self, orders, cash, reserved):
+        """Selected account's gross paid premium + fees + open holds, under lock."""
+        boundary = self._fo_boundary
+        if boundary is None:
+            return
+        committed = self.starting_cents - cash + reserved
+        if committed * 10000 > self.starting_cents * boundary.policy.max_portfolio_debit_bps:
+            raise Stage55SyntheticBookBlocked("Selected F&O account committed-capital limit exceeded")
+        markets = {}
+        for spec in boundary.instruments:
+            units = debit = 0
+            for order in orders.values():
+                if order['symbol'] != spec.symbol:
+                    continue
+                pending = order['state'] in ('PENDING_SYNTHETIC', 'PARTIAL_SYNTHETIC')
+                remaining = order['qty'] - order['filled'] if pending else 0
+                units += order['filled'] + remaining
+                debit += order['paid_notional'] + order['fee_spent']
+                if pending:
+                    debit += remaining * order['limit'] + order['fee_budget'] - order['fee_spent']
+            # A signed research packet is a bounded allocation, not an endless
+            # permission to reopen its full lot after each fill or partial cancel.
+            if units > spec.quantity:
+                raise Stage55SyntheticBookBlocked("Selected research allocation already committed")
+            markets[spec.underlying] = markets.get(spec.underlying, 0) + debit
+        if any(debit * 10000 > self.starting_cents * boundary.policy.max_per_underlying_debit_bps
+               for debit in markets.values()):
+            raise Stage55SyntheticBookBlocked("Selected F&O underlying committed-capital limit exceeded")
 
     def _write_event(self, conn, core: tuple, hashed: str) -> None:
         """Patchable test seam to simulate a crash before commit."""
@@ -474,12 +510,27 @@ class Stage55IsolatedSyntheticExecutionBook:
                     expected_revision != rev or expected_journal_tip != previous
                 ):
                     raise Stage55SyntheticBookBlocked("Stale synthetic SQLite snapshot denied")
+                existing_event = conn.execute(
+                    "SELECT kind,order_id,symbol,qty,price_cents,fee_cents,fee_buffer_cents "
+                    "FROM execution_events WHERE operation_id=?", (op,),
+                ).fetchone()
+                if existing_event is not None and self._fo_boundary is not None:
+                    if existing_event != (kind, oid, symbol, qty, price, fee, buffer):
+                        raise Stage55SyntheticBookBlocked("Idempotency ID conflicts with committed operation")
+                    state = orders[oid]
+                    # Read-only acknowledgement, including after lost response /
+                    # restart. It grants no new permit and changes no journal row.
+                    return Stage55SyntheticReceipt(
+                        account_id=self.account_id, operation_id=op, order_id=oid,
+                        event_kind=kind, order_state=state['state'],
+                        filled_quantity=state['filled'], cash_cents=cash,
+                        open_reserved_cents=held, available_cents=cash-held,
+                        revision=rev, journal_tip=previous, replayed=True,
+                    )
+                if existing_event is not None:
+                    raise Stage55SyntheticBookBlocked("Repeated operation ID denied")
                 if rev >= _MAX_EVENTS:
                     raise Stage55SyntheticBookBlocked("Synthetic journal capacity reached")
-                if conn.execute(
-                    "SELECT 1 FROM execution_events WHERE operation_id=?", (op,)
-                ).fetchone():
-                    raise Stage55SyntheticBookBlocked("Repeated operation ID denied")
                 if self._fo_boundary is not None and kind != "CANCEL":
                     operation = SyntheticFOOperation(kind, op, oid, symbol, qty, price, fee, buffer)
                     now = int(self._clock())
@@ -501,6 +552,11 @@ class Stage55IsolatedSyntheticExecutionBook:
                             (held + budget) * 10000 > self.starting_cents *
                                 self.policy.max_open_reserve_bps):
                         raise Stage55SyntheticBookBlocked("Synthetic reserve or risk cap exceeded")
+                    trial = dict(orders)
+                    trial[oid] = dict(symbol=symbol, qty=qty, filled=0, limit=price,
+                                      fee_budget=buffer, fee_spent=0, paid_notional=0,
+                                      state='PENDING_SYNTHETIC')
+                    self._check_fo_capital(trial, cash, held+budget)
                 else:
                     existing = orders.get(oid)
                     if existing is None or existing["state"] not in (
@@ -632,6 +688,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                         state=item["state"], quantity=item["qty"],
                         filled_quantity=item["filled"],
                         unfilled_quantity=unfilled, open_hold_cents=hold,
+                        limit_price_cents=item['limit'],
+                        paid_notional_cents=item['paid_notional'],
+                        paid_fees_cents=item['fee_spent'],
                     ))
                 if total_held != reserved:
                     raise Stage55SyntheticBookBlocked("Snapshot holds do not match replay")
@@ -667,6 +726,11 @@ class Stage55IsolatedSyntheticExecutionBook:
                 )
         except sqlite3.Error as exc:
             raise Stage55SyntheticBookBlocked("Failed to inspect local synthetic risk state") from exc
+
+    @property
+    def selected_fo_boundary_sha256(self) -> str | None:
+        """Configuration identity only; never exports the verification key."""
+        return self._fo_boundary.digest if self._fo_boundary is not None else None
 
     def set_local_synthetic_kill_switch(
         self, *, active: bool, operation_id: str,
