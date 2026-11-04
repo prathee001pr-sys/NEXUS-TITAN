@@ -41,6 +41,40 @@ class Stage82LocalSyntheticRiskState:
     verdict: str = "STAGE82_LOCAL_SQLITE_KILL_SWITCH_ONLY_NO_GO"
 
 
+@dataclass(frozen=True, slots=True)
+class Stage83LocalSyntheticOrder:
+    order_id: str
+    symbol: str
+    state: str
+    quantity: int
+    filled_quantity: int
+    unfilled_quantity: int
+    open_hold_cents: int
+
+
+@dataclass(frozen=True, slots=True)
+class Stage83LocalSyntheticLedgerSnapshot:
+    account_id: str
+    initial_cents: int
+    cash_cents: int
+    reserved_cents: int
+    available_cents: int
+    paid_notional_cents: int
+    paid_fees_cents: int
+    journal_revision: int
+    journal_tip: str
+    kill_switch_active: bool
+    risk_revision: int
+    orders: tuple[Stage83LocalSyntheticOrder, ...]
+    local_integrity_verified: bool = True
+    cross_ledger_authority_verified: bool = False
+    real_market_data_authenticated: bool = False
+    paper_order_authorized: bool = False
+    live_trading_enabled: bool = False
+    broker_orders_transmitted: int = 0
+    verdict: str = "STAGE83_ONE_SQLITE_SYNTHETIC_LEDGER_ONLY_NO_GO"
+
+
 class Stage55SyntheticBookBlocked(PermissionError):
     """Fail-closed local synthetic accounting refusal; no broker order."""
 
@@ -488,6 +522,51 @@ class Stage55IsolatedSyntheticExecutionBook:
             expected_revision=expected_revision,
             expected_journal_tip=expected_journal_tip,
         )
+
+    def snapshot_local_synthetic_portfolio(self) -> Stage83LocalSyntheticLedgerSnapshot:
+        """One coherent read-only SQLite snapshot of orders, holds and stop.
+
+        This is NOT a global capital balance or a real F&O positions book.
+        """
+        try:
+            with self._conn() as conn:
+                conn.execute("BEGIN")
+                entries, cash, reserved, notional, fees, rev, tip = self._replay_checked(conn)
+                risk = conn.execute(
+                    "SELECT scope_sha,stopped,risk_revision FROM execution_local_risk WHERE singleton=1"
+                ).fetchone()
+                if (risk is None or risk[0] != self._scope
+                        or type(risk[1]) is not int or risk[1] not in (0, 1)
+                        or type(risk[2]) is not int or risk[2] < 0):
+                    raise Stage55SyntheticBookBlocked("Snapshot local risk state invalid")
+                rows = []
+                total_held = 0
+                for oid, item in sorted(entries.items()):
+                    pending = item["state"] in ("PENDING_SYNTHETIC", "PARTIAL_SYNTHETIC")
+                    unfilled = item["qty"] - item["filled"]
+                    hold = (unfilled * item["limit"] +
+                            item["fee_budget"] - item["fee_spent"]) if pending else 0
+                    total_held += hold
+                    rows.append(Stage83LocalSyntheticOrder(
+                        order_id=oid, symbol=item["symbol"],
+                        state=item["state"], quantity=item["qty"],
+                        filled_quantity=item["filled"],
+                        unfilled_quantity=unfilled, open_hold_cents=hold,
+                    ))
+                if total_held != reserved:
+                    raise Stage55SyntheticBookBlocked("Snapshot holds do not match replay")
+                conn.commit()
+                return Stage83LocalSyntheticLedgerSnapshot(
+                    account_id=self.account_id, initial_cents=self.starting_cents,
+                    cash_cents=cash, reserved_cents=reserved,
+                    available_cents=cash-reserved,
+                    paid_notional_cents=notional, paid_fees_cents=fees,
+                    journal_revision=rev, journal_tip=tip,
+                    kill_switch_active=bool(risk[1]), risk_revision=risk[2],
+                    orders=tuple(rows),
+                )
+        except sqlite3.Error as exc:
+            raise Stage55SyntheticBookBlocked("Local portfolio snapshot unavailable") from exc
 
     def inspect_local_synthetic_risk_state(self) -> Stage82LocalSyntheticRiskState:
         """Read local same-DB stop flag; NOT authenticated owner/risk telemetry."""

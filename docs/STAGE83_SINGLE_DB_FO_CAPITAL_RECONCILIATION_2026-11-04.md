@@ -1,0 +1,5 @@
+# Stage83 — Single-SQLite multi-contract F&O virtual-capital review
+
+**Research only / NO-GO, 2026-11-04.** Stage55 adds a coherent read-only snapshot of simulated per-order NIFTY/BANKNIFTY holds, cash, risk stop, journal version and fee/notional totals **within one SQLite transaction**. Stage83 compares the single-file reserved and already-spent cash against caller-declared Stage76 F&O budget, including per-underlying pending holds, and checks cash conservation. Tests cover two different underlyings sharing one file, partial lifecycle, local kill, invalid account or budget, damaged journal, and proof that **two separate SQLite files independently claim the same virtual capital**.
+
+This is NOT a unified global cross-ledger authority, signed risk, real market data, paper order admission, actual F&O positions/margin/MTM, or portfolio profit. It is independent of Stage53, crypto, legacy VirtualAccount and direct APIs. All approvals and live flags false. No main merge or broker orders. Verdict: `STAGE83_SINGLE_SQLITE_FO_ACCOUNT_RESEARCH_NO_GO`.
