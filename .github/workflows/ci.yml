@@ -47,6 +47,8 @@ jobs:
         run: python scripts/run_stage71_fo_alignment_smoke.py
       - name: Stage72 expiry-aware options IV Greeks research NO-GO smoke
         run: python scripts/run_stage72_iv_greeks_smoke.py
+      - name: Stage73 F&O EVOLVE experience calibration research-only NO-GO smoke
+        run: python scripts/run_stage73_fo_evolve_smoke.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
