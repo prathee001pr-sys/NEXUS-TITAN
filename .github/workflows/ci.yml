@@ -67,6 +67,8 @@ jobs:
         run: python scripts/run_stage81_ancestry_smoke.py
       - name: Stage82 same-file synthetic kill and direct API veto smoke
         run: python scripts/run_stage82_local_risk_smoke.py
+      - name: Stage83 multi-contract one-SQLite F&O capital reconciliation NO-GO smoke
+        run: python scripts/run_stage83_fo_capital_smoke.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
