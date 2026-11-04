@@ -15,9 +15,16 @@ import hashlib
 import json
 import re
 import sqlite3
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
+
+from nexus_titan.operations.fo_risk_boundary import (
+    SyntheticFOOperation, SyntheticFORiskBoundary, SyntheticFORiskBlocked,
+    SyntheticFORiskPermit,
+)
 
 _MAX_CENTS = 900_000_000_000_000
 _MAX_EVENTS = 500
@@ -66,6 +73,7 @@ class Stage83LocalSyntheticLedgerSnapshot:
     kill_switch_active: bool
     risk_revision: int
     orders: tuple[Stage83LocalSyntheticOrder, ...]
+    ledger_scope_sha256: str = ""
     local_integrity_verified: bool = True
     cross_ledger_authority_verified: bool = False
     real_market_data_authenticated: bool = False
@@ -173,6 +181,8 @@ class Stage55IsolatedSyntheticExecutionBook:
         self, *, db_path: Path, account_id: str, starting_cents: int,
         policy: Stage55SyntheticPolicy = Stage55SyntheticPolicy(),
         excluded_ledger_paths: tuple[Path, ...] = (),
+        fo_boundary: SyntheticFORiskBoundary | None = None,
+        clock: Callable[[], float] = time.time,
     ) -> None:
         if not isinstance(db_path, Path):
             raise TypeError("Explicit SQLite Path required")
@@ -180,10 +190,23 @@ class Stage55IsolatedSyntheticExecutionBook:
             raise TypeError("Stage55SyntheticPolicy required")
         if not isinstance(excluded_ledger_paths, tuple):
             raise TypeError("Excluded ledger paths must be a tuple")
+        if fo_boundary is not None and not isinstance(fo_boundary, SyntheticFORiskBoundary):
+            raise TypeError("Typed F&O risk boundary required")
+        if not callable(clock):
+            raise TypeError("Explicit synthetic clock must be callable")
         self.account_id = _id(account_id, "Account ID")
         self.starting_cents = _amount(starting_cents, "Starting cents")
         self.policy = policy
         self._path = db_path
+        self._fo_boundary = fo_boundary
+        self._clock = clock
+        if fo_boundary is not None and (
+            any(p.account_id != self.account_id or p.virtual_capital_cents != self.starting_cents
+                for p in fo_boundary.packets)
+            or policy.max_single_reserve_bps > fo_boundary.policy.max_single_debit_bps
+            or policy.max_open_reserve_bps > fo_boundary.policy.max_portfolio_debit_bps
+        ):
+            raise Stage55SyntheticBookBlocked("F&O risk boundary account/capital/policy mismatch")
         try:
             if not db_path.name or db_path.is_dir() or any(
                 p.is_symlink() for p in (db_path, *db_path.parents)
@@ -198,7 +221,8 @@ class Stage55IsolatedSyntheticExecutionBook:
             self._scope = hashlib.sha256(json.dumps(
                 ["STAGE55_SINGLE_DB_ONLY_V1", self.account_id, self.starting_cents,
                  policy.max_single_reserve_bps, policy.max_open_reserve_bps,
-                 str(canonical)],
+                 str(canonical),
+                 *([] if fo_boundary is None else ["MANDATORY_FO_V1", fo_boundary.digest])],
                 separators=(",", ":"), ensure_ascii=False,
             ).encode("utf-8")).hexdigest()
             db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -223,6 +247,13 @@ class Stage55IsolatedSyntheticExecutionBook:
                     scope_sha TEXT NOT NULL, stopped INTEGER NOT NULL
                     CHECK(stopped IN (0,1)), risk_revision INTEGER NOT NULL
                 )""")
+                conn.execute("""CREATE TABLE IF NOT EXISTS execution_fo_boundary(
+                    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                    scope_sha TEXT NOT NULL, boundary_sha TEXT NOT NULL
+                )""")
+                conn.execute("""CREATE TABLE IF NOT EXISTS execution_fo_permits(
+                    seq INTEGER PRIMARY KEY, permit_json TEXT NOT NULL
+                )""")
                 conn.execute("BEGIN IMMEDIATE")
                 head = conn.execute("SELECT 1 FROM execution_head WHERE singleton=1").fetchone()
                 if head is None:
@@ -233,6 +264,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                         (self.account_id, self.starting_cents, self._scope,
                          self.starting_cents, 0, 0, _GENESIS),
                     )
+                    if fo_boundary is not None:
+                        conn.execute("INSERT INTO execution_fo_boundary VALUES (1,?,?)",
+                                     (self._scope, fo_boundary.digest))
                 risk = conn.execute(
                     "SELECT scope_sha, stopped, risk_revision FROM execution_local_risk WHERE singleton=1"
                 ).fetchone()
@@ -283,7 +317,32 @@ class Stage55IsolatedSyntheticExecutionBook:
         if (head[3] != derived[1] or head[4] != derived[2]
                 or head[5] != derived[5] or head[6] != derived[6]):
             raise Stage55SyntheticBookBlocked("Synthetic event/head balances disagree")
+        self._check_fo_history(conn, derived[0])
         return derived
+
+    def _check_fo_history(self, conn, orders):
+        marker = conn.execute("SELECT scope_sha,boundary_sha FROM execution_fo_boundary WHERE singleton=1").fetchone()
+        proofs = dict(conn.execute("SELECT seq,permit_json FROM execution_fo_permits").fetchall())
+        boundary = self._fo_boundary
+        if boundary is None:
+            if marker is not None or proofs:
+                raise Stage55SyntheticBookBlocked("Mandatory F&O boundary cannot be omitted")
+            return
+        if marker != (self._scope, boundary.digest):
+            raise Stage55SyntheticBookBlocked("Mandatory F&O boundary missing or changed")
+        rows = conn.execute("SELECT seq,operation_id,kind,order_id,symbol,qty,price_cents,fee_cents,fee_buffer_cents,previous_sha FROM execution_events WHERE kind!='CANCEL' ORDER BY seq").fetchall()
+        if set(proofs) != {r[0] for r in rows}:
+            raise Stage55SyntheticBookBlocked("Synthetic F&O risk journal coverage mismatch")
+        try:
+            for seq, op, kind, oid, sym, qty, price, fee, buffer, prev in rows:
+                permit = SyntheticFORiskPermit.decode(proofs[seq])
+                operation = SyntheticFOOperation(kind, op, oid, sym, qty, price, fee, buffer)
+                boundary.verify(permit, operation, scope=self._scope, revision=seq-1,
+                                tip=prev, risk_revision=permit.risk_revision, now_epoch=permit.issued_epoch)
+                boundary.review(operation, permit.telemetry, permit.issued_epoch, False,
+                                {k: v['symbol'] for k, v in orders.items()})
+        except (SyntheticFORiskBlocked, ValueError, TypeError) as exc:
+            raise Stage55SyntheticBookBlocked("Synthetic F&O risk journal verification failed") from exc
 
     def _derive(self, conn):
         events = conn.execute(
@@ -380,7 +439,8 @@ class Stage55IsolatedSyntheticExecutionBook:
                 symbol: str = "", qty: int = 0, price: int = 0,
                 fee: int = 0, buffer: int = 0,
                 expected_revision: int | None = None,
-                expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
+                expected_journal_tip: str | None = None,
+                risk_permit: SyntheticFORiskPermit | None = None) -> Stage55SyntheticReceipt:
         op = _id(operation_id, "Operation ID")
         oid = _id(order_id, "Order ID")
         if (expected_revision is None) != (expected_journal_tip is None):
@@ -420,6 +480,17 @@ class Stage55IsolatedSyntheticExecutionBook:
                     "SELECT 1 FROM execution_events WHERE operation_id=?", (op,)
                 ).fetchone():
                     raise Stage55SyntheticBookBlocked("Repeated operation ID denied")
+                if self._fo_boundary is not None and kind != "CANCEL":
+                    operation = SyntheticFOOperation(kind, op, oid, symbol, qty, price, fee, buffer)
+                    now = int(self._clock())
+                    self._fo_boundary.verify(
+                        risk_permit, operation, scope=self._scope, revision=rev,
+                        tip=previous, risk_revision=risk_row[2], now_epoch=now,
+                    )
+                    self._fo_boundary.review(
+                        operation, risk_permit.telemetry, now, bool(risk_row[1]),
+                        {k: v['symbol'] for k, v in orders.items()},
+                    )
                 if kind == "OPEN":
                     if oid in orders or op != oid:
                         raise Stage55SyntheticBookBlocked("Duplicate synthetic order ID denied")
@@ -447,6 +518,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                 core = (rev + 1, op, kind, oid, symbol, qty, price, fee, buffer, previous)
                 new_hash = _hash_event(core)
                 self._write_event(conn, core, new_hash)
+                if self._fo_boundary is not None and kind != "CANCEL":
+                    conn.execute("INSERT INTO execution_fo_permits VALUES (?,?)",
+                                 (rev+1, risk_permit.encode()))
                 # Derive all balances in this SAME transaction from the
                 # immutable event history. The head is the second committed
                 # half of the same SQLite transaction, not another DB.
@@ -473,6 +547,8 @@ class Stage55IsolatedSyntheticExecutionBook:
                 )
         except Stage55SyntheticBookBlocked:
             raise
+        except SyntheticFORiskBlocked as exc:
+            raise Stage55SyntheticBookBlocked("Mandatory synthetic F&O risk veto: " + str(exc)) from exc
         except (OSError, sqlite3.Error, OverflowError, TypeError, ValueError) as exc:
             raise Stage55SyntheticBookBlocked("Local synthetic transaction failed") from exc
 
@@ -480,7 +556,8 @@ class Stage55IsolatedSyntheticExecutionBook:
                               quantity: int, limit_price_cents: int,
                               fee_buffer_cents: int,
                               expected_revision: int | None = None,
-                              expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
+                              expected_journal_tip: str | None = None,
+                              risk_permit: SyntheticFORiskPermit | None = None) -> Stage55SyntheticReceipt:
         if not isinstance(symbol, str) or _SYMBOL.fullmatch(symbol) is None:
             raise Stage55SyntheticBookBlocked("Only bounded uppercase synthetic equity symbols supported")
         qty = _quantity(quantity)
@@ -493,13 +570,15 @@ class Stage55IsolatedSyntheticExecutionBook:
             symbol=symbol, qty=qty, price=price, buffer=buffer,
             expected_revision=expected_revision,
             expected_journal_tip=expected_journal_tip,
+            risk_permit=risk_permit,
         )
 
     def record_simulated_fill(self, *, order_id: str, fill_id: str,
                               quantity: int, price_cents: int,
                               fee_cents: int, evidence_source: str,
                               expected_revision: int | None = None,
-                              expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
+                              expected_journal_tip: str | None = None,
+                              risk_permit: SyntheticFORiskPermit | None = None) -> Stage55SyntheticReceipt:
         if evidence_source != "LOCAL_SYNTHETIC_TEST_ONLY":
             raise Stage55SyntheticBookBlocked("Only explicitly synthetic local fills can be recorded")
         return self._record(
@@ -509,6 +588,7 @@ class Stage55IsolatedSyntheticExecutionBook:
             fee=_amount(fee_cents, "Synthetic fees", allow_zero=True),
             expected_revision=expected_revision,
             expected_journal_tip=expected_journal_tip,
+            risk_permit=risk_permit,
         )
 
     def cancel_unfilled(self, *, order_id: str, cancel_id: str,
@@ -564,6 +644,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                     journal_revision=rev, journal_tip=tip,
                     kill_switch_active=bool(risk[1]), risk_revision=risk[2],
                     orders=tuple(rows),
+                    ledger_scope_sha256=self._scope,
                 )
         except sqlite3.Error as exc:
             raise Stage55SyntheticBookBlocked("Local portfolio snapshot unavailable") from exc
@@ -594,6 +675,8 @@ class Stage55IsolatedSyntheticExecutionBook:
         if type(active) is not bool:
             raise Stage55SyntheticBookBlocked("Local kill switch requires explicit bool")
         _id(operation_id, "Local risk operation ID")
+        if self._fo_boundary is not None and not active:
+            raise Stage55SyntheticBookBlocked("Protected synthetic F&O stop cannot be rearmed by legacy API")
         try:
             with self._conn() as conn:
                 conn.execute("BEGIN IMMEDIATE")
