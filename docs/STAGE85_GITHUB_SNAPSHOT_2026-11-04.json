@@ -1,0 +1,1409 @@
+{
+  "schema_version": 1,
+  "captured_utc": "2026-11-04T13:41:31.723Z",
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "candidate_parent_sha": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+  "candidate_parent_tree_sha": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+  "main": {
+    "sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+    "protected": false
+  },
+  "comparisons": [
+    {
+      "repository_full_name": "prathee001pr-sys/NEXUS-TITAN",
+      "base": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "head": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+      "status": "ahead",
+      "ahead_by": 410,
+      "behind_by": 0,
+      "total_commits": 410,
+      "too_large": null,
+      "base_commit": {
+        "sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c"
+      },
+      "merge_base_commit": {
+        "sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c"
+      }
+    },
+    {
+      "repository_full_name": "prathee001pr-sys/NEXUS-TITAN",
+      "base": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+      "head": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+      "status": "ahead",
+      "ahead_by": 528,
+      "behind_by": 0,
+      "total_commits": 528,
+      "too_large": null,
+      "base_commit": {
+        "sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/fa8c34eba862108d6cd333c59964c4e3cc6e6405"
+      },
+      "merge_base_commit": {
+        "sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/fa8c34eba862108d6cd333c59964c4e3cc6e6405"
+      }
+    },
+    {
+      "repository_full_name": "prathee001pr-sys/NEXUS-TITAN",
+      "base": "d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+      "head": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+      "status": "ahead",
+      "ahead_by": 523,
+      "behind_by": 0,
+      "total_commits": 523,
+      "too_large": null,
+      "base_commit": {
+        "sha": "d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148"
+      },
+      "merge_base_commit": {
+        "sha": "d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148"
+      }
+    },
+    {
+      "repository_full_name": "prathee001pr-sys/NEXUS-TITAN",
+      "base": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+      "head": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+      "status": "ahead",
+      "ahead_by": 531,
+      "behind_by": 0,
+      "total_commits": 531,
+      "too_large": null,
+      "base_commit": {
+        "sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/40e93cfb77fa0650e4f57428c6d77f70bb78d564"
+      },
+      "merge_base_commit": {
+        "sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+        "url": "https://api.github.com/repos/prathee001pr-sys/NEXUS-TITAN/commits/40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+        "html_url": "https://github.com/prathee001pr-sys/NEXUS-TITAN/commit/40e93cfb77fa0650e4f57428c6d77f70bb78d564"
+      }
+    }
+  ],
+  "original_roots_tree_conflicts": [],
+  "open_prs": [
+    {
+      "number": 1,
+      "base": "main",
+      "base_sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+      "head": "integration/phase6-zip-baseline",
+      "head_sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "draft": true,
+      "filenames": [
+        ".env.example",
+        ".github/workflows/tests.yml",
+        "README.md",
+        "data/README.md",
+        "data/market_sample.csv",
+        "data/nifty_daily_sample.csv",
+        "docs/MASTER_REQUIREMENTS_REGISTER.md",
+        "docs/PHASE6_INTEGRATION_STATUS.md",
+        "docs/PHASE6_ZIP_COMPATIBILITY_TEST_REPORT.md",
+        "docs/PHASE6_ZIP_INTEGRATION_PLAN.md",
+        "docs/PHASE6_ZIP_SOURCE_MAP.md",
+        "docs/PHASE7_STAGE15_SAFETY_FIX_VALIDATION_2026-11-02.md",
+        "docs/phase6_reference/IMPLEMENTATION_STATUS_PHASE5.md",
+        "docs/phase6_reference/IMPLEMENTATION_STATUS_PHASE6.md",
+        "docs/phase6_reference/TITAN_EVOLVE_AGENT_CREATION_ENGINE.md",
+        "docs/phase6_reference/TITAN_EVOLVE_PHASE6_RUNTIME_AND_COLLABORATION.md",
+        "docs/phase6_reference/TITAN_EVOLVE_SCHEDULED_RESEARCH.md",
+        "docs/phase6_reference/V6_PHASE5_AGENT_CREATION_RELEASE_REPORT.md",
+        "examples/agent_workflow.sample.json",
+        "scripts/run_agent_runtime.py",
+        "scripts/run_backtest.py",
+        "scripts/run_evolve_agents.py",
+        "scripts/run_evolve_scheduler.py",
+        "scripts/run_project_validation.py",
+        "src/nexus_titan/ai_agents/__init__.py",
+        "src/nexus_titan/ai_agents/agent_system.py",
+        "src/nexus_titan/config/__init__.py",
+        "src/nexus_titan/cost/__init__.py",
+        "src/nexus_titan/cost/charges.py",
+        "src/nexus_titan/crypto/__init__.py",
+        "src/nexus_titan/crypto/crypto_engine.py",
+        "src/nexus_titan/dashboard/__init__.py",
+        "src/nexus_titan/dashboard/api_service.py",
+        "src/nexus_titan/data/canonical.py",
+        "src/nexus_titan/data/csv_ohlcv.py",
+        "src/nexus_titan/data/market_data.py",
+        "src/nexus_titan/derivatives/__init__.py",
+        "src/nexus_titan/derivatives/options_engine.py",
+        "src/nexus_titan/research/__init__.py",
+        "src/nexus_titan/research/backtest.py",
+        "src/nexus_titan/research/indicators.py",
+        "src/nexus_titan/research/market_signal.py",
+        "src/nexus_titan/research/post_mortem.py",
+        "src/nexus_titan/research/signal_engine.py",
+        "src/nexus_titan/research/strategies.py",
+        "src/nexus_titan/research/v6_strategies.py",
+        "src/nexus_titan/research/v6_validation.py",
+        "src/nexus_titan/research/validation.py",
+        "src/nexus_titan/risk/__init__.py",
+        "src/nexus_titan/risk/authoritative_risk.py",
+        "src/nexus_titan/risk/portfolio_risk.py",
+        "src/nexus_titan/risk/risk_manager.py",
+        "src/nexus_titan/self_improvement/__init__.py",
+        "src/nexus_titan/self_improvement/adaptive.py",
+        "src/nexus_titan/self_improvement/agent_creation.py",
+        "src/nexus_titan/self_improvement/agent_runtime.py",
+        "src/nexus_titan/self_improvement/agents.py",
+        "src/nexus_titan/self_improvement/code_proposals.py",
+        "src/nexus_titan/self_improvement/engine.py",
+        "src/nexus_titan/self_improvement/experimentation.py",
+        "src/nexus_titan/self_improvement/llm_provider.py",
+        "src/nexus_titan/self_improvement/llm_research.py",
+        "src/nexus_titan/self_improvement/research_sources.py",
+        "src/nexus_titan/self_improvement/scheduler.py",
+        "src/nexus_titan/storage/__init__.py",
+        "src/nexus_titan/storage/sqlite_ledger.py",
+        "src/nexus_titan/storage/trade_ledger.py",
+        "src/nexus_titan/storage/virtual_trading.py",
+        "src/nexus_titan/trading_engine.py",
+        "src/nexus_titan/virtual/__init__.py",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_phase6_advanced_backtest.py",
+        "tests/test_phase6_agent_runtime.py",
+        "tests/test_phase6_ai_agents.py",
+        "tests/test_phase6_canonical_data.py",
+        "tests/test_phase6_cli.py",
+        "tests/test_phase6_crypto_engine.py",
+        "tests/test_phase6_dashboard.py",
+        "tests/test_phase6_evolve_services.py",
+        "tests/test_phase6_indicators.py",
+        "tests/test_phase6_json_ledger.py",
+        "tests/test_phase6_options_greeks.py",
+        "tests/test_phase6_portfolio_risk.py",
+        "tests/test_phase6_risk_facade.py",
+        "tests/test_phase6_sqlite_ledger.py",
+        "tests/test_phase6_trading_decision.py",
+        "tests/test_phase6_validation.py",
+        "tests/test_phase6_virtual_order_manager.py",
+        "tests/test_phase6_zip_compatibility.py",
+        "tests/test_stage15_safety_fix_regressions.py"
+      ]
+    },
+    {
+      "number": 3,
+      "base": "main",
+      "base_sha": "40e93cfb77fa0650e4f57428c6d77f70bb78d564",
+      "head": "feature/oos-probability-calibration",
+      "head_sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/intelligence/__init__.py",
+        "src/nexus_titan/intelligence/calibration.py",
+        "tests/test_probability_calibration.py"
+      ]
+    },
+    {
+      "number": 4,
+      "base": "integration/phase6-zip-baseline",
+      "base_sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "head": "audit/phase7-v5-register-2026-11-02",
+      "head_sha": "f966a775744f9f8da207bca0e916df3c67ebf9ee",
+      "draft": true,
+      "filenames": [
+        "docs/MASTER_TRADING_UPGRADE_REGISTER_GITHUB_REVIEW_2026-11-02.md",
+        "docs/STAGE1_15_CALIBRATION_FOLLOWUP_2026-11-02.md"
+      ]
+    },
+    {
+      "number": 5,
+      "base": "feature/oos-probability-calibration",
+      "base_sha": "fa8c34eba862108d6cd333c59964c4e3cc6e6405",
+      "head": "hardening/calibration-wilson-2026-11-02",
+      "head_sha": "d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/calibration-hardening.yml",
+        "docs/PROBABILITY_CALIBRATION.md",
+        "src/nexus_titan/intelligence/calibration.py",
+        "tests/test_probability_calibration.py"
+      ]
+    },
+    {
+      "number": 6,
+      "base": "integration/phase6-zip-baseline",
+      "base_sha": "1e9436f6b82baf55eb33d4b98ff0cf47dc6fd69c",
+      "head": "integration/stage1-15-calibration-2026-11-02",
+      "head_sha": "61b4d6937f96823f963e281a6b286b07c0197e23",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "CANDIDATE_MANIFEST.json",
+        "README.md",
+        "SECURITY.md",
+        "docs/DATASET_PROVENANCE_PROMOTION_GATE.md",
+        "docs/DATA_VENDOR_DUE_DILIGENCE_2026-11-01.md",
+        "docs/MASTER_INTEGRATION_ARCHITECTURE.md",
+        "docs/MASTER_REQUIREMENTS_REGISTER.md",
+        "docs/MASTER_TRADING_UPGRADE_REGISTER_2026-11-02.md",
+        "docs/OPERATIONS_RUNBOOK.md",
+        "docs/PHASE7_ADVANCED_AUDIT_2026-11-01.md",
+        "docs/PHASE7_ADVANCED_ROADMAP_IMPLEMENTATION.md",
+        "docs/PHASE7_HARDENING_REPORT.md",
+        "docs/PHASE7_STAGE10_INTEGRATION_RELEASE_AUDIT_2026-11-01.md",
+        "docs/PHASE7_STAGE11_PROFESSIONALIZATION_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE12_MASTER_INTEGRATION_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE13_SPECIALIST_EVOLVE_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE14_EVIDENCE_HARDENING_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE15_EVIDENCE_PROVENANCE_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE15_SAFETY_FIX_VALIDATION_2026-11-02.md",
+        "docs/PHASE7_STAGE1_15_CANONICAL_INTEGRATION_AUDIT_2026-11-02.md",
+        "docs/PHASE7_STAGE3_MARKET_INTELLIGENCE_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE4_ANALYTICAL_INTELLIGENCE_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE5_SPECIALIST_INTEGRATION_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE6_STRATEGY_EVALUATION_REDTEAM_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE7_DIGITAL_TWIN_EXECUTION_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE8_POSTMORTEM_OPERATIONS_REPORT_2026-11-01.md",
+        "docs/PHASE7_STAGE9_SHADOW_VALIDATION_REPORT_2026-11-01.md",
+        "docs/PROBABILITY_CALIBRATION.md",
+        "reports/phase7_advanced_backtest_report.json",
+        "reports/phase7_advanced_backtest_report_stage10.json",
+        "reports/phase7_advanced_backtest_report_stage11.json",
+        "reports/phase7_advanced_backtest_report_stage12.json",
+        "reports/phase7_advanced_backtest_report_stage13.json",
+        "reports/phase7_advanced_backtest_report_stage14.json",
+        "reports/phase7_advanced_backtest_report_stage1_15_after_fixes.json",
+        "reports/phase7_advanced_backtest_report_stage9.json",
+        "reports/release_preflight_stage11.json",
+        "reports/release_preflight_stage12.json",
+        "reports/release_preflight_stage13.json",
+        "reports/release_preflight_stage14.json",
+        "reports/release_preflight_stage15.json",
+        "reports/release_preflight_stage15_after_fixes.json",
+        "reports/release_preflight_stage1_15_after_fixes.json",
+        "reports/stage7_pytest.txt",
+        "scripts/release_preflight.py",
+        "scripts/run_advanced_backtest_suite.py",
+        "src/nexus_titan/core/master_integration.py",
+        "src/nexus_titan/core/security_gates.py",
+        "src/nexus_titan/cost/charges.py",
+        "src/nexus_titan/crypto/crypto_engine.py",
+        "src/nexus_titan/dashboard/api_service.py",
+        "src/nexus_titan/data/canonical.py",
+        "src/nexus_titan/data/instrument_master.py",
+        "src/nexus_titan/data/provenance.py",
+        "src/nexus_titan/data/quality.py",
+        "src/nexus_titan/data/telegram_ingest.py",
+        "src/nexus_titan/derivatives/__init__.py",
+        "src/nexus_titan/derivatives/chain_and_settlement.py",
+        "src/nexus_titan/derivatives/options_engine.py",
+        "src/nexus_titan/evolve/governance.py",
+        "src/nexus_titan/evolve/research.py",
+        "src/nexus_titan/intelligence/__init__.py",
+        "src/nexus_titan/intelligence/calibration.py",
+        "src/nexus_titan/intelligence/consensus.py",
+        "src/nexus_titan/intelligence/evidence_integrity.py",
+        "src/nexus_titan/intelligence/market_state.py",
+        "src/nexus_titan/intelligence/pipeline.py",
+        "src/nexus_titan/intelligence/specialist_roles.py",
+        "src/nexus_titan/operations/__init__.py",
+        "src/nexus_titan/operations/health.py",
+        "src/nexus_titan/operations/resource_manager.py",
+        "src/nexus_titan/operations/watchdog.py",
+        "src/nexus_titan/research/adversarial_red_team.py",
+        "src/nexus_titan/research/backtest.py",
+        "src/nexus_titan/research/market_intelligence.py",
+        "src/nexus_titan/research/post_mortem.py",
+        "src/nexus_titan/research/strategies.py",
+        "src/nexus_titan/research/strategy_lab.py",
+        "src/nexus_titan/research/v6_strategies.py",
+        "src/nexus_titan/research/v6_validation.py",
+        "src/nexus_titan/research/validation.py",
+        "src/nexus_titan/risk/authoritative_risk.py",
+        "src/nexus_titan/risk/portfolio_risk.py",
+        "src/nexus_titan/shadow/__init__.py",
+        "src/nexus_titan/shadow/validation.py",
+        "src/nexus_titan/simulation/__init__.py",
+        "src/nexus_titan/simulation/digital_twin.py",
+        "src/nexus_titan/simulation/execution_simulator.py",
+        "src/nexus_titan/virtual/__init__.py",
+        "src/nexus_titan/virtual/microstructure.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_data_provenance_gates.py",
+        "tests/test_market_state_tensor.py",
+        "tests/test_master_integration.py",
+        "tests/test_phase6_dashboard.py",
+        "tests/test_phase6_validation.py",
+        "tests/test_phase7_advanced_roadmap.py",
+        "tests/test_phase7_hardening.py",
+        "tests/test_probability_calibration.py",
+        "tests/test_release_preflight.py",
+        "tests/test_signal_consensus.py",
+        "tests/test_stage13_specialist_governance.py",
+        "tests/test_stage15_evidence_integrity.py",
+        "tests/test_stage15_safety_fix_regressions.py",
+        "tests/test_stage4_market_intelligence.py",
+        "tests/test_stage6_red_team.py",
+        "tests/test_stage6_strategy_lab.py",
+        "tests/test_stage7_simulation.py",
+        "tests/test_stage8_operations.py",
+        "tests/test_stage8_post_mortem.py",
+        "tests/test_stage9_shadow_validation.py",
+        "tests/test_trading_intelligence_pipeline.py"
+      ]
+    },
+    {
+      "number": 7,
+      "base": "integration/stage1-15-calibration-2026-11-02",
+      "base_sha": "61b4d6937f96823f963e281a6b286b07c0197e23",
+      "head": "feature/verified-option-chain-integrity-2026-11-02",
+      "head_sha": "b709cda0449acddff2bf75536bcf9ce308947096",
+      "draft": true,
+      "filenames": [
+        "docs/OPTION_CHAIN_INTEGRITY_GATE_2026-11-02.md",
+        "docs/OPTION_CHAIN_RESEARCH_CSV_IMPORT_2026-11-02.md",
+        "src/nexus_titan/data/option_chain_ingest.py",
+        "src/nexus_titan/derivatives/chain_integrity.py",
+        "tests/test_option_chain_ingest.py",
+        "tests/test_verified_chain_integrity.py"
+      ]
+    },
+    {
+      "number": 8,
+      "base": "feature/verified-option-chain-integrity-2026-11-02",
+      "base_sha": "b709cda0449acddff2bf75536bcf9ce308947096",
+      "head": "feature/option-chain-history-validation-2026-11-02",
+      "head_sha": "a944fea9330a123cc67d9c330e5a57f72ad0dd58",
+      "draft": true,
+      "filenames": [
+        "docs/OPTION_CHAIN_HISTORY_CONTINUITY_2026-11-02.md",
+        "src/nexus_titan/data/option_chain_history.py",
+        "tests/test_option_chain_history.py"
+      ]
+    },
+    {
+      "number": 9,
+      "base": "feature/option-chain-history-validation-2026-11-02",
+      "base_sha": "a944fea9330a123cc67d9c330e5a57f72ad0dd58",
+      "head": "feature/options-research-execution-2026-11-02",
+      "head_sha": "615276113b4de4f0cf71f55e636f8271ecf6b514",
+      "draft": true,
+      "filenames": [
+        "docs/OPTIONS_RESEARCH_EXECUTION_2026-11-02.md",
+        "src/nexus_titan/simulation/options_research_execution.py",
+        "tests/test_options_research_execution.py"
+      ]
+    },
+    {
+      "number": 10,
+      "base": "feature/options-research-execution-2026-11-02",
+      "base_sha": "615276113b4de4f0cf71f55e636f8271ecf6b514",
+      "head": "feature/options-order-reconciliation-2026-11-02",
+      "head_sha": "7b5005f4887a3e2c88b24647afddfc9ecc04a798",
+      "draft": true,
+      "filenames": [
+        "docs/OPTIONS_RESEARCH_ORDER_RECONCILIATION_2026-11-02.md",
+        "src/nexus_titan/simulation/options_order_reconciliation.py",
+        "tests/test_options_order_reconciliation.py"
+      ]
+    },
+    {
+      "number": 11,
+      "base": "feature/options-order-reconciliation-2026-11-02",
+      "base_sha": "7b5005f4887a3e2c88b24647afddfc9ecc04a798",
+      "head": "feature/stage19-durable-research-shadow-ledger-2026-11-02",
+      "head_sha": "c0404b04d548dbe689166d99c0b974c0b73d8d52",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE19_DURABLE_RESEARCH_SHADOW_LEDGER_2026-11-02.md",
+        "src/nexus_titan/shadow/research_reservation_ledger.py",
+        "tests/test_stage19_research_shadow_ledger.py"
+      ]
+    },
+    {
+      "number": 12,
+      "base": "feature/stage19-durable-research-shadow-ledger-2026-11-02",
+      "base_sha": "c0404b04d548dbe689166d99c0b974c0b73d8d52",
+      "head": "feature/stage20-recovery-multiday-evidence-2026-11-02",
+      "head_sha": "94a295a083d2340f44ef9ec4fcad0296db1699cd",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE20_SHADOW_MULTIDAY_RECOVERY_2026-11-02.md",
+        "src/nexus_titan/shadow/research_recovery_validation.py",
+        "tests/test_stage20_research_recovery_validation.py"
+      ]
+    },
+    {
+      "number": 13,
+      "base": "feature/stage20-recovery-multiday-evidence-2026-11-02",
+      "base_sha": "94a295a083d2340f44ef9ec4fcad0296db1699cd",
+      "head": "feature/stage21-unified-evidence-readiness-2026-11-02",
+      "head_sha": "d548495f364f5102b6060a3e45cf83c8866b1f35",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE21_UNIFIED_SHADOW_EVIDENCE_REVIEW_2026-11-02.md",
+        "src/nexus_titan/shadow/unified_readiness.py",
+        "tests/test_stage21_unified_readiness.py"
+      ]
+    },
+    {
+      "number": 14,
+      "base": "feature/stage21-unified-evidence-readiness-2026-11-02",
+      "base_sha": "d548495f364f5102b6060a3e45cf83c8866b1f35",
+      "head": "feature/stage22-offline-integration-smoke-2026-11-02",
+      "head_sha": "e17ff1213f2daa9049fef1f71e0acd4c302cb0dc",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE22_INTEGRATION_AUDIT_AND_OFFLINE_SMOKE_2026-11-02.md",
+        "scripts/run_stage22_research_smoke.py",
+        "tests/test_stage22_offline_integration.py"
+      ]
+    },
+    {
+      "number": 15,
+      "base": "feature/stage22-offline-integration-smoke-2026-11-02",
+      "base_sha": "e17ff1213f2daa9049fef1f71e0acd4c302cb0dc",
+      "head": "feature/stage23-guarded-options-paper-research-2026-11-02",
+      "head_sha": "b12c688b94815f87350b630b008eb7e2b51b5146",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE23_GUARDED_OPTIONS_PAPER_RESEARCH_2026-11-02.md",
+        "src/nexus_titan/shadow/guarded_options_research.py",
+        "tests/test_stage23_guarded_options_research.py"
+      ]
+    },
+    {
+      "number": 16,
+      "base": "feature/stage23-guarded-options-paper-research-2026-11-02",
+      "base_sha": "b12c688b94815f87350b630b008eb7e2b51b5146",
+      "head": "feature/stage24-long-options-exit-fifo-2026-11-02",
+      "head_sha": "b118a218327bccd2862a55a55e694a58dcf29fe4",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE24_LONG_OPTIONS_EXIT_FIFO_2026-11-02.md",
+        "src/nexus_titan/shadow/long_option_exit_research.py",
+        "tests/test_stage24_long_option_exit_research.py"
+      ]
+    },
+    {
+      "number": 17,
+      "base": "feature/stage24-long-options-exit-fifo-2026-11-02",
+      "base_sha": "b118a218327bccd2862a55a55e694a58dcf29fe4",
+      "head": "feature/stage25-sell-aware-multiday-e2e-audit-2026-11-02",
+      "head_sha": "104eb267767df8d9ca968a17ea25131b6faffb97",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE25_FINAL_E2E_SYNTHETIC_BACKTEST_AUDIT_2026-11-02.md",
+        "docs/STAGE25_SELL_AWARE_MULTIDAY_AND_BACKTEST_2026-11-02.md",
+        "scripts/run_stage25_full_research_audit.py",
+        "src/nexus_titan/shadow/research_reservation_ledger.py",
+        "src/nexus_titan/shadow/sell_aware_multiday.py",
+        "tests/test_stage25_sell_aware_multiday.py"
+      ]
+    },
+    {
+      "number": 18,
+      "base": "feature/stage25-sell-aware-multiday-e2e-audit-2026-11-02",
+      "base_sha": "104eb267767df8d9ca968a17ea25131b6faffb97",
+      "head": "feature/stage26-historical-fo-bundle-preflight-2026-11-02",
+      "head_sha": "74aea563f0b62e14d6320dbd8d4c0f18905942a8",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE26_HISTORICAL_FO_SOURCE_PREFLIGHT_AND_RISK_AUDIT_2026-11-02.md",
+        "scripts/run_stage26_fo_bundle_preflight.py",
+        "src/nexus_titan/data/historical_fo_bundle.py",
+        "tests/test_stage26_historical_fo_bundle.py"
+      ]
+    },
+    {
+      "number": 19,
+      "base": "feature/stage26-historical-fo-bundle-preflight-2026-11-02",
+      "base_sha": "74aea563f0b62e14d6320dbd8d4c0f18905942a8",
+      "head": "feature/stage27-nifty-spot-daily-ingest-2026-11-02",
+      "head_sha": "6dfe8fec99a921888691414a35df096e01e78c20",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE27_NIFTY_SPOT_DAILY_IMPORT_2026-11-02.md",
+        "scripts/import_nifty_spot_daily.py",
+        "src/nexus_titan/data/nifty_spot_daily.py",
+        "tests/test_stage27_nifty_spot_daily.py"
+      ]
+    },
+    {
+      "number": 20,
+      "base": "feature/stage27-nifty-spot-daily-ingest-2026-11-02",
+      "base_sha": "6dfe8fec99a921888691414a35df096e01e78c20",
+      "head": "feature/stage28-guarded-paper-ledger-admission-2026-11-02",
+      "head_sha": "ca4f2a1c9c94d1d354c1f1602fb4d56bf49a9f4c",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE28_ATOMIC_GUARDED_PAPER_RESEARCH_ADMISSION_2026-11-02.md",
+        "src/nexus_titan/shadow/guarded_options_research.py",
+        "src/nexus_titan/shadow/research_reservation_ledger.py",
+        "tests/test_stage28_guarded_paper_ledger_admission.py"
+      ]
+    },
+    {
+      "number": 21,
+      "base": "feature/stage28-guarded-paper-ledger-admission-2026-11-02",
+      "base_sha": "ca4f2a1c9c94d1d354c1f1602fb4d56bf49a9f4c",
+      "head": "feature/stage29-emergency-exit-admission-2026-11-02",
+      "head_sha": "a70b3c1711a33b7bf0aad97bce829caf60977b8a",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage29_emergency_exit_admission.py"
+      ]
+    },
+    {
+      "number": 22,
+      "base": "feature/stage29-emergency-exit-admission-2026-11-02",
+      "base_sha": "a70b3c1711a33b7bf0aad97bce829caf60977b8a",
+      "head": "feature/stage30-kill-switch-fill-finality-2026-11-02",
+      "head_sha": "6087ff81d81bff832f2194272dfe368daa74d28a",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage30_kill_switch_fill_finality.py"
+      ]
+    },
+    {
+      "number": 23,
+      "base": "feature/stage30-kill-switch-fill-finality-2026-11-02",
+      "base_sha": "6087ff81d81bff832f2194272dfe368daa74d28a",
+      "head": "feature/stage31-manual-paper-mode-escalation-2026-11-02",
+      "head_sha": "af744889d810b95d2241ad1956c6d6316df83d62",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage31_manual_paper_mode_escalation.py"
+      ]
+    },
+    {
+      "number": 24,
+      "base": "feature/stage31-manual-paper-mode-escalation-2026-11-02",
+      "base_sha": "af744889d810b95d2241ad1956c6d6316df83d62",
+      "head": "feature/stage32-unified-paper-safety-preflight-2026-11-02",
+      "head_sha": "7cbc158af1a0c318c18812dc957179aaca4f130a",
+      "draft": true,
+      "filenames": [
+        "docs/STAGES29_32_BATCH_SAFETY_REVIEW_2026-11-02.md",
+        "scripts/run_stage32_paper_safety_smoke.py",
+        "src/nexus_titan/shadow/paper_safety_preflight.py",
+        "tests/test_stage32_paper_safety_preflight.py"
+      ]
+    },
+    {
+      "number": 25,
+      "base": "feature/stage32-unified-paper-safety-preflight-2026-11-02",
+      "base_sha": "7cbc158af1a0c318c18812dc957179aaca4f130a",
+      "head": "feature/stage33-paper-intent-gateway-2026-11-02",
+      "head_sha": "e7d807ce3ffff2e6341cb413f91d4427a2ce5d53",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/shadow/paper_intent_gateway.py",
+        "tests/test_stage33_paper_intent_gateway.py"
+      ]
+    },
+    {
+      "number": 26,
+      "base": "feature/stage33-paper-intent-gateway-2026-11-02",
+      "base_sha": "e7d807ce3ffff2e6341cb413f91d4427a2ce5d53",
+      "head": "feature/stage34-guarded-options-exit-admission-2026-11-02",
+      "head_sha": "f5f678a0503c21c888672a0a9a04771de863ce32",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/shadow/long_option_exit_research.py",
+        "tests/test_stage34_guarded_options_exit_atomic.py"
+      ]
+    },
+    {
+      "number": 27,
+      "base": "feature/stage34-guarded-options-exit-admission-2026-11-02",
+      "base_sha": "f5f678a0503c21c888672a0a9a04771de863ce32",
+      "head": "feature/stage35-paper-intent-evidence-2026-11-02",
+      "head_sha": "3a592525f88758d7e1b0b6e7faa77574ba342dde",
+      "draft": true,
+      "filenames": [
+        "src/nexus_titan/shadow/paper_intent_evidence.py",
+        "tests/test_stage35_paper_intent_evidence.py"
+      ]
+    },
+    {
+      "number": 28,
+      "base": "feature/stage35-paper-intent-evidence-2026-11-02",
+      "base_sha": "3a592525f88758d7e1b0b6e7faa77574ba342dde",
+      "head": "feature/stage36-synthetic-e2e-recovery-audit-2026-11-02",
+      "head_sha": "c1ebcec83cb2604b0dc27f230b032354eb3dd775",
+      "draft": true,
+      "filenames": [
+        "docs/STAGES33_36_BATCH_ENGINEERING_REVIEW_2026-11-02.md",
+        "scripts/run_stage36_synthetic_paper_e2e.py",
+        "tests/test_stage36_synthetic_paper_e2e.py"
+      ]
+    },
+    {
+      "number": 29,
+      "base": "feature/stage36-synthetic-e2e-recovery-audit-2026-11-02",
+      "base_sha": "c1ebcec83cb2604b0dc27f230b032354eb3dd775",
+      "head": "feature/stage37-strict-durable-paper-account-2026-11-02",
+      "head_sha": "b2e654f4edaf6b3dfdfd2cc6f676f83d13fb16f7",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE37_STRICT_DURABLE_PAPER_ACCOUNT_2026-11-02.md",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage37_strict_paper_account.py"
+      ]
+    },
+    {
+      "number": 30,
+      "base": "feature/stage37-strict-durable-paper-account-2026-11-02",
+      "base_sha": "b2e654f4edaf6b3dfdfd2cc6f676f83d13fb16f7",
+      "head": "feature/stage38-durable-account-cas-recovery-2026-11-02",
+      "head_sha": "6311b1124f151d8c15329ea863ec2fcbe53e1ed8",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE38_DURABLE_ACCOUNT_CAS_RECOVERY_2026-11-02.md",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage38_durable_account_cas.py"
+      ]
+    },
+    {
+      "number": 31,
+      "base": "feature/stage38-durable-account-cas-recovery-2026-11-02",
+      "base_sha": "6311b1124f151d8c15329ea863ec2fcbe53e1ed8",
+      "head": "feature/stage39-strict-paper-adversarial-e2e-2026-11-02",
+      "head_sha": "2434c20e07fc047dab19d58b3f4b078450ee8aba",
+      "draft": true,
+      "filenames": [
+        "docs/STAGES37_39_STRICT_PAPER_SAFETY_REVIEW_2026-11-02.md",
+        "scripts/run_stage39_strict_paper_adversarial_audit.py",
+        "tests/test_stage39_strict_paper_adversarial_audit.py"
+      ]
+    },
+    {
+      "number": 32,
+      "base": "feature/stage39-strict-paper-adversarial-e2e-2026-11-02",
+      "base_sha": "2434c20e07fc047dab19d58b3f4b078450ee8aba",
+      "head": "feature/stage40-gateway-only-paper-enforcement-2026-11-02",
+      "head_sha": "3ca13fbeaf114c655daf81d9aec0a919cecc5bf7",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE40_GATEWAY_ONLY_PAPER_POLICY_2026-11-02.md",
+        "src/nexus_titan/shadow/paper_intent_gateway.py",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage40_gateway_only_paper.py"
+      ]
+    },
+    {
+      "number": 33,
+      "base": "feature/stage40-gateway-only-paper-enforcement-2026-11-02",
+      "base_sha": "3ca13fbeaf114c655daf81d9aec0a919cecc5bf7",
+      "head": "feature/stage41-risk-policy-drift-gate-2026-11-02",
+      "head_sha": "c59e177ad853548fdc432aefa2d20ffa83d62f8b",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE41_PENDING_BUY_RISK_POLICY_DRIFT_2026-11-02.md",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage41_paper_risk_policy_drift.py"
+      ]
+    },
+    {
+      "number": 34,
+      "base": "feature/stage41-risk-policy-drift-gate-2026-11-02",
+      "base_sha": "c59e177ad853548fdc432aefa2d20ffa83d62f8b",
+      "head": "feature/stage42-gateway-risk-e2e-validation-2026-11-02",
+      "head_sha": "e10418e3a38e10a6da9f64a53d7bfa960d02db98",
+      "draft": true,
+      "filenames": [
+        "docs/STAGES40_42_SEQUENTIAL_GATEWAY_RISK_REVIEW_2026-11-02.md",
+        "scripts/run_stage42_gateway_risk_e2e.py",
+        "tests/test_stage42_gateway_risk_e2e.py"
+      ]
+    },
+    {
+      "number": 35,
+      "base": "feature/stage42-gateway-risk-e2e-validation-2026-11-02",
+      "base_sha": "e10418e3a38e10a6da9f64a53d7bfa960d02db98",
+      "head": "feature/stage43-paper-deployment-startup-gate-2026-11-03",
+      "head_sha": "b1383bbfb71fbd84dd0f8ecee1c48040d286db9b",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE43_PAPER_DEPLOYMENT_INTEGRATION_GATE_2026-11-03.md",
+        "scripts/run_stage43_paper_deployment_smoke.py",
+        "src/nexus_titan/operations/paper_deployment.py",
+        "tests/test_stage43_paper_deployment_startup.py"
+      ]
+    },
+    {
+      "number": 36,
+      "base": "feature/stage43-paper-deployment-startup-gate-2026-11-03",
+      "base_sha": "b1383bbfb71fbd84dd0f8ecee1c48040d286db9b",
+      "head": "feature/stage44-historical-fo-catalog-preflight-2026-11-03",
+      "head_sha": "f46471a449a9832e269f975ba92dbe0aa9eafdfd",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE44_HISTORICAL_FO_CATALOG_PREFLIGHT_2026-11-03.md",
+        "scripts/run_stage44_historical_fo_catalog.py",
+        "src/nexus_titan/data/historical_fo_catalog.py",
+        "tests/test_stage44_historical_fo_catalog.py"
+      ]
+    },
+    {
+      "number": 37,
+      "base": "feature/stage44-historical-fo-catalog-preflight-2026-11-03",
+      "base_sha": "f46471a449a9832e269f975ba92dbe0aa9eafdfd",
+      "head": "feature/stage45-offline-paper-entry-readiness-2026-11-03",
+      "head_sha": "62a83cc0d4ff64366f1f83f10be74c6e3297476c",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE45_OFFLINE_PAPER_ENTRY_READINESS_2026-11-03.md",
+        "scripts/run_stage45_paper_entry_smoke.py",
+        "src/nexus_titan/operations/offline_entry_readiness.py",
+        "tests/test_stage45_offline_entry_readiness.py"
+      ]
+    },
+    {
+      "number": 38,
+      "base": "feature/stage45-offline-paper-entry-readiness-2026-11-03",
+      "base_sha": "62a83cc0d4ff64366f1f83f10be74c6e3297476c",
+      "head": "feature/stage46-pr-stack-integration-audit-2026-11-03",
+      "head_sha": "119d663bdc96e9793ad04108bfad2df23461a993",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE46_PR_STACK_INTEGRATION_AUDIT_2026-11-03.md",
+        "docs/STAGE46_PR_STACK_SNAPSHOT_2026-11-03.json",
+        "scripts/run_stage46_pr_stack_audit.py",
+        "src/nexus_titan/operations/pr_stack_audit.py",
+        "tests/test_stage46_pr_stack_audit.py"
+      ]
+    },
+    {
+      "number": 39,
+      "base": "feature/stage46-pr-stack-integration-audit-2026-11-03",
+      "base_sha": "119d663bdc96e9793ad04108bfad2df23461a993",
+      "head": "feature/stage47-offline-risk-veto-boundary-2026-11-03",
+      "head_sha": "e64146bea7b04ba868811192625f6ab4ce2a8d1e",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE47_OFFLINE_RISK_VETO_GATE_2026-11-03.md",
+        "scripts/run_stage47_offline_risk_veto_smoke.py",
+        "src/nexus_titan/operations/offline_risk_veto.py",
+        "tests/test_stage47_offline_risk_veto.py"
+      ]
+    },
+    {
+      "number": 40,
+      "base": "feature/stage47-offline-risk-veto-boundary-2026-11-03",
+      "base_sha": "e64146bea7b04ba868811192625f6ab4ce2a8d1e",
+      "head": "feature/stage48-signed-paper-approval-2026-11-03",
+      "head_sha": "f875f705eda3c568521b7e32d5a5761b7c7f701d",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE48_SIGNED_SYNTHETIC_PAPER_APPROVAL_2026-11-03.md",
+        "scripts/run_stage48_signed_paper_smoke.py",
+        "src/nexus_titan/operations/signed_paper_approval.py",
+        "tests/test_stage48_signed_paper_approval.py"
+      ]
+    },
+    {
+      "number": 41,
+      "base": "feature/stage48-signed-paper-approval-2026-11-03",
+      "base_sha": "f875f705eda3c568521b7e32d5a5761b7c7f701d",
+      "head": "feature/stage49-durable-paper-entry-fence-2026-11-03",
+      "head_sha": "9c74e2f1630e7eca4032891c27f6fb97c0e6a25b",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE49_DURABLE_PAPER_ENTRY_FENCE_2026-11-03.md",
+        "scripts/run_stage49_paper_fence_smoke.py",
+        "src/nexus_titan/operations/durable_paper_fence.py",
+        "tests/test_stage49_durable_paper_fence.py"
+      ]
+    },
+    {
+      "number": 42,
+      "base": "feature/stage49-durable-paper-entry-fence-2026-11-03",
+      "base_sha": "9c74e2f1630e7eca4032891c27f6fb97c0e6a25b",
+      "head": "feature/stage50-readonly-paper-dashboard-2026-11-03",
+      "head_sha": "74b2133d21f6b8d0f159a58a9d742ac9db3052ce",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE50_READONLY_PAPER_DASHBOARD_2026-11-03.md",
+        "scripts/run_stage50_paper_dashboard_smoke.py",
+        "src/nexus_titan/dashboard/api_service.py",
+        "src/nexus_titan/dashboard/paper_read_model.py",
+        "tests/test_stage50_paper_dashboard_read_model.py"
+      ]
+    },
+    {
+      "number": 43,
+      "base": "feature/stage50-readonly-paper-dashboard-2026-11-03",
+      "base_sha": "74b2133d21f6b8d0f159a58a9d742ac9db3052ce",
+      "head": "feature/stage51-offline-visual-paper-dashboard-2026-11-03",
+      "head_sha": "422b76685b0e8024c0e34c9000891e3e6e664c8e",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE51_VISUAL_OFFLINE_DASHBOARD_AND_SECURITY_REVIEW_2026-11-03.md",
+        "scripts/run_stage51_visual_dashboard_demo.py",
+        "src/nexus_titan/dashboard/static/stage51.css",
+        "src/nexus_titan/dashboard/static/stage51.html",
+        "src/nexus_titan/dashboard/static/stage51.js",
+        "tests/helpers/stage51_browser_harness.cjs",
+        "tests/test_stage51_visual_dashboard.py"
+      ]
+    },
+    {
+      "number": 44,
+      "base": "feature/stage51-offline-visual-paper-dashboard-2026-11-03",
+      "base_sha": "422b76685b0e8024c0e34c9000891e3e6e664c8e",
+      "head": "feature/stage52-security-release-readiness-audit-2026-11-03",
+      "head_sha": "37b98eeda09a0b6bec75ca9cb104944f254c9630",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE52_SECURITY_HARDENING_RELEASE_AUDIT_2026-11-03.md",
+        "scripts/run_stage52_security_audit.py",
+        "src/nexus_titan/dashboard/static/stage51.js",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/helpers/stage51_browser_harness.cjs",
+        "tests/test_stage52_release_security_audit.py"
+      ]
+    },
+    {
+      "number": 45,
+      "base": "feature/stage52-security-release-readiness-audit-2026-11-03",
+      "base_sha": "37b98eeda09a0b6bec75ca9cb104944f254c9630",
+      "head": "feature/stage53-synthetic-capital-authority-2026-11-03",
+      "head_sha": "eca466d49025b5819475cf6c275d4f2d88c209fc",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE53_SYNTHETIC_SINGLE_DB_CAPITAL_AUTHORITY_2026-11-03.md",
+        "scripts/run_stage53_capital_authority_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/synthetic_capital_authority.py",
+        "tests/test_stage53_synthetic_capital_authority.py"
+      ]
+    },
+    {
+      "number": 46,
+      "base": "feature/stage53-synthetic-capital-authority-2026-11-03",
+      "base_sha": "eca466d49025b5819475cf6c275d4f2d88c209fc",
+      "head": "feature/stage54-multi-ledger-recovery-audit-2026-11-03",
+      "head_sha": "800a22c3a0d65d3fbdc6a3a751993b9260b1d2ce",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE54_MULTI_LEDGER_RECONCILIATION_RECOVERY_2026-11-03.md",
+        "scripts/run_stage54_multiledger_recovery_smoke.py",
+        "src/nexus_titan/operations/multi_ledger_recovery_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage54_multi_ledger_recovery_audit.py"
+      ]
+    },
+    {
+      "number": 47,
+      "base": "feature/stage54-multi-ledger-recovery-audit-2026-11-03",
+      "base_sha": "800a22c3a0d65d3fbdc6a3a751993b9260b1d2ce",
+      "head": "feature/stage55-single-db-synthetic-reserve-settle-2026-11-03",
+      "head_sha": "38fcd8df544823042ae0040ed61a3f9151f49eff",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE55_SINGLE_DB_SYNTHETIC_CAPITAL_LIFECYCLE_2026-11-03.md",
+        "scripts/run_stage55_atomic_book_smoke.py",
+        "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage55_isolated_atomic_execution_book.py"
+      ]
+    },
+    {
+      "number": 48,
+      "base": "feature/stage55-single-db-synthetic-reserve-settle-2026-11-03",
+      "base_sha": "38fcd8df544823042ae0040ed61a3f9151f49eff",
+      "head": "feature/stage56-brokerless-risk-veto-boundary-2026-11-03",
+      "head_sha": "c226827e0cd2c1348c173f2074f2e73309f4bf81",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE56_BROKERLESS_RISK_VETO_BOUNDARY_2026-11-03.md",
+        "scripts/run_stage56_brokerless_risk_gate.py",
+        "scripts/run_stage56_risk_veto_smoke.py",
+        "src/nexus_titan/operations/brokerless_risk_veto.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/risk_boundary_inventory.py",
+        "tests/test_stage56_brokerless_risk_veto.py"
+      ]
+    },
+    {
+      "number": 49,
+      "base": "feature/stage56-brokerless-risk-veto-boundary-2026-11-03",
+      "base_sha": "c226827e0cd2c1348c173f2074f2e73309f4bf81",
+      "head": "feature/stage57-durable-paper-approval-revocation-2026-11-03",
+      "head_sha": "c93c9fffd3573e8f13adb3d02afd1ce3b720b8cf",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE57_DURABLE_APPROVAL_REVOCATION_AND_RISK_REVIEW_2026-11-03.md",
+        "scripts/run_stage57_approval_revocation_smoke.py",
+        "src/nexus_titan/core/security_gates.py",
+        "src/nexus_titan/operations/local_approval_risk_review.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage57_approval_revocation_risk_binding.py"
+      ]
+    },
+    {
+      "number": 50,
+      "base": "feature/stage57-durable-paper-approval-revocation-2026-11-03",
+      "base_sha": "c93c9fffd3573e8f13adb3d02afd1ce3b720b8cf",
+      "head": "feature/stage58-synthetic-execution-stress-2026-11-03",
+      "head_sha": "8457d417aae5fcd407a0833fc570cd448f4d1792",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE58_ADVANCED_SYNTHETIC_EXECUTION_STRESS_2026-11-03.md",
+        "scripts/run_stage58_execution_stress_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/simulation/stage58_execution_stress.py",
+        "tests/test_stage58_execution_stress.py"
+      ]
+    },
+    {
+      "number": 51,
+      "base": "feature/stage58-synthetic-execution-stress-2026-11-03",
+      "base_sha": "8457d417aae5fcd407a0833fc570cd448f4d1792",
+      "head": "feature/stage59-futures-history-quality-preflight-2026-11-03",
+      "head_sha": "6ff296c5ebef60872004722214fb97dc8b6247c5",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE59_FUTURES_HISTORY_QUALITY_AND_PROVIDER_ADAPTER_2026-11-03.md",
+        "scripts/run_stage59_futures_history_smoke.py",
+        "src/nexus_titan/data/stage59_futures_history.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage59_futures_history.py"
+      ]
+    },
+    {
+      "number": 52,
+      "base": "feature/stage59-futures-history-quality-preflight-2026-11-03",
+      "base_sha": "6ff296c5ebef60872004722214fb97dc8b6247c5",
+      "head": "feature/stage60-purged-fo-oos-research-2026-11-03",
+      "head_sha": "1d08f9cb00ba516ef29bd427009e61162d370340",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE60_PURGED_FO_OOS_DIRECTIONAL_RESEARCH_2026-11-03.md",
+        "scripts/run_stage60_purged_oos_smoke.py",
+        "src/nexus_titan/data/stage59_futures_history.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/research/stage60_purged_oos.py",
+        "tests/test_stage60_purged_oos_research.py"
+      ]
+    },
+    {
+      "number": 53,
+      "base": "feature/stage60-purged-fo-oos-research-2026-11-03",
+      "base_sha": "1d08f9cb00ba516ef29bd427009e61162d370340",
+      "head": "feature/stage61-unified-fo-evidence-no-go-scorecard-2026-11-03",
+      "head_sha": "287e9336b128f029bc9884959e253457742a255f",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE61_UNIFIED_FO_RESEARCH_EVIDENCE_SCORECARD_2026-11-03.md",
+        "scripts/run_stage61_fo_evidence_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/research/stage61_evidence_scorecard.py",
+        "tests/test_stage61_fo_evidence_scorecard.py"
+      ]
+    },
+    {
+      "number": 54,
+      "base": "feature/stage61-unified-fo-evidence-no-go-scorecard-2026-11-03",
+      "base_sha": "287e9336b128f029bc9884959e253457742a255f",
+      "head": "feature/stage62-no-merge-integrated-audit-2026-11-03",
+      "head_sha": "7eef2890950781f638a337a32884762b429e7718",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE62_PR_DEPENDENCY_SNAPSHOT_2026-11-03.json",
+        "docs/STAGE62_PR_STACK_SOURCE_AND_CI_INTEGRATION_AUDIT_2026-11-03.md",
+        "scripts/run_stage62_integration_audit.py",
+        "src/nexus_titan/operations/integration_candidate_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage62_integration_candidate_audit.py"
+      ]
+    },
+    {
+      "number": 55,
+      "base": "feature/stage62-no-merge-integrated-audit-2026-11-03",
+      "base_sha": "7eef2890950781f638a337a32884762b429e7718",
+      "head": "feature/stage63-offline-operator-status-view-2026-11-03",
+      "head_sha": "7adda76b6c2a0427bdec21019788c94765b64df0",
+      "draft": true,
+      "filenames": [
+        "docs/STAGE63_OFFLINE_OPERATOR_AUDIT_DASHBOARD_2026-11-03.md",
+        "src/nexus_titan/dashboard/static/stage63.css",
+        "src/nexus_titan/dashboard/static/stage63.html",
+        "src/nexus_titan/dashboard/static/stage63.js",
+        "tests/helpers/stage63_browser_harness.cjs",
+        "tests/test_stage63_operator_dashboard.py"
+      ]
+    },
+    {
+      "number": 56,
+      "base": "feature/stage63-offline-operator-status-view-2026-11-03",
+      "base_sha": "7adda76b6c2a0427bdec21019788c94765b64df0",
+      "head": "feature/stage64-prospective-shadow-trial-governance-2026-11-03",
+      "head_sha": "24e5249d2d42c0a3cd50c6ddad6f0a70146e0580",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE64_PROSPECTIVE_SHADOW_TRIAL_GOVERNANCE_2026-11-03.md",
+        "scripts/run_stage64_shadow_trial_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/shadow/stage64_trial_governance.py",
+        "tests/test_stage64_shadow_trial_governance.py"
+      ]
+    },
+    {
+      "number": 57,
+      "base": "feature/stage64-prospective-shadow-trial-governance-2026-11-03",
+      "base_sha": "24e5249d2d42c0a3cd50c6ddad6f0a70146e0580",
+      "head": "feature/stage65-final-acceptance-no-go-2026-11-03",
+      "head_sha": "5500f6833fefb46b016068d1a94b81fdb3fa497b",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE65_FINAL_ACCEPTANCE_NO_GO_HANDOFF_2026-11-03.md",
+        "docs/STAGE65_FINAL_PR_REVIEW_SNAPSHOT_2026-11-03.json",
+        "scripts/run_stage65_final_acceptance.py",
+        "src/nexus_titan/operations/integration_candidate_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/stage65_release_acceptance.py",
+        "tests/test_stage65_final_release_acceptance.py"
+      ]
+    },
+    {
+      "number": 58,
+      "base": "feature/stage65-final-acceptance-no-go-2026-11-03",
+      "base_sha": "5500f6833fefb46b016068d1a94b81fdb3fa497b",
+      "head": "feature/stage66-exhaustive-pr-inventory-2026-11-03",
+      "head_sha": "d35dad8edaa07462bf0f48a3b28245022bda66dd",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE66_COMPLETE_PR_INVENTORY_HANDOFF_2026-11-03.md",
+        "docs/STAGE66_PR_FILES_PART_01_2026-11-03.json",
+        "docs/STAGE66_PR_FILES_PART_02_2026-11-03.json",
+        "docs/STAGE66_PR_FILES_PART_03_2026-11-03.json",
+        "docs/STAGE66_PR_FILES_PART_04_2026-11-03.json",
+        "docs/STAGE66_PR_FILES_PART_05_2026-11-03.json",
+        "docs/STAGE66_PR_FILES_PART_06_2026-11-03.json",
+        "scripts/run_stage66_pr_inventory.py",
+        "src/nexus_titan/operations/stage66_pr_inventory.py",
+        "tests/test_stage66_pr_inventory.py"
+      ]
+    },
+    {
+      "number": 59,
+      "base": "feature/stage66-exhaustive-pr-inventory-2026-11-03",
+      "base_sha": "d35dad8edaa07462bf0f48a3b28245022bda66dd",
+      "head": "integration/stage67-calibration-lineage-2026-11-03",
+      "head_sha": "a9de0307c394208f450680f0a7ca1e6b26f0cd41",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/calibration-hardening.yml",
+        ".github/workflows/ci.yml",
+        "docs/STAGE67_CALIBRATION_LINEAGE_RECONCILIATION_2026-11-03.md",
+        "scripts/run_stage67_calibration_reconciliation.py",
+        "src/nexus_titan/operations/stage67_calibration_reconcile.py",
+        "tests/test_stage67_calibration_reconciliation.py"
+      ]
+    },
+    {
+      "number": 60,
+      "base": "integration/stage67-calibration-lineage-2026-11-03",
+      "base_sha": "a9de0307c394208f450680f0a7ca1e6b26f0cd41",
+      "head": "integration/stage68-combined-offline-acceptance-2026-11-03",
+      "head_sha": "dc7383533551e0ebb98c2035b0d7e5057396abf6",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE68_COMBINED_OFFLINE_INTEGRATION_NO_GO_2026-11-03.md",
+        "scripts/run_stage68_combined_candidate.py",
+        "src/nexus_titan/operations/stage68_combined_candidate.py",
+        "tests/test_stage68_combined_candidate.py"
+      ]
+    },
+    {
+      "number": 61,
+      "base": "integration/stage68-combined-offline-acceptance-2026-11-03",
+      "base_sha": "dc7383533551e0ebb98c2035b0d7e5057396abf6",
+      "head": "feature/stage69-brokerless-risk-budget-crosscheck-2026-11-03",
+      "head_sha": "47c7a19d162d8db8bcfb94091276a271b86ee214",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE69_SYNTHETIC_RISK_BUDGET_CROSSCHECK_2026-11-03.md",
+        "scripts/run_stage69_synthetic_risk_budget_smoke.py",
+        "src/nexus_titan/operations/stage69_risk_budget_preflight.py",
+        "tests/test_stage69_risk_budget_preflight.py"
+      ]
+    },
+    {
+      "number": 62,
+      "base": "feature/stage69-brokerless-risk-budget-crosscheck-2026-11-03",
+      "base_sha": "47c7a19d162d8db8bcfb94091276a271b86ee214",
+      "head": "feature/stage70-fo-risk-integration-audit-2026-11-04",
+      "head_sha": "921f04970889e0827c31ef0c794916a3bdfac274",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE70_FO_FIRST_INTEGRATION_RISK_AUDIT_2026-11-04.md",
+        "scripts/run_stage70_fo_integration_audit.py",
+        "src/nexus_titan/operations/stage70_fo_integration_gate.py",
+        "tests/test_stage70_fo_integration_gate.py"
+      ]
+    },
+    {
+      "number": 63,
+      "base": "feature/stage70-fo-risk-integration-audit-2026-11-04",
+      "base_sha": "921f04970889e0827c31ef0c794916a3bdfac274",
+      "head": "feature/stage71-fo-point-in-time-alignment-2026-11-04",
+      "head_sha": "9559494f715289a8de32eee40c62a370e7931c22",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE71_FO_POINT_IN_TIME_ALIGNMENT_2026-11-04.md",
+        "scripts/run_stage71_fo_alignment_smoke.py",
+        "src/nexus_titan/data/stage71_fo_asof_alignment.py",
+        "tests/test_stage71_fo_asof_alignment.py"
+      ]
+    },
+    {
+      "number": 64,
+      "base": "feature/stage71-fo-point-in-time-alignment-2026-11-04",
+      "base_sha": "9559494f715289a8de32eee40c62a370e7931c22",
+      "head": "feature/stage72-fo-expiry-iv-greeks-envelope-2026-11-04",
+      "head_sha": "fe1b7cd3443174bea8031e6f2e241120f4d78b17",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE72_FO_EXPIRY_IV_GREEKS_RESEARCH_2026-11-04.md",
+        "scripts/run_stage72_iv_greeks_smoke.py",
+        "src/nexus_titan/derivatives/stage72_expiry_iv_research.py",
+        "tests/test_stage72_expiry_iv_research.py"
+      ]
+    },
+    {
+      "number": 65,
+      "base": "feature/stage72-fo-expiry-iv-greeks-envelope-2026-11-04",
+      "base_sha": "fe1b7cd3443174bea8031e6f2e241120f4d78b17",
+      "head": "feature/stage73-fo-evolve-experience-calibration-2026-11-04",
+      "head_sha": "80149ce7db0e318075ffd6c29266f4b202337b1b",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE73_FO_EVOLVE_EXPERIENCE_CALIBRATION_2026-11-04.md",
+        "scripts/run_stage73_fo_evolve_smoke.py",
+        "src/nexus_titan/evolve/stage73_fo_experience.py",
+        "tests/test_stage73_fo_experience.py"
+      ]
+    },
+    {
+      "number": 66,
+      "base": "feature/stage73-fo-evolve-experience-calibration-2026-11-04",
+      "base_sha": "80149ce7db0e318075ffd6c29266f4b202337b1b",
+      "head": "feature/stage74-fo-options-scenario-lab-2026-11-04",
+      "head_sha": "82d16d076e750bfd57a926f7afe11d9f60405204",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE74_FO_DIGITAL_TWIN_OPTIONS_STRESS_2026-11-04.md",
+        "scripts/run_stage74_fo_scenario_smoke.py",
+        "src/nexus_titan/simulation/stage74_fo_options_scenario_lab.py",
+        "tests/test_stage74_fo_options_scenario_lab.py"
+      ]
+    },
+    {
+      "number": 67,
+      "base": "feature/stage74-fo-options-scenario-lab-2026-11-04",
+      "base_sha": "82d16d076e750bfd57a926f7afe11d9f60405204",
+      "head": "feature/stage75-fo-shadow-readiness-no-go-2026-11-04",
+      "head_sha": "49f7dbb9aa2f4be9f0ea714c72e0fe01685e3c0f",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE75_FO_SHADOW_READINESS_AUDIT_2026-11-04.md",
+        "scripts/run_stage75_fo_shadow_readiness_smoke.py",
+        "src/nexus_titan/shadow/stage75_fo_shadow_readiness.py",
+        "tests/test_stage75_fo_shadow_readiness.py"
+      ]
+    },
+    {
+      "number": 68,
+      "base": "feature/stage75-fo-shadow-readiness-no-go-2026-11-04",
+      "base_sha": "49f7dbb9aa2f4be9f0ea714c72e0fe01685e3c0f",
+      "head": "feature/stage76-fo-portfolio-risk-capital-fence-2026-11-04",
+      "head_sha": "28ec69315fd3a8135522d65751f2bb16ad4f8c42",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE76_FO_PORTFOLIO_RISK_CAPITAL_FENCE_2026-11-04.md",
+        "scripts/run_stage76_fo_portfolio_risk_smoke.py",
+        "src/nexus_titan/operations/stage76_fo_portfolio_risk_fence.py",
+        "tests/test_stage76_fo_portfolio_risk_fence.py"
+      ]
+    },
+    {
+      "number": 69,
+      "base": "feature/stage76-fo-portfolio-risk-capital-fence-2026-11-04",
+      "base_sha": "28ec69315fd3a8135522d65751f2bb16ad4f8c42",
+      "head": "feature/stage77-brokerless-fo-synthetic-gateway-2026-11-04",
+      "head_sha": "b620b7dfa0954b3b40091270e81b974c9518093f",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE77_BROKERLESS_FO_SYNTHETIC_GATEWAY_2026-11-04.md",
+        "scripts/run_stage77_fo_gateway_smoke.py",
+        "src/nexus_titan/operations/stage77_brokerless_fo_sandbox.py",
+        "tests/test_stage77_brokerless_fo_sandbox.py"
+      ]
+    },
+    {
+      "number": 70,
+      "base": "feature/stage77-brokerless-fo-synthetic-gateway-2026-11-04",
+      "base_sha": "b620b7dfa0954b3b40091270e81b974c9518093f",
+      "head": "feature/stage78-fo-cutover-concurrency-recovery-audit-2026-11-04",
+      "head_sha": "2ce525310ad53b90e2636e3e73fc77c9b263393a",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE78_FO_RISK_GATEWAY_CUTOVER_CONCURRENCY_2026-11-04.md",
+        "scripts/run_stage78_fo_cutover_audit.py",
+        "src/nexus_titan/operations/stage78_fo_gateway_cutover_audit.py",
+        "tests/test_stage78_fo_gateway_cutover_audit.py"
+      ]
+    },
+    {
+      "number": 71,
+      "base": "feature/stage78-fo-cutover-concurrency-recovery-audit-2026-11-04",
+      "base_sha": "2ce525310ad53b90e2636e3e73fc77c9b263393a",
+      "head": "audit/fo-full-chain-e2e-2026-11-04",
+      "head_sha": "5bec401a039cb5570625526c65643f2379fb70c3",
+      "draft": true,
+      "filenames": [
+        "tests/test_full_chain_fo_data_to_sandbox_e2e.py"
+      ]
+    },
+    {
+      "number": 72,
+      "base": "audit/fo-full-chain-e2e-2026-11-04",
+      "base_sha": "5bec401a039cb5570625526c65643f2379fb70c3",
+      "head": "feature/stage79-local-sqlite-risk-cas-fence-2026-11-04",
+      "head_sha": "f695f210c8d00edfe5139858ab1c6f26ebb95a39",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE79_LOCAL_SQLITE_CAS_RISK_FENCE_2026-11-04.md",
+        "scripts/run_stage79_local_sqlite_cas_smoke.py",
+        "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+        "src/nexus_titan/operations/stage77_brokerless_fo_sandbox.py",
+        "tests/test_stage79_local_sqlite_cas_fence.py"
+      ]
+    },
+    {
+      "number": 73,
+      "base": "feature/stage79-local-sqlite-risk-cas-fence-2026-11-04",
+      "base_sha": "f695f210c8d00edfe5139858ab1c6f26ebb95a39",
+      "head": "feature/stage80-pr-cutover-readiness-2026-11-04",
+      "head_sha": "6dc2bb95c283511a60865417d0f4ee2ff3c5188e",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE80_FROZEN_OPEN_PR_SNAPSHOT_2026-11-04.json",
+        "docs/STAGE80_INTEGRATION_CANDIDATE_CUTOVER_PLAN_2026-11-04.md",
+        "scripts/run_stage80_integration_candidate.py",
+        "src/nexus_titan/operations/stage80_integration_candidate_gate.py",
+        "tests/test_stage80_integration_candidate_gate.py"
+      ]
+    },
+    {
+      "number": 74,
+      "base": "feature/stage80-pr-cutover-readiness-2026-11-04",
+      "base_sha": "6dc2bb95c283511a60865417d0f4ee2ff3c5188e",
+      "head": "feature/stage81-combined-root-ancestry-2026-11-04",
+      "head_sha": "5a06cf916be2c4b2ebf5d0ca3ce0d70f9386f21a",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE81_TWO_ROOT_ANCESTRY_EVIDENCE_2026-11-04.json",
+        "scripts/run_stage81_ancestry_smoke.py",
+        "src/nexus_titan/operations/stage81_root_ancestry_review.py",
+        "tests/test_stage81_root_ancestry_review.py"
+      ]
+    },
+    {
+      "number": 75,
+      "base": "feature/stage81-combined-root-ancestry-2026-11-04",
+      "base_sha": "5a06cf916be2c4b2ebf5d0ca3ce0d70f9386f21a",
+      "head": "feature/stage82-local-sqlite-kill-switch-2026-11-04",
+      "head_sha": "0c1796f60aa9ade1de7c12a3955e5c345269d4f3",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE82_LOCAL_SQLITE_KILL_SWITCH_2026-11-04.md",
+        "scripts/run_stage82_local_risk_smoke.py",
+        "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+        "tests/test_stage82_local_sqlite_kill_switch.py"
+      ]
+    },
+    {
+      "number": 76,
+      "base": "feature/stage82-local-sqlite-kill-switch-2026-11-04",
+      "base_sha": "0c1796f60aa9ade1de7c12a3955e5c345269d4f3",
+      "head": "feature/stage83-fo-single-account-ledger-reconcile-2026-11-04",
+      "head_sha": "78d8ace95a5f14a086bc3d2209315ffedba0c3d7",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE83_SINGLE_DB_FO_CAPITAL_RECONCILIATION_2026-11-04.md",
+        "scripts/run_stage83_fo_capital_smoke.py",
+        "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+        "src/nexus_titan/operations/stage83_fo_capital_reconciliation.py",
+        "tests/test_stage83_fo_capital_reconciliation.py"
+      ]
+    },
+    {
+      "number": 77,
+      "base": "feature/stage83-fo-single-account-ledger-reconcile-2026-11-04",
+      "base_sha": "78d8ace95a5f14a086bc3d2209315ffedba0c3d7",
+      "head": "feature/stage84-fo-combined-e2e-regression-2026-11-04",
+      "head_sha": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+      "draft": true,
+      "filenames": [
+        ".github/workflows/ci.yml",
+        "docs/STAGE84_BATCH_81_84_END_TO_END_2026-11-04.md",
+        "scripts/run_stage84_batch_smoke.py",
+        "tests/test_stage84_combined_fo_end_to_end.py"
+      ]
+    }
+  ],
+  "baseline": {
+    "tests": 2316,
+    "failed": 0,
+    "python_local": "3.12.14",
+    "github_run_id": 41824039895,
+    "github_commit_sha": "034eb43bdf196062e903f943fa172bb0576cbb7f",
+    "ci_python": [
+      "3.11",
+      "3.12",
+      "3.13"
+    ],
+    "ci_conclusion": "success"
+  },
+  "limitations": [
+    "Point-in-time connector observations, not signed attestations",
+    "Full changed-filename inventory, not exhaustive semantic review of every historic patch",
+    "No merge authorization",
+    "Main unprotected in branch listing"
+  ]
+}

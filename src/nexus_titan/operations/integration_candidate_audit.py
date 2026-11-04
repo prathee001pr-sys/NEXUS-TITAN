@@ -24,6 +24,70 @@ from nexus_titan.operations.release_security_audit import inspect_stage52_securi
 from nexus_titan.operations.risk_boundary_inventory import inspect_stage56_bypass_paths
 
 
+@dataclass(frozen=True, slots=True)
+class PackageDependencyReview:
+    """Whole-package static inventory; runtime behavior still requires tests."""
+
+    modules: tuple[str, ...]
+    internal_import_edges: tuple[tuple[str, str], ...]
+    unresolved_internal_imports: tuple[tuple[str, str], ...]
+    duplicate_definitions: tuple[tuple[str, str], ...]
+    identical_module_groups: tuple[tuple[str, ...], ...]
+
+    @property
+    def passed(self) -> bool:
+        return not self.unresolved_internal_imports and not self.duplicate_definitions
+
+
+def inspect_package_dependencies(repo_root: Path) -> PackageDependencyReview:
+    """Inspect every Python source module without importing or executing it.
+
+    Identical nonempty modules are reported for human review, never deleted.
+    This checks import targets, not dynamically generated imports or symbols.
+    """
+    package = repo_root / "src/nexus_titan"
+    if not package.is_dir() or any(p.is_symlink() for p in (package, *package.parents)):
+        raise ValueError("Regular package directory required")
+    sources: dict[str, ast.Module] = {}
+    fingerprints: dict[str, list[str]] = {}
+    for path in sorted(package.rglob("*.py")):
+        if any(p.is_symlink() for p in (path, *path.parents)) or path.stat().st_size > 512_000:
+            raise ValueError("Unsafe or oversized package source")
+        relative = path.relative_to(repo_root / "src").with_suffix("")
+        parts = relative.parts[:-1] if relative.name == "__init__" else relative.parts
+        name = ".".join(parts)
+        raw = path.read_bytes()
+        sources[name] = ast.parse(raw.decode("utf-8"), filename=str(relative))
+        if raw.strip() and path.name != "__init__.py":
+            fingerprints.setdefault(hashlib.sha256(raw).hexdigest(), []).append(name)
+    if not sources or len(sources) > 1024:
+        raise ValueError("Empty or unbounded source inventory")
+    edges: set[tuple[str, str]] = set()
+    duplicates: list[tuple[str, str]] = []
+    for name, tree in sources.items():
+        seen: set[str] = set()
+        for node in tree.body:
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name in seen:
+                    duplicates.append((name, node.name))
+                seen.add(node.name)
+        for node in ast.walk(tree):
+            targets = []
+            if isinstance(node, ast.ImportFrom) and not node.level:
+                targets = [node.module or ""]
+            elif isinstance(node, ast.Import):
+                targets = [a.name for a in node.names]
+            for target in targets:
+                if target == "nexus_titan" or target.startswith("nexus_titan."):
+                    edges.add((name, target))
+    return PackageDependencyReview(
+        modules=tuple(sorted(sources)), internal_import_edges=tuple(sorted(edges)),
+        unresolved_internal_imports=tuple(sorted(e for e in edges if e[1] not in sources)),
+        duplicate_definitions=tuple(sorted(duplicates)),
+        identical_module_groups=tuple(sorted(tuple(v) for v in fingerprints.values() if len(v) > 1)),
+    )
+
+
 # Explicit cross-stage contracts. Check that the IMPORTING module names a
 # concrete exported class/function in its imported module. This does NOT
 # guarantee the import's semantics or test unrelated dynamic Python paths.
