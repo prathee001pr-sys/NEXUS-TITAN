@@ -162,6 +162,13 @@ def _keyword_has_attr(call: ast.Call, key: str, holder: str, attr: str) -> bool:
     return False
 
 
+def _keyword_is_name(call: ast.Call, key: str, name: str) -> bool:
+    return any(
+        kw.arg == key and isinstance(kw.value, ast.Name)
+        and kw.value.id == name for kw in call.keywords
+    )
+
+
 def _stage79_contract(book_raw: bytes, gateway_raw: bytes) -> int:
     try:
         book_tree = ast.parse(book_raw.decode("utf-8"), filename=_STAGE55)
@@ -180,22 +187,30 @@ def _stage79_contract(book_raw: bytes, gateway_raw: bytes) -> int:
     begin = [c for c in _calls(record, "conn", "execute")
              if c.args and isinstance(c.args[0], ast.Constant)
              and c.args[0].value == "BEGIN IMMEDIATE"]
-    if len(begin) != 1:
+    writes = _calls(record, "self", "_write_event")
+    if len(begin) != 1 or len(writes) != 1 or begin[0].lineno >= writes[0].lineno:
         raise Stage80CutoverBlocked("Stage55 atomic SQLite write begin marker missing")
-    # Presence is source-shape evidence, never a dominance/execution proof.
+    # Strict lexical contract only; no runtime control-flow proof.
     compares = [n for n in ast.walk(record) if isinstance(n, ast.Compare)]
-    revision_checked = any(
-        isinstance(c.left, ast.Name) and c.left.id == "expected_revision"
-        and any(isinstance(x, ast.Name) and x.id == "rev" for x in c.comparators)
-        for c in compares
-    )
-    head_checked = any(
-        isinstance(c.left, ast.Name) and c.left.id == "expected_journal_tip"
-        and any(isinstance(x, ast.Name) and x.id == "previous" for x in c.comparators)
-        for c in compares
-    )
-    if not (revision_checked and head_checked):
-        raise Stage80CutoverBlocked("Stage55 expected revision or head comparison missing")
+    def checks(left: str, right: str) -> bool:
+        return any(
+            isinstance(c.left, ast.Name) and c.left.id == left
+            and len(c.ops) == 1 and isinstance(c.ops[0], ast.NotEq)
+            and len(c.comparators) == 1
+            and isinstance(c.comparators[0], ast.Name)
+            and c.comparators[0].id == right
+            and begin[0].lineno < c.lineno < writes[0].lineno
+            for c in compares
+        )
+    if not (checks("expected_revision", "rev")
+            and checks("expected_journal_tip", "previous")):
+        raise Stage80CutoverBlocked("Stage55 exact-head inequality comparison missing")
+    for public in ("reserve_synthetic_buy", "record_simulated_fill", "cancel_unfilled"):
+        callsites = _calls(_method(book, public), "self", "_record")
+        if (len(callsites) != 1
+                or not _keyword_is_name(callsites[0], "expected_revision", "expected_revision")
+                or not _keyword_is_name(callsites[0], "expected_journal_tip", "expected_journal_tip")):
+            raise Stage80CutoverBlocked("Stage55 direct method fails to forward optional CAS")
     status = _method(gate, "_book_status")
     attr_names = {n.attr for n in ast.walk(status) if isinstance(n, ast.Attribute)}
     if not {"_expected_revision", "_expected_tip", "revision", "journal_tip"}.issubset(attr_names):
