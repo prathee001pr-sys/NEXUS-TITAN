@@ -24,6 +24,7 @@ _MAX_EVENTS = 500
 _GENESIS = "0" * 64
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}\Z", re.ASCII)
 _SYMBOL = re.compile(r"[A-Z][A-Z0-9._-]{0,29}\Z", re.ASCII)
+_SHA256 = re.compile(r"[0-9a-f]{64}\Z", re.ASCII)
 
 
 class Stage55SyntheticBookBlocked(PermissionError):
@@ -307,13 +308,31 @@ class Stage55IsolatedSyntheticExecutionBook:
 
     def _record(self, *, operation_id: str, kind: str, order_id: str,
                 symbol: str = "", qty: int = 0, price: int = 0,
-                fee: int = 0, buffer: int = 0) -> Stage55SyntheticReceipt:
+                fee: int = 0, buffer: int = 0,
+                expected_revision: int | None = None,
+                expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
         op = _id(operation_id, "Operation ID")
         oid = _id(order_id, "Order ID")
+        if (expected_revision is None) != (expected_journal_tip is None):
+            raise Stage55SyntheticBookBlocked("Revision and journal head must be supplied together")
+        if expected_revision is not None and (
+            type(expected_revision) is not int or expected_revision < 0
+            or not isinstance(expected_journal_tip, str)
+            or _SHA256.fullmatch(expected_journal_tip) is None
+        ):
+            raise Stage55SyntheticBookBlocked("Invalid expected synthetic SQLite version")
         try:
             with self._conn() as conn:
                 conn.execute("BEGIN IMMEDIATE")
                 orders, cash, held, _, _, rev, previous = self._replay_checked(conn)
+                # Compare a previously observed head WITHIN the same
+                # BEGIN IMMEDIATE transaction that makes the mutation.
+                # This is only one SQLite file; direct legacy writes can
+                # still omit this optional, cooperative check.
+                if expected_revision is not None and (
+                    expected_revision != rev or expected_journal_tip != previous
+                ):
+                    raise Stage55SyntheticBookBlocked("Stale synthetic SQLite snapshot denied")
                 if rev >= _MAX_EVENTS:
                     raise Stage55SyntheticBookBlocked("Synthetic journal capacity reached")
                 if conn.execute(
@@ -378,7 +397,9 @@ class Stage55IsolatedSyntheticExecutionBook:
 
     def reserve_synthetic_buy(self, *, request_id: str, symbol: str,
                               quantity: int, limit_price_cents: int,
-                              fee_buffer_cents: int) -> Stage55SyntheticReceipt:
+                              fee_buffer_cents: int,
+                              expected_revision: int | None = None,
+                              expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
         if not isinstance(symbol, str) or _SYMBOL.fullmatch(symbol) is None:
             raise Stage55SyntheticBookBlocked("Only bounded uppercase synthetic equity symbols supported")
         qty = _quantity(quantity)
@@ -389,11 +410,15 @@ class Stage55IsolatedSyntheticExecutionBook:
         return self._record(
             operation_id=request_id, kind="OPEN", order_id=request_id,
             symbol=symbol, qty=qty, price=price, buffer=buffer,
+            expected_revision=expected_revision,
+            expected_journal_tip=expected_journal_tip,
         )
 
     def record_simulated_fill(self, *, order_id: str, fill_id: str,
                               quantity: int, price_cents: int,
-                              fee_cents: int, evidence_source: str) -> Stage55SyntheticReceipt:
+                              fee_cents: int, evidence_source: str,
+                              expected_revision: int | None = None,
+                              expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
         if evidence_source != "LOCAL_SYNTHETIC_TEST_ONLY":
             raise Stage55SyntheticBookBlocked("Only explicitly synthetic local fills can be recorded")
         return self._record(
@@ -401,13 +426,21 @@ class Stage55IsolatedSyntheticExecutionBook:
             qty=_quantity(quantity),
             price=_amount(price_cents, "Synthetic fill price"),
             fee=_amount(fee_cents, "Synthetic fees", allow_zero=True),
+            expected_revision=expected_revision,
+            expected_journal_tip=expected_journal_tip,
         )
 
     def cancel_unfilled(self, *, order_id: str, cancel_id: str,
-                        evidence_source: str) -> Stage55SyntheticReceipt:
+                        evidence_source: str,
+                        expected_revision: int | None = None,
+                        expected_journal_tip: str | None = None) -> Stage55SyntheticReceipt:
         if evidence_source != "LOCAL_SYNTHETIC_TEST_ONLY":
             raise Stage55SyntheticBookBlocked("Only synthetic cancellation simulation accepted")
-        return self._record(operation_id=cancel_id, kind="CANCEL", order_id=order_id)
+        return self._record(
+            operation_id=cancel_id, kind="CANCEL", order_id=order_id,
+            expected_revision=expected_revision,
+            expected_journal_tip=expected_journal_tip,
+        )
 
     def inspect(self) -> Stage55SyntheticStatus:
         try:
