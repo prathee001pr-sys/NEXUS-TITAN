@@ -247,6 +247,11 @@ def inspect_stage75_fo_shadow_readiness(
             or sum(r.strike == first.strike and r.option_type == first.option_type
                    for r in stage72.rows) != 1):
         raise Stage75ReadinessBlocked("Missing unique long option contract/stressed quantity")
+    quote = next(r for r in stage72.rows
+                 if r.strike == first.strike and r.option_type == first.option_type)
+    ask_cents = _rupee_cents(quote.ask, "Stage72 ask")
+    if ask_cents == 0 or first.quantity <= 0:
+        raise Stage75ReadinessBlocked("Underlying option quote is not a positive long-option ask")
     seen_cases: set[str] = set()
     debit: int | None = None
     largest_loss = 0
@@ -263,6 +268,15 @@ def inspect_stage75_fo_shadow_readiness(
         premium = _rupee_cents(row.hypothetical_premium_at_risk_rupees, "Premium at risk")
         proceeds = _rupee_cents(row.hypothetical_exit_proceeds_rupees, "Exit proceeds")
         net = _rupee_cents(abs(row.hypothetical_round_trip_net_rupees), "Magnitude of model net")
+        entry_fee = _rupee_cents(row.indicative_entry_charges_rupees, "Entry fee")
+        exit_fee = _rupee_cents(row.indicative_exit_charges_rupees, "Exit fee")
+        exit_unit_price = _rupee_cents(
+            row.hypothetical_exit_price_after_friction, "Hypothetical exit unit price",
+        )
+        expected_entry = ask_cents * row.quantity + entry_fee
+        expected_exit = max(0, exit_unit_price * row.quantity - exit_fee)
+        if (abs(entry - expected_entry) > 1 or abs(proceeds - expected_exit) > 2):
+            raise Stage75ReadinessBlocked("Scenario prices, quantities and fees fail cashflow reconciliation")
         if (entry == 0 or entry != premium
                 or abs((proceeds - entry) - (net if row.hypothetical_round_trip_net_rupees >= 0 else -net)) > 1
                 or (debit is not None and entry != debit)):
