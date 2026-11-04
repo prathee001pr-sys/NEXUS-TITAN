@@ -1,0 +1,255 @@
+{
+  "scope": "Public statically declared candidates; dynamic/private calls require separate review",
+  "global_enforcement_claimed": false,
+  "entrypoints": [
+    {
+      "path": "src/nexus_titan/crypto/crypto_engine.py",
+      "callable": "CryptoVirtualAccount.execute_crypto_order",
+      "line": 89,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/derivatives/chain_and_settlement.py",
+      "callable": "settle_option_at_expiry",
+      "line": 222,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/evolve/governance.py",
+      "callable": "GovernedEvolveService.approve",
+      "line": 39,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/evolve/research.py",
+      "callable": "EvolveResearch.approve",
+      "line": 87,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/durable_paper_fence.py",
+      "callable": "Stage49DurablePaperFence.request_first_synthetic_buy",
+      "line": 229,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+      "callable": "Stage55IsolatedSyntheticExecutionBook.reserve_synthetic_buy",
+      "line": 555,
+      "scope": "SELECTED_ACCOUNT_BOUNDARY_ENFORCED"
+    },
+    {
+      "path": "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+      "callable": "Stage55IsolatedSyntheticExecutionBook.record_simulated_fill",
+      "line": 576,
+      "scope": "SELECTED_ACCOUNT_BOUNDARY_ENFORCED"
+    },
+    {
+      "path": "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+      "callable": "Stage55IsolatedSyntheticExecutionBook.cancel_unfilled",
+      "line": 594,
+      "scope": "SELECTED_ACCOUNT_BOUNDARY_ENFORCED"
+    },
+    {
+      "path": "src/nexus_titan/operations/local_approval_risk_review.py",
+      "callable": "inspect_stage57_local_approval_binding",
+      "line": 50,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/offline_entry_readiness.py",
+      "callable": "Stage45ConservativePaperEntry.request_buy",
+      "line": 165,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/offline_risk_veto.py",
+      "callable": "Stage47OfflineRiskVetoEntry.request_buy",
+      "line": 314,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/paper_deployment.py",
+      "callable": "PaperOnlyDeployment.request_buy",
+      "line": 195,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/paper_deployment.py",
+      "callable": "PaperOnlyDeployment.request_sell_to_close",
+      "line": 207,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/signed_paper_approval.py",
+      "callable": "_OneShotPaperApprovalCallback.approve",
+      "line": 161,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/signed_paper_approval.py",
+      "callable": "Stage48SignedPaperSession.request_synthetic_buy",
+      "line": 228,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/signed_paper_approval.py",
+      "callable": "Stage48SignedPaperSession.approve_pending_buy",
+      "line": 243,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/stage77_brokerless_fo_sandbox.py",
+      "callable": "Stage77BrokerlessFOSyntheticGateway.reserve_synthetic_long_option",
+      "line": 184,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/stage77_brokerless_fo_sandbox.py",
+      "callable": "Stage77BrokerlessFOSyntheticGateway.record_synthetic_fill",
+      "line": 226,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/stage77_brokerless_fo_sandbox.py",
+      "callable": "Stage77BrokerlessFOSyntheticGateway.cancel_synthetic_remaining",
+      "line": 258,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/operations/synthetic_capital_authority.py",
+      "callable": "Stage53SyntheticCapitalAuthority.hold_for_synthetic_research",
+      "line": 292,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/research/market_intelligence.py",
+      "callable": "order_book_imbalance",
+      "line": 138,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/risk/portfolio_risk.py",
+      "callable": "PortfolioRiskManager.evaluate_order",
+      "line": 71,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/self_improvement/engine.py",
+      "callable": "TitanEvolveEngine.approve_and_promote_skill",
+      "line": 280,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/guarded_options_research.py",
+      "callable": "guarded_options_research_buy",
+      "line": 62,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/long_option_exit_research.py",
+      "callable": "simulate_and_settle_long_exit",
+      "line": 266,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/paper_intent_gateway.py",
+      "callable": "PaperIntentGateway.request_buy",
+      "line": 75,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/paper_intent_gateway.py",
+      "callable": "PaperIntentGateway.request_sell_to_close",
+      "line": 98,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/research_reservation_ledger.py",
+      "callable": "DurableResearchShadowLedger.reserve_buy",
+      "line": 429,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/research_reservation_ledger.py",
+      "callable": "DurableResearchShadowLedger.reserve_buy_guarded",
+      "line": 442,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/research_reservation_ledger.py",
+      "callable": "DurableResearchShadowLedger.cancel",
+      "line": 518,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/research_reservation_ledger.py",
+      "callable": "DurableResearchShadowLedger.settle_buy",
+      "line": 538,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/sell_aware_multiday.py",
+      "callable": "reconstruct_sell_aware_daily_journal",
+      "line": 110,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/shadow/sell_aware_multiday.py",
+      "callable": "inspect_sell_aware_day_closes",
+      "line": 267,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/simulation/options_order_reconciliation.py",
+      "callable": "reconcile_options_research_order",
+      "line": 71,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/simulation/options_research_execution.py",
+      "callable": "simulate_historical_option_fill",
+      "line": 89,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/microstructure.py",
+      "callable": "MicrostructureSimulator.evaluate_order_against_book",
+      "line": 115,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/microstructure.py",
+      "callable": "ShadowPaperRunner.route_shadow_order",
+      "line": 269,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/order_manager.py",
+      "callable": "VirtualAccount.submit_order",
+      "line": 651,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/order_manager.py",
+      "callable": "VirtualAccount.approve_order",
+      "line": 762,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/order_manager.py",
+      "callable": "VirtualAccount.execute_fill",
+      "line": 783,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    },
+    {
+      "path": "src/nexus_titan/virtual/order_manager.py",
+      "callable": "VirtualAccount.cancel_order",
+      "line": 944,
+      "scope": "OUTSIDE_SELECTED_ACCOUNT_OR_RESEARCH_ONLY"
+    }
+  ],
+  "private_transaction_boundary": "Stage55IsolatedSyntheticExecutionBook._record",
+  "legacy_stage77_on_selected_account": "Tested denial without mandatory permit",
+  "crypto": "Separate account and risk boundary retained"
+}
