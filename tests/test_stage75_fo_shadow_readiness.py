@@ -229,6 +229,31 @@ def test_duplicate_or_inconsistent_scenario_cashflows_are_rejected():
         inspect_stage75_fo_shadow_readiness(**inputs)
 
 
+def test_fake_exit_price_that_does_not_match_reported_cashflow_rejected():
+    inputs = fixture()
+    old = inputs["stage74"].outcomes[0]
+    forged = replace(old, hypothetical_exit_price_after_friction=17.0)
+    inputs["stage74"] = replace(inputs["stage74"], outcomes=(
+        forged, inputs["stage74"].outcomes[1],
+    ))
+    with pytest.raises(Stage75ReadinessBlocked, match="cashflow reconciliation"):
+        inspect_stage75_fo_shadow_readiness(**inputs)
+
+
+def test_unfounded_entry_debit_not_reconciled_to_stage72_ask_and_fees():
+    inputs = fixture()
+    old = inputs["stage74"].outcomes[0]
+    forged = replace(old, hypothetical_entry_debit_rupees=490.,
+                     hypothetical_premium_at_risk_rupees=490.,
+                     hypothetical_round_trip_net_rupees=-90.)
+    inputs["stage74"] = replace(inputs["stage74"], outcomes=(
+        forged, inputs["stage74"].outcomes[1],
+    ))
+    with pytest.raises(Stage75ReadinessBlocked, match="cashflow reconciliation"):
+        inspect_stage75_fo_shadow_readiness(**inputs)
+
+
+
 @pytest.mark.parametrize("key,attribute", [
     ("stage71", "paper_order_authorized"),
     ("stage72", "live_trading_enabled"),
