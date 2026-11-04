@@ -163,6 +163,24 @@ def test_cross_session_stress_refused():
         analyse(fixture(), scenarios=isolated("OVERNIGHT", time_minutes=1440))
 
 
+def test_same_date_but_after_regular_session_close_is_rejected():
+    # 09:16 + 400 minutes = 15:56 IST: same calendar date, market closed.
+    with pytest.raises(Stage74ScenarioBlocked, match="Cross-session"):
+        analyse(fixture(), scenarios=isolated("AFTER_CLOSE", time_minutes=400))
+
+
+def test_total_liquidity_loss_refuses_to_assume_executable_exit():
+    result = analyse(fixture(), scenarios=isolated("NO_LIQUIDITY", haircut=10000))
+    row = result.outcomes[0]
+    assert row.hypothetical_exit_price_after_friction == 0
+    assert row.hypothetical_exit_proceeds_rupees == 0
+    assert row.indicative_exit_charges_rupees == 0
+    assert row.hypothetical_round_trip_net_rupees == pytest.approx(
+        -row.hypothetical_entry_debit_rupees
+    )
+
+
+
 @pytest.mark.parametrize("bad", [
     Stage74StressCase("BAD", 21, 0, 0, 1, 0, 0),
     Stage74StressCase("BAD", 0, -41, 0, 1, 0, 0),
