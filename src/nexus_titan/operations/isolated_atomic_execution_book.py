@@ -27,6 +27,20 @@ _SYMBOL = re.compile(r"[A-Z][A-Z0-9._-]{0,29}\Z", re.ASCII)
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z", re.ASCII)
 
 
+@dataclass(frozen=True, slots=True)
+class Stage82LocalSyntheticRiskState:
+    account_id: str
+    kill_switch_active: bool
+    risk_revision: int
+    book_revision: int
+    local_integrity_verified: bool = True
+    authenticated_risk_authority: bool = False
+    globally_unbypassable: bool = False
+    live_trading_enabled: bool = False
+    broker_orders_transmitted: int = 0
+    verdict: str = "STAGE82_LOCAL_SQLITE_KILL_SWITCH_ONLY_NO_GO"
+
+
 class Stage55SyntheticBookBlocked(PermissionError):
     """Fail-closed local synthetic accounting refusal; no broker order."""
 
@@ -170,6 +184,11 @@ class Stage55IsolatedSyntheticExecutionBook:
                     fee_buffer_cents INTEGER NOT NULL,
                     previous_sha TEXT NOT NULL, event_sha TEXT NOT NULL
                 )""")
+                conn.execute("""CREATE TABLE IF NOT EXISTS execution_local_risk(
+                    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                    scope_sha TEXT NOT NULL, stopped INTEGER NOT NULL
+                    CHECK(stopped IN (0,1)), risk_revision INTEGER NOT NULL
+                )""")
                 conn.execute("BEGIN IMMEDIATE")
                 head = conn.execute("SELECT 1 FROM execution_head WHERE singleton=1").fetchone()
                 if head is None:
@@ -180,6 +199,23 @@ class Stage55IsolatedSyntheticExecutionBook:
                         (self.account_id, self.starting_cents, self._scope,
                          self.starting_cents, 0, 0, _GENESIS),
                     )
+                risk = conn.execute(
+                    "SELECT scope_sha, stopped, risk_revision FROM execution_local_risk WHERE singleton=1"
+                ).fetchone()
+                if risk is None:
+                    previous = conn.execute("SELECT revision FROM execution_head WHERE singleton=1").fetchone()
+                    if previous is None or previous[0] != 0:
+                        raise Stage55SyntheticBookBlocked(
+                            "Existing nonempty book lacks local risk state; manual migration required"
+                        )
+                    conn.execute(
+                        "INSERT INTO execution_local_risk VALUES (1, ?, 0, 0)", (self._scope,)
+                    )
+                else:
+                    if (risk[0] != self._scope or type(risk[1]) is not int
+                            or risk[1] not in (0, 1)
+                            or type(risk[2]) is not int or not 0 <= risk[2] <= 100000):
+                        raise Stage55SyntheticBookBlocked("Local synthetic risk state invalid")
                 self._replay_checked(conn)
                 conn.commit()
         except Stage55SyntheticBookBlocked:
@@ -325,6 +361,17 @@ class Stage55IsolatedSyntheticExecutionBook:
             with self._conn() as conn:
                 conn.execute("BEGIN IMMEDIATE")
                 orders, cash, held, _, _, rev, previous = self._replay_checked(conn)
+                risk_row = conn.execute(
+                    "SELECT scope_sha, stopped, risk_revision FROM execution_local_risk WHERE singleton=1"
+                ).fetchone()
+                if (risk_row is None or risk_row[0] != self._scope
+                        or type(risk_row[1]) is not int or risk_row[1] not in (0, 1)
+                        or type(risk_row[2]) is not int or not 0 <= risk_row[2] <= 100000):
+                    raise Stage55SyntheticBookBlocked("Local kill-switch state missing or invalid")
+                # This condition is checked under the SAME BEGIN IMMEDIATE lock
+                # as OPEN/FILL, including raw direct calls that omit Stage79 CAS.
+                if risk_row[1] and kind != "CANCEL":
+                    raise Stage55SyntheticBookBlocked("Local synthetic kill switch stops reserve and fill")
                 # Compare a previously observed head WITHIN the same
                 # BEGIN IMMEDIATE transaction that makes the mutation.
                 # This is only one SQLite file; direct legacy writes can
@@ -441,6 +488,58 @@ class Stage55IsolatedSyntheticExecutionBook:
             expected_revision=expected_revision,
             expected_journal_tip=expected_journal_tip,
         )
+
+    def inspect_local_synthetic_risk_state(self) -> Stage82LocalSyntheticRiskState:
+        """Read local same-DB stop flag; NOT authenticated owner/risk telemetry."""
+        try:
+            with self._conn() as conn:
+                ledger = self._replay_checked(conn)
+                row = conn.execute(
+                    "SELECT scope_sha, stopped, risk_revision FROM execution_local_risk WHERE singleton=1"
+                ).fetchone()
+                if (row is None or row[0] != self._scope
+                        or type(row[1]) is not int or row[1] not in (0, 1)
+                        or type(row[2]) is not int or row[2] < 0):
+                    raise Stage55SyntheticBookBlocked("Local synthetic risk state unavailable")
+                return Stage82LocalSyntheticRiskState(
+                    account_id=self.account_id, kill_switch_active=bool(row[1]),
+                    risk_revision=row[2], book_revision=ledger[5],
+                )
+        except sqlite3.Error as exc:
+            raise Stage55SyntheticBookBlocked("Failed to inspect local synthetic risk state") from exc
+
+    def set_local_synthetic_kill_switch(
+        self, *, active: bool, operation_id: str,
+    ) -> Stage82LocalSyntheticRiskState:
+        """UNAUTHENTICATED test-only stop/resume. No global safety authority."""
+        if type(active) is not bool:
+            raise Stage55SyntheticBookBlocked("Local kill switch requires explicit bool")
+        _id(operation_id, "Local risk operation ID")
+        try:
+            with self._conn() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                ledger = self._replay_checked(conn)
+                row = conn.execute(
+                    "SELECT scope_sha, stopped, risk_revision FROM execution_local_risk WHERE singleton=1"
+                ).fetchone()
+                if (row is None or row[0] != self._scope
+                        or type(row[1]) is not int or row[1] not in (0, 1)
+                        or type(row[2]) is not int or not 0 <= row[2] < 100000):
+                    raise Stage55SyntheticBookBlocked("Invalid local kill switch revision")
+                updated = conn.execute(
+                    "UPDATE execution_local_risk SET stopped=?, risk_revision=? "
+                    "WHERE singleton=1 AND scope_sha=? AND risk_revision=?",
+                    (int(active), row[2] + 1, self._scope, row[2]),
+                ).rowcount
+                if updated != 1:
+                    raise Stage55SyntheticBookBlocked("Local kill switch CAS failed")
+                conn.commit()
+                return Stage82LocalSyntheticRiskState(
+                    account_id=self.account_id, kill_switch_active=active,
+                    risk_revision=row[2] + 1, book_revision=ledger[5],
+                )
+        except sqlite3.Error as exc:
+            raise Stage55SyntheticBookBlocked("Local risk state update failed") from exc
 
     def inspect(self) -> Stage55SyntheticStatus:
         try:
