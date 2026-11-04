@@ -25,6 +25,11 @@ from nexus_titan.operations.fo_risk_boundary import (
     SyntheticFOOperation, SyntheticFORiskBoundary, SyntheticFORiskBlocked,
     SyntheticFORiskPermit,
 )
+from nexus_titan.operations.synthetic_option_positions import (
+    SyntheticCloseAccounting, SyntheticCloseAuthorization, SyntheticCloseRequest,
+    allocate_entry_costs, validate_close_position, verify_close_authorization,
+    value_positions,
+)
 
 _MAX_CENTS = 900_000_000_000_000
 _MAX_EVENTS = 500
@@ -60,6 +65,20 @@ class Stage83LocalSyntheticOrder:
     limit_price_cents: int = 0
     paid_notional_cents: int = 0
     paid_fees_cents: int = 0
+    closed_quantity: int = 0
+    open_quantity: int = 0
+    remaining_premium_cents: int = 0
+    remaining_entry_fees_cents: int = 0
+    entry_fees_cents: int = 0
+    exit_fees_cents: int = 0
+    exit_proceeds_cents: int = 0
+    realized_gross_pnl_cents: int = 0
+    realized_net_pnl_cents: int = 0
+    contract_sha256: str = ''
+    option_type: str = ''
+    lot_size: int = 0
+    last_fill_epoch: int = 0
+    closing_events: tuple[SyntheticCloseAccounting,...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +103,13 @@ class Stage83LocalSyntheticLedgerSnapshot:
     live_trading_enabled: bool = False
     broker_orders_transmitted: int = 0
     verdict: str = "STAGE83_ONE_SQLITE_SYNTHETIC_LEDGER_ONLY_NO_GO"
+    exit_proceeds_cents: int = 0
+    entry_fees_cents: int = 0
+    exit_fees_cents: int = 0
+    remaining_cost_basis_cents: int = 0
+    realized_gross_pnl_cents: int = 0
+    realized_net_pnl_cents: int = 0
+    gross_entry_commitment_cents: int = 0
 
 
 class Stage55SyntheticBookBlocked(PermissionError):
@@ -121,6 +147,8 @@ class Stage55SyntheticReceipt:
     trading_authority: bool = False
     live_orders_transmitted: int = 0
     replayed: bool = False
+    close_accounting: SyntheticCloseAccounting | None = None
+    position_state: str = 'NO_POSITION'
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,7 +268,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 )""")
                 conn.execute("""CREATE TABLE IF NOT EXISTS execution_events(
                     seq INTEGER PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE,
-                    kind TEXT NOT NULL CHECK(kind IN ('OPEN','FILL','CANCEL')),
+                    kind TEXT NOT NULL CHECK(kind IN ('OPEN','FILL','CANCEL','CLOSE')),
                     order_id TEXT NOT NULL, symbol TEXT NOT NULL, qty INTEGER NOT NULL,
                     price_cents INTEGER NOT NULL, fee_cents INTEGER NOT NULL,
                     fee_buffer_cents INTEGER NOT NULL,
@@ -289,11 +317,35 @@ class Stage55IsolatedSyntheticExecutionBook:
                             or type(risk[2]) is not int or not 0 <= risk[2] <= 100000):
                         raise Stage55SyntheticBookBlocked("Local synthetic risk state invalid")
                 self._replay_checked(conn)
+                self._upgrade_close_schema(conn)
                 conn.commit()
         except Stage55SyntheticBookBlocked:
             raise
-        except (OSError, sqlite3.Error, OverflowError, ValueError) as exc:
+        except (SyntheticFORiskBlocked, OSError, sqlite3.Error, OverflowError, ValueError) as exc:
             raise Stage55SyntheticBookBlocked("Synthetic execution book initialization failed") from exc
+
+    def _upgrade_close_schema(self, conn):
+        """Verified selected v1 books migrate in this SAME rollback-safe transaction."""
+        schema=conn.execute("SELECT sql FROM sqlite_master WHERE name='execution_events'").fetchone()
+        if self._fo_boundary is None or "'CLOSE'" in schema[0]:
+            return
+        columns=tuple(row[1] for row in conn.execute('PRAGMA table_info(execution_events)'))
+        expected=('seq','operation_id','kind','order_id','symbol','qty','price_cents',
+                  'fee_cents','fee_buffer_cents','previous_sha','event_sha')
+        custom=conn.execute("SELECT name FROM sqlite_master WHERE tbl_name='execution_events' AND type IN ('index','trigger') AND sql IS NOT NULL").fetchall()
+        if columns!=expected or custom:
+            raise Stage55SyntheticBookBlocked('Custom execution schema requires explicit reviewed migration')
+        conn.execute("""CREATE TABLE execution_events_stage89(
+            seq INTEGER PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE,
+            kind TEXT NOT NULL CHECK(kind IN ('OPEN','FILL','CANCEL','CLOSE')),
+            order_id TEXT NOT NULL, symbol TEXT NOT NULL, qty INTEGER NOT NULL,
+            price_cents INTEGER NOT NULL, fee_cents INTEGER NOT NULL,
+            fee_buffer_cents INTEGER NOT NULL, previous_sha TEXT NOT NULL, event_sha TEXT NOT NULL
+        )""")
+        conn.execute('INSERT INTO execution_events_stage89 SELECT * FROM execution_events')
+        conn.execute('DROP TABLE execution_events')
+        conn.execute('ALTER TABLE execution_events_stage89 RENAME TO execution_events')
+        self._replay_checked(conn)
 
     @contextmanager
     def _conn(self):
@@ -317,7 +369,10 @@ class Stage55IsolatedSyntheticExecutionBook:
             self.account_id, self.starting_cents, self._scope,
         ):
             raise Stage55SyntheticBookBlocked("Synthetic book scope/head changed")
-        derived = self._derive(conn)
+        try:
+            derived = self._derive(conn)
+        except SyntheticFORiskBlocked as exc:
+            raise Stage55SyntheticBookBlocked('Malformed synthetic position/risk history') from exc
         if (head[3] != derived[1] or head[4] != derived[2]
                 or head[5] != derived[5] or head[6] != derived[6]):
             raise Stage55SyntheticBookBlocked("Synthetic event/head balances disagree")
@@ -339,6 +394,14 @@ class Stage55IsolatedSyntheticExecutionBook:
             raise Stage55SyntheticBookBlocked("Synthetic F&O risk journal coverage mismatch")
         try:
             for seq, op, kind, oid, sym, qty, price, fee, buffer, prev in rows:
+                if kind=='CLOSE':
+                    authorization=SyntheticCloseAuthorization.decode(proofs[seq])
+                    contract=boundary.position_contract(sym)
+                    request=SyntheticCloseRequest(op,oid,sym,contract['contract_sha256'],qty,price,fee)
+                    verify_close_authorization(boundary,authorization,request,
+                        scope=self._scope,revision=seq-1,tip=prev,
+                        risk_revision=authorization.risk_revision,now_epoch=authorization.issued_epoch)
+                    continue
                 permit = SyntheticFORiskPermit.decode(proofs[seq])
                 operation = SyntheticFOOperation(kind, op, oid, sym, qty, price, fee, buffer)
                 boundary.verify(permit, operation, scope=self._scope, revision=seq-1,
@@ -359,6 +422,7 @@ class Stage55IsolatedSyntheticExecutionBook:
         cash = self.starting_cents
         reserved = 0
         paid_notional = paid_fees = 0
+        exit_proceeds = 0
         previous = _GENESIS
         orders = {}
         operation_ids = set()
@@ -386,6 +450,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                     symbol=sym, qty=qty, filled=0, limit=price,
                     fee_budget=buffer, fee_spent=0, state="PENDING_SYNTHETIC",
                     paid_notional=0,
+                    closed=0, open_premium=0, open_fees=0, exit_fees=0,
+                    exit_proceeds=0, realized_gross=0, realized_net=0,
+                    last_fill_epoch=0, closes=[],
                 )
                 reserved += held
             elif kind == "FILL":
@@ -403,6 +470,13 @@ class Stage55IsolatedSyntheticExecutionBook:
                 order["filled"] += qty
                 order["fee_spent"] += fee
                 order["paid_notional"] += qty * price
+                order['open_premium'] += qty*price
+                order['open_fees'] += fee
+                if self._fo_boundary is not None:
+                    proof=conn.execute('SELECT permit_json FROM execution_fo_permits WHERE seq=?',(seq,)).fetchone()
+                    if proof is None:
+                        raise Stage55SyntheticBookBlocked('Missing fill risk proof')
+                    order['last_fill_epoch']=SyntheticFORiskPermit.decode(proof[0]).issued_epoch
                 if order["filled"] == order["qty"]:
                     reserved -= order["fee_budget"] - order["fee_spent"]
                     order["state"] = "FILLED_SYNTHETIC"
@@ -421,10 +495,47 @@ class Stage55IsolatedSyntheticExecutionBook:
                     order["fee_budget"] - order["fee_spent"]
                 )
                 order["state"] = "CANCELLED_SYNTHETIC"
+            elif kind=='CLOSE':
+                if self._fo_boundary is None or buffer!=0:
+                    raise Stage55SyntheticBookBlocked('Close requires the selected F&O boundary')
+                order=orders.get(oid)
+                if order is None:
+                    raise Stage55SyntheticBookBlocked('No existing long position')
+                contract=self._fo_boundary.position_contract(sym)
+                request=SyntheticCloseRequest(op,oid,sym,contract['contract_sha256'],qty,price,fee)
+                positions=[self._order_snapshot(k,o) for k,o in orders.items()]
+                validate_close_position(self._fo_boundary,request,positions)
+                proof=conn.execute('SELECT permit_json FROM execution_fo_permits WHERE seq=?',(seq,)).fetchone()
+                if proof is None:
+                    raise Stage55SyntheticBookBlocked('Missing close risk proof')
+                authorization=SyntheticCloseAuthorization.decode(proof[0])
+                if authorization.quote.observed_epoch<order['last_fill_epoch']:
+                    raise Stage55SyntheticBookBlocked('Close quote predates position fill')
+                held_qty=order['filled']-order['closed']
+                allocated,entry_fee=allocate_entry_costs(order['open_premium'],order['open_fees'],held_qty,qty)
+                proceeds=qty*price
+                if fee>proceeds:
+                    raise Stage55SyntheticBookBlocked('Exit fee exceeds proceeds')
+                order['open_premium']-=allocated
+                order['open_fees']-=entry_fee
+                order['closed']+=qty
+                order['exit_fees']+=fee
+                order['exit_proceeds']+=proceeds
+                gross=proceeds-allocated
+                net=gross-entry_fee-fee
+                order['realized_gross']+=gross
+                order['realized_net']+=net
+                order['closes'].append(SyntheticCloseAccounting(op,oid,qty,allocated,entry_fee,
+                    proceeds,fee,gross,net,held_qty-qty,order['open_premium'],order['open_fees']))
+                cash+=proceeds-fee
+                exit_proceeds+=proceeds
+                paid_fees+=fee
             else:
                 raise Stage55SyntheticBookBlocked("Unsupported synthetic event kind")
-            if (cash < 0 or reserved < 0 or reserved > cash or cash > self.starting_cents
-                    or paid_notional + paid_fees + cash != self.starting_cents):
+            if (cash < 0 or reserved < 0 or reserved > cash or cash > _MAX_CENTS
+                    or paid_notional + paid_fees + cash != self.starting_cents+exit_proceeds
+                    or cash+sum(o['open_premium']+o['open_fees'] for o in orders.values())
+                       != self.starting_cents+sum(o['realized_net'] for o in orders.values())):
                 raise Stage55SyntheticBookBlocked("Synthetic cash conservation failed")
             self._check_fo_capital(orders, cash, reserved)
             previous = hashed
@@ -443,7 +554,8 @@ class Stage55IsolatedSyntheticExecutionBook:
         boundary = self._fo_boundary
         if boundary is None:
             return
-        committed = self.starting_cents - cash + reserved
+        # Closing proceeds never replenish the originally reviewed allocation.
+        committed = sum(o['paid_notional']+o['fee_spent'] for o in orders.values())+reserved
         if committed * 10000 > self.starting_cents * boundary.policy.max_portfolio_debit_bps:
             raise Stage55SyntheticBookBlocked("Selected F&O account committed-capital limit exceeded")
         markets = {}
@@ -476,7 +588,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                 fee: int = 0, buffer: int = 0,
                 expected_revision: int | None = None,
                 expected_journal_tip: str | None = None,
-                risk_permit: SyntheticFORiskPermit | None = None) -> Stage55SyntheticReceipt:
+                risk_permit: SyntheticFORiskPermit | None = None,
+                close_request: SyntheticCloseRequest | None = None,
+                close_authorization: SyntheticCloseAuthorization | None = None) -> Stage55SyntheticReceipt:
         op = _id(operation_id, "Operation ID")
         oid = _id(order_id, "Order ID")
         if (expected_revision is None) != (expected_journal_tip is None):
@@ -500,8 +614,20 @@ class Stage55IsolatedSyntheticExecutionBook:
                     raise Stage55SyntheticBookBlocked("Local kill-switch state missing or invalid")
                 # This condition is checked under the SAME BEGIN IMMEDIATE lock
                 # as OPEN/FILL, including raw direct calls that omit Stage79 CAS.
-                if risk_row[1] and kind != "CANCEL":
+                if risk_row[1] and kind not in ("CANCEL","CLOSE"):
                     raise Stage55SyntheticBookBlocked("Local synthetic kill switch stops reserve and fill")
+                if self._fo_boundary is not None and kind in ('OPEN','FILL'):
+                    realized=sum(o['realized_net'] for o in orders.values())
+                    if max(0,-realized)*10000>=self.starting_cents*self._fo_boundary.policy.max_daily_loss_bps:
+                        raise Stage55SyntheticBookBlocked('Locally realized session loss vetoes additional exposure')
+                if kind=='CLOSE':
+                    if (self._fo_boundary is None or not isinstance(close_request,SyntheticCloseRequest)
+                            or not isinstance(close_authorization,SyntheticCloseAuthorization)
+                            or (close_request.operation_id,close_request.order_id,close_request.symbol,
+                                close_request.quantity,close_request.price_cents,close_request.fee_cents)
+                               !=(op,oid,symbol,qty,price,fee) or buffer!=0
+                            or close_request.contract_sha256!=self._fo_boundary.position_contract(symbol)['contract_sha256']):
+                        raise Stage55SyntheticBookBlocked('Authenticated exact-contract close request required')
                 # Compare a previously observed head WITHIN the same
                 # BEGIN IMMEDIATE transaction that makes the mutation.
                 # This is only one SQLite file; direct legacy writes can
@@ -517,6 +643,14 @@ class Stage55IsolatedSyntheticExecutionBook:
                 if existing_event is not None and self._fo_boundary is not None:
                     if existing_event != (kind, oid, symbol, qty, price, fee, buffer):
                         raise Stage55SyntheticBookBlocked("Idempotency ID conflicts with committed operation")
+                    if kind=='CLOSE':
+                        seq,old_tip=conn.execute('SELECT seq,previous_sha FROM execution_events WHERE operation_id=?',(op,)).fetchone()
+                        stored=conn.execute('SELECT permit_json FROM execution_fo_permits WHERE seq=?',(seq,)).fetchone()
+                        if stored is None or close_authorization.encode()!=stored[0]:
+                            raise Stage55SyntheticBookBlocked('Exact authenticated committed close retry required')
+                        verify_close_authorization(self._fo_boundary,close_authorization,close_request,
+                            scope=self._scope,revision=seq-1,tip=old_tip,
+                            risk_revision=close_authorization.risk_revision,now_epoch=close_authorization.issued_epoch)
                     state = orders[oid]
                     # Read-only acknowledgement, including after lost response /
                     # restart. It grants no new permit and changes no journal row.
@@ -526,12 +660,22 @@ class Stage55IsolatedSyntheticExecutionBook:
                         filled_quantity=state['filled'], cash_cents=cash,
                         open_reserved_cents=held, available_cents=cash-held,
                         revision=rev, journal_tip=previous, replayed=True,
+                        close_accounting=next((c for c in state['closes'] if c.operation_id==op),None),
+                        position_state=self._position_state(state),
                     )
                 if existing_event is not None:
                     raise Stage55SyntheticBookBlocked("Repeated operation ID denied")
                 if rev >= _MAX_EVENTS:
                     raise Stage55SyntheticBookBlocked("Synthetic journal capacity reached")
-                if self._fo_boundary is not None and kind != "CANCEL":
+                if kind=='CLOSE':
+                    now=int(self._clock())
+                    verify_close_authorization(self._fo_boundary,close_authorization,close_request,
+                        scope=self._scope,revision=rev,tip=previous,risk_revision=risk_row[2],now_epoch=now)
+                    position=validate_close_position(self._fo_boundary,close_request,
+                        [self._order_snapshot(k,o) for k,o in orders.items()])
+                    if close_authorization.quote.observed_epoch<position.last_fill_epoch:
+                        raise Stage55SyntheticBookBlocked('Close quote predates position fill')
+                elif self._fo_boundary is not None and kind != "CANCEL":
                     operation = SyntheticFOOperation(kind, op, oid, symbol, qty, price, fee, buffer)
                     now = int(self._clock())
                     self._fo_boundary.verify(
@@ -557,7 +701,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                                       fee_budget=buffer, fee_spent=0, paid_notional=0,
                                       state='PENDING_SYNTHETIC')
                     self._check_fo_capital(trial, cash, held+budget)
-                else:
+                elif kind!='CLOSE':
                     existing = orders.get(oid)
                     if existing is None or existing["state"] not in (
                         "PENDING_SYNTHETIC", "PARTIAL_SYNTHETIC"
@@ -576,7 +720,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 self._write_event(conn, core, new_hash)
                 if self._fo_boundary is not None and kind != "CANCEL":
                     conn.execute("INSERT INTO execution_fo_permits VALUES (?,?)",
-                                 (rev+1, risk_permit.encode()))
+                                 (rev+1, close_authorization.encode() if kind=='CLOSE' else risk_permit.encode()))
                 # Derive all balances in this SAME transaction from the
                 # immutable event history. The head is the second committed
                 # half of the same SQLite transaction, not another DB.
@@ -600,6 +744,8 @@ class Stage55IsolatedSyntheticExecutionBook:
                     cash_cents=checked[1], open_reserved_cents=checked[2],
                     available_cents=checked[1] - checked[2],
                     revision=checked[5], journal_tip=checked[6],
+                    close_accounting=next((c for c in state['closes'] if c.operation_id==op),None),
+                    position_state=self._position_state(state),
                 )
         except Stage55SyntheticBookBlocked:
             raise
@@ -659,6 +805,58 @@ class Stage55IsolatedSyntheticExecutionBook:
             expected_journal_tip=expected_journal_tip,
         )
 
+    def record_synthetic_close(self, request: SyntheticCloseRequest, *, authorization: SyntheticCloseAuthorization):
+        if not isinstance(request,SyntheticCloseRequest):
+            raise Stage55SyntheticBookBlocked('Typed synthetic SELL-to-close request required')
+        return self._record(operation_id=request.operation_id,kind='CLOSE',order_id=request.order_id,
+            symbol=request.symbol,qty=request.quantity,price=request.price_cents,fee=request.fee_cents,
+            close_request=request,close_authorization=authorization)
+
+    @staticmethod
+    def _position_state(order):
+        if order['filled']==0:
+            return 'NO_POSITION'
+        if order['filled']==order['closed']:
+            return 'CLOSED_LONG'
+        return 'PARTIALLY_CLOSED_LONG' if order['closed'] else 'OPEN_LONG'
+
+    def _order_snapshot(self, oid, item):
+        pending=item['state'] in ('PENDING_SYNTHETIC','PARTIAL_SYNTHETIC')
+        unfilled=item['qty']-item['filled']
+        hold=(unfilled*item['limit']+item['fee_budget']-item['fee_spent']) if pending else 0
+        contract=self._fo_boundary.position_contract(item['symbol']) if self._fo_boundary is not None else {}
+        return Stage83LocalSyntheticOrder(
+            order_id=oid,symbol=item['symbol'],state=item['state'],quantity=item['qty'],
+            filled_quantity=item['filled'],unfilled_quantity=unfilled,open_hold_cents=hold,
+            limit_price_cents=item['limit'],paid_notional_cents=item['paid_notional'],
+            paid_fees_cents=item['fee_spent']+item['exit_fees'],closed_quantity=item['closed'],
+            open_quantity=item['filled']-item['closed'],remaining_premium_cents=item['open_premium'],
+            remaining_entry_fees_cents=item['open_fees'],entry_fees_cents=item['fee_spent'],
+            exit_fees_cents=item['exit_fees'],exit_proceeds_cents=item['exit_proceeds'],
+            realized_gross_pnl_cents=item['realized_gross'],realized_net_pnl_cents=item['realized_net'],
+            contract_sha256=contract.get('contract_sha256',''),option_type=contract.get('option_type',''),
+            lot_size=contract.get('lot_size',0),last_fill_epoch=item['last_fill_epoch'],
+            closing_events=tuple(item['closes']))
+
+    def synthetic_mark_to_market(self, quotes):
+        if self._fo_boundary is None:
+            raise Stage55SyntheticBookBlocked('Selected synthetic F&O account required for MTM')
+        try:
+            return value_positions(self._fo_boundary,self.snapshot_local_synthetic_portfolio(),quotes,
+                                   now_epoch=int(self._clock()))
+        except SyntheticFORiskBlocked as exc:
+            raise Stage55SyntheticBookBlocked('Synthetic valuation denied: '+str(exc)) from exc
+
+    def synthetic_valued_snapshot(self, quotes):
+        if self._fo_boundary is None:
+            raise Stage55SyntheticBookBlocked('Selected F&O boundary required')
+        snapshot=self.snapshot_local_synthetic_portfolio()
+        try:
+            valuation=value_positions(self._fo_boundary,snapshot,quotes,now_epoch=int(self._clock()))
+        except SyntheticFORiskBlocked as exc:
+            raise Stage55SyntheticBookBlocked('Synthetic performance valuation denied: '+str(exc)) from exc
+        return snapshot,valuation
+
     def snapshot_local_synthetic_portfolio(self) -> Stage83LocalSyntheticLedgerSnapshot:
         """One coherent read-only SQLite snapshot of orders, holds and stop.
 
@@ -678,20 +876,9 @@ class Stage55IsolatedSyntheticExecutionBook:
                 rows = []
                 total_held = 0
                 for oid, item in sorted(entries.items()):
-                    pending = item["state"] in ("PENDING_SYNTHETIC", "PARTIAL_SYNTHETIC")
-                    unfilled = item["qty"] - item["filled"]
-                    hold = (unfilled * item["limit"] +
-                            item["fee_budget"] - item["fee_spent"]) if pending else 0
-                    total_held += hold
-                    rows.append(Stage83LocalSyntheticOrder(
-                        order_id=oid, symbol=item["symbol"],
-                        state=item["state"], quantity=item["qty"],
-                        filled_quantity=item["filled"],
-                        unfilled_quantity=unfilled, open_hold_cents=hold,
-                        limit_price_cents=item['limit'],
-                        paid_notional_cents=item['paid_notional'],
-                        paid_fees_cents=item['fee_spent'],
-                    ))
+                    row=self._order_snapshot(oid,item)
+                    total_held+=row.open_hold_cents
+                    rows.append(row)
                 if total_held != reserved:
                     raise Stage55SyntheticBookBlocked("Snapshot holds do not match replay")
                 conn.commit()
@@ -704,6 +891,13 @@ class Stage55IsolatedSyntheticExecutionBook:
                     kill_switch_active=bool(risk[1]), risk_revision=risk[2],
                     orders=tuple(rows),
                     ledger_scope_sha256=self._scope,
+                    exit_proceeds_cents=sum(o.exit_proceeds_cents for o in rows),
+                    entry_fees_cents=sum(o.entry_fees_cents for o in rows),
+                    exit_fees_cents=sum(o.exit_fees_cents for o in rows),
+                    remaining_cost_basis_cents=sum(o.remaining_premium_cents+o.remaining_entry_fees_cents for o in rows),
+                    realized_gross_pnl_cents=sum(o.realized_gross_pnl_cents for o in rows),
+                    realized_net_pnl_cents=sum(o.realized_net_pnl_cents for o in rows),
+                    gross_entry_commitment_cents=sum(o.paid_notional_cents+o.entry_fees_cents for o in rows)+reserved,
                 )
         except sqlite3.Error as exc:
             raise Stage55SyntheticBookBlocked("Local portfolio snapshot unavailable") from exc
@@ -790,7 +984,7 @@ class Stage55IsolatedSyntheticExecutionBook:
                 counts["PARTIAL_SYNTHETIC"], counts["FILLED_SYNTHETIC"],
                 counts["CANCELLED_SYNTHETIC"], rev, tip, True, (),
             )
-        except (Stage55SyntheticBookBlocked, sqlite3.Error, OSError, ValueError, TypeError):
+        except (Stage55SyntheticBookBlocked, SyntheticFORiskBlocked, sqlite3.Error, OSError, ValueError, TypeError):
             return Stage55SyntheticStatus(
                 self.account_id, self.starting_cents, None, None, None,
                 None, None, None, None, None, None, None,

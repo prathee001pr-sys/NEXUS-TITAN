@@ -17,16 +17,18 @@ ROOT = Path(__file__).resolve().parents[2]
 chain_fixture = runpy.run_path(str(ROOT / "tests/test_full_chain_fo_data_to_sandbox_e2e.py"))["integrated_chain"]
 
 
-def environment(tmp_path, *, capital=10_000_000, policy=None, history_bars=4, option_start_minute=1):
-    chains = {name: chain_fixture(tmp_path / name, name, capital, history_bars, option_start_minute)
+def environment(tmp_path, *, capital=10_000_000, policy=None, history_bars=4, option_start_minute=1,
+                lots=1, option_types=None):
+    chains = {name: chain_fixture(tmp_path / name, name, capital, history_bars, option_start_minute,
+                                 lots, (option_types or {}).get(name,'CE'))
               for name in ("NIFTY", "BANKNIFTY")}
     key = secrets.token_bytes(32)
     specs = []
     for name, c in chains.items():
-        price = int(round(next(r.ask for r in c['72'].rows if r.option_type == 'CE') * 100))
-        qty = c['contract'].lot_size
+        price = int(round(next(r.ask for r in c['72'].rows if r.option_type == c['75'].selected_option_type) * 100))
+        qty = c['contract'].lot_size*lots
         specs.append(SyntheticFOInstrument(
-            name, c['75'].option_symbol, qty, qty, 5, price,
+            name, c['75'].option_symbol, qty, c['contract'].lot_size, 5, price,
             c['75'].long_option_entry_debit_cents - qty*price,
             int(c['72'].observation_time.timestamp()),
             int(c['72'].declared_expiry_cutoff.timestamp()),

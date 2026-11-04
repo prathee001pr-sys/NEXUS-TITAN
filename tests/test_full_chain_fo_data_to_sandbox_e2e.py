@@ -151,7 +151,8 @@ def _source_files(root: Path, underlying: str, history_bars=4, option_start_minu
     return futures, catalog, oc
 
 
-def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS, history_bars=4, option_start_minute=1):
+def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS, history_bars=4, option_start_minute=1,
+                     lots=1, option_type='CE'):
     futures, catalog, contract = _source_files(tmp_path, underlying, history_bars, option_start_minute)
     stage71 = align_stage71_fo_research_inputs(futures, catalog)
     snapshot = catalog.partitions[0].history.snapshots[0]
@@ -179,7 +180,7 @@ def integrated_chain(tmp_path, underlying="NIFTY", capital=CAPITAL_CENTS, histor
                              min_paired_samples=2)
     stage74 = simulate_stage74_long_option_scenarios(
         report=stage72, contract=contract, reference_spot=100.0,
-        strike=100.0, option_type="CE", lots=1,
+        strike=100.0, option_type=option_type, lots=lots,
     )
     stage69 = Stage69ResearchPreflight(
         account_id="qa-fo-portfolio",

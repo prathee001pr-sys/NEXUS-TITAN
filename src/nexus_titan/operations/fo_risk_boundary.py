@@ -222,6 +222,18 @@ class SyntheticFORiskBoundary:
         if not isinstance(permit.signature_hex, str) or not hmac.compare_digest(expected, permit.signature_hex):
             raise SyntheticFORiskBlocked("Invalid synthetic risk signature")
 
+    def position_contract(self, symbol):
+        """Full identity for the pinned long CE/PE, not just a display symbol."""
+        specs=[s for s in self.instruments if s.symbol==symbol]
+        packets=[p for p in self.packets if p.option_symbol==symbol]
+        if len(specs)!=1 or len(packets)!=1 or packets[0].selected_option_type not in ('CE','PE'):
+            raise SyntheticFORiskBlocked('Unknown selected long-option contract')
+        s,p=specs[0],packets[0]
+        identity={'underlying':s.underlying,'symbol':symbol,'option_type':p.selected_option_type,
+                  'strike':p.selected_strike,'expiry_epoch':s.expiry_epoch,'lot_size':s.lot_size,
+                  'tick_cents':s.tick_cents,'research_packet_sha256':s.research_packet_sha256}
+        return {**identity,'contract_sha256':_sha(['STAGE89_CONTRACT_V1',identity])}
+
 
 class SyntheticFORiskAuthority:
     """Privileged LOCAL TEST harness; never inject this into order clients/EVOLVE."""
@@ -246,3 +258,11 @@ class SyntheticFORiskAuthority:
         return replace(permit, signature_hex=hmac.new(
             self._key, _json(permit.payload()).encode(), hashlib.sha256,
         ).hexdigest())
+
+    def issue_quote(self, boundary, **kwargs):
+        from nexus_titan.operations.synthetic_option_positions import issue_quote
+        return issue_quote(self._key,boundary,**kwargs)
+
+    def issue_close(self, boundary, **kwargs):
+        from nexus_titan.operations.synthetic_option_positions import issue_close
+        return issue_close(self._key,boundary,**kwargs)

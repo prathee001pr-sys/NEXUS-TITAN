@@ -131,8 +131,9 @@ def inspect_stage83_fo_account_reconciliation(
     ) for k in sorted(limits))
     if sum(x.reserved_cents for x in markets) != snap.reserved_cents:
         raise Stage83LedgerMismatch("Per-market holds disagree with SQLite head")
-    committed = snap.initial_cents - snap.cash_cents + snap.reserved_cents
-    if (snap.initial_cents != snap.cash_cents+snap.paid_notional_cents+snap.paid_fees_cents
+    committed = snap.gross_entry_commitment_cents
+    if (snap.initial_cents+snap.exit_proceeds_cents != snap.cash_cents+snap.paid_notional_cents+snap.paid_fees_cents
+            or snap.cash_cents+snap.remaining_cost_basis_cents!=snap.initial_cents+snap.realized_net_pnl_cents
             or not 0 <= snap.reserved_cents <= snap.cash_cents
             or snap.available_cents != snap.cash_cents-snap.reserved_cents):
         raise Stage83LedgerMismatch("Ledger cash conservation mismatch")
