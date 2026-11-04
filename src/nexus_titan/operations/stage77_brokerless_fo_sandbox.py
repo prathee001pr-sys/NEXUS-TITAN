@@ -95,6 +95,8 @@ class Stage77BrokerlessFOSyntheticGateway:
             raise Stage77SyntheticGatewayBlocked("Account scope mismatch")
         if any(p.virtual_capital_cents != book.starting_cents for p in research_packets):
             raise Stage77SyntheticGatewayBlocked("SQLite opening capital differs from Stage75 research assumption")
+        self._expected_revision = status.revision
+        self._expected_tip = status.journal_tip
 
     def _book_status(self):
         status = self._book.inspect()
@@ -107,6 +109,11 @@ class Stage77BrokerlessFOSyntheticGateway:
                 or type(status.open_reserved_cents) is not int
                 or type(status.available_cents) is not int):
             raise Stage77SyntheticGatewayBlocked("Local SQLite journal or no-authority boundary unavailable")
+        if (status.revision != self._expected_revision
+                or status.journal_tip != self._expected_tip):
+            raise Stage77SyntheticGatewayBlocked(
+                "Unexpected direct SQLite ledger mutation requires manual recovery"
+            )
         return status
 
     def _review(self, telemetry: Stage76UntrustedRiskTelemetry) -> Stage76FOPortfolioRiskReview:
@@ -130,6 +137,22 @@ class Stage77BrokerlessFOSyntheticGateway:
             raise Stage77SyntheticGatewayBlocked("Risk gate denies even local synthetic research mutation")
         self._book_status()
         return review
+
+    def _advance_local_head(self, receipt: Stage55SyntheticReceipt) -> None:
+        """Accept exactly one valid local journal step; not a signed receipt."""
+        if (not isinstance(receipt, Stage55SyntheticReceipt)
+                or receipt.account_id != self._book.account_id
+                or receipt.synthetic_only is not True
+                or receipt.trading_authority is not False
+                or receipt.live_orders_transmitted != 0
+                or type(receipt.revision) is not int
+                or receipt.revision != self._expected_revision + 1
+                or not isinstance(receipt.journal_tip, str)
+                or _SHA.fullmatch(receipt.journal_tip) is None
+                or receipt.journal_tip == self._expected_tip):
+            raise Stage77SyntheticGatewayBlocked("Unverifiable synthetic ledger revision progression")
+        self._expected_revision = receipt.revision
+        self._expected_tip = receipt.journal_tip
 
     def _selected(self, digest: str) -> Stage75FOShadowReadinessPacket:
         if not isinstance(digest, str) or _SHA.fullmatch(digest) is None:
@@ -181,19 +204,24 @@ class Stage77BrokerlessFOSyntheticGateway:
                 or quantity * limit_price_cents + fee_buffer_cents
                    != packet.long_option_entry_debit_cents):
             raise Stage77SyntheticGatewayBlocked("Declared long-option quantity/fee debit mismatch")
+        current = self._book_status()
         try:
             booked = self._book.reserve_synthetic_buy(
                 request_id=request_id, symbol=symbol, quantity=quantity,
                 limit_price_cents=limit_price_cents,
                 fee_buffer_cents=fee_buffer_cents,
+                expected_revision=current.revision,
+                expected_journal_tip=current.journal_tip,
             )
         except Stage55SyntheticBookBlocked as exc:
             raise Stage77SyntheticGatewayBlocked("Single-DB synthetic capital reserve rejected") from exc
+        result = self._receipt("SYNTHETIC_RESERVE_ONLY", research_packet_sha256, review, booked)
+        self._advance_local_head(booked)
         self._active[request_id] = (
             research_packet_sha256, symbol, quantity, limit_price_cents,
             review.account_id,
         )
-        return self._receipt("SYNTHETIC_RESERVE_ONLY", research_packet_sha256, review, booked)
+        return result
 
     def record_synthetic_fill(
         self, *, request_id: str, fill_id: str, quantity: int,
@@ -210,17 +238,22 @@ class Stage77BrokerlessFOSyntheticGateway:
                 or type(price_cents) is not int or not 1 <= price_cents <= state[3]
                 or type(fee_cents) is not int or not 0 <= fee_cents <= 10**10):
             raise Stage77SyntheticGatewayBlocked("Invalid synthetic fill declaration")
+        current = self._book_status()
         try:
             receipt = self._book.record_simulated_fill(
                 order_id=request_id, fill_id=fill_id, quantity=quantity,
                 price_cents=price_cents, fee_cents=fee_cents,
                 evidence_source="LOCAL_SYNTHETIC_TEST_ONLY",
+                expected_revision=current.revision,
+                expected_journal_tip=current.journal_tip,
             )
         except Stage55SyntheticBookBlocked as exc:
             raise Stage77SyntheticGatewayBlocked("Single-DB simulated fill failed") from exc
+        result = self._receipt("SYNTHETIC_FILL_ONLY", state[0], review, receipt)
+        self._advance_local_head(receipt)
         if receipt.order_state == "FILLED_SYNTHETIC":
             del self._active[request_id]
-        return self._receipt("SYNTHETIC_FILL_ONLY", state[0], review, receipt)
+        return result
 
     def cancel_synthetic_remaining(
         self, *, request_id: str, cancel_id: str,
@@ -232,7 +265,7 @@ class Stage77BrokerlessFOSyntheticGateway:
         state = self._active.get(request_id)
         if state is None or not isinstance(cancel_id, str) or _ID.fullmatch(cancel_id) is None:
             raise Stage77SyntheticGatewayBlocked("Unknown synthetic cancellation ID")
-        self._book_status()
+        current = self._book_status()
         try:
             receipt = self._book.cancel_unfilled(
                 order_id=request_id, cancel_id=cancel_id,
@@ -240,6 +273,7 @@ class Stage77BrokerlessFOSyntheticGateway:
             )
         except Stage55SyntheticBookBlocked as exc:
             raise Stage77SyntheticGatewayBlocked("Synthetic cancellation failed") from exc
+        self._advance_local_head(receipt)
         del self._active[request_id]
         # Cancellation is intentionally not a positive fresh-risk authorization.
         return Stage77GatewayResearchReceipt(
