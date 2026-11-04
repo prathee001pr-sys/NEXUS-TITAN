@@ -41,6 +41,8 @@ jobs:
         run: python scripts/run_stage68_combined_candidate.py
       - name: Stage69 synthetic Risk Veto and budget crosscheck NO-LIVE smoke
         run: python scripts/run_stage69_synthetic_risk_budget_smoke.py
+      - name: Stage70 F&O-first static execution surface and integration NO-GO audit
+        run: python scripts/run_stage70_fo_integration_audit.py
       - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@v4
