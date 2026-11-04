@@ -270,6 +270,8 @@ class Stage77BrokerlessFOSyntheticGateway:
             receipt = self._book.cancel_unfilled(
                 order_id=request_id, cancel_id=cancel_id,
                 evidence_source="LOCAL_SYNTHETIC_TEST_ONLY",
+                expected_revision=current.revision,
+                expected_journal_tip=current.journal_tip,
             )
         except Stage55SyntheticBookBlocked as exc:
             raise Stage77SyntheticGatewayBlocked("Synthetic cancellation failed") from exc
