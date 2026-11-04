@@ -105,7 +105,7 @@ def test_bad_scope_or_missing_risk_table_block_direct_writes(tmp_path):
     a=book(path)
     with sqlite3.connect(path) as conn:
         conn.execute("UPDATE execution_local_risk SET scope_sha=?", ("0"*64,))
-    with pytest.raises(Stage55SyntheticBookBlocked, match="risk state"):
+    with pytest.raises(Stage55SyntheticBookBlocked, match="kill-switch state|risk state"):
         reserve(a)
     assert a.inspect().revision == 0
 
