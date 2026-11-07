@@ -1,0 +1,50 @@
+title = "NEXUS TITAN credential scanning"
+
+[extend]
+useDefault = true
+
+# Keep the built-in generic key rule enabled. Each exception below requires
+# BOTH an exact file path and a complete, anchored non-secret code line.
+# No directory, commit or credential value is globally excluded.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Stage36 synthetic fill idempotency identifiers"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^scripts/run_stage36_synthetic_paper_e2e\.py$''']
+regexes = [
+  '''^\s*virtual\.execute_fill\(buy\.order_id,100,idempotency_key="stage36-buy-1"\)\s*$''',
+  '''^\s*restored\.execute_fill\(second\.order_id,100,idempotency_key="stage36-buy-2"\)\s*$''',
+]
+
+[[rules.allowlists]]
+description = "Stage42 synthetic fill idempotency identifier"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^scripts/run_stage42_gateway_risk_e2e\.py$''']
+regexes = [
+  '''^\s*account\.execute_fill\(buy\.order_id,100,idempotency_key="STAGE42-BUY-1"\)\s*$''',
+]
+
+[[rules.allowlists]]
+description = "Stage57 synthetic token ID and actor label"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^scripts/run_stage57_approval_revocation_smoke\.py$''']
+regexes = [
+  '''^\s*token_id="STAGE57-REVOKE-ACTOR", actor="LOCAL-LABEL-HUMAN",\s*$''',
+]
+
+[[rules.allowlists]]
+description = "Stage89 HMAC domain labels; key material is supplied at runtime"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^src/nexus_titan/operations/synthetic_option_positions\.py$''']
+regexes = [
+  '''^\s*expected=_mac\(boundary\.verification_key,'STAGE89_QUOTE_V1',quote\.payload\(\)\)\s*$''',
+  '''^\s*expected=_mac\(boundary\.verification_key,'STAGE89_CLOSE_V1',a\.payload\(\)\)\s*$''',
+  '''^\s*q=replace\(q,signature_hex=_mac\(key,'STAGE89_QUOTE_V1',q\.payload\(\)\)\)\s*$''',
+  '''^\s*a=replace\(a,signature_hex=_mac\(key,'STAGE89_CLOSE_V1',a\.payload\(\)\)\)\s*$''',
+]

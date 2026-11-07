@@ -97,7 +97,11 @@ def inspect_stage68_combined_candidate(repo_root: Path) -> Stage68CandidateRevie
         and calibration.frozen_source_lineage_check_passed
         and inventory.reviewed_pr_count == 56
         and inventory.total_changed_file_entries == 429
-        and calibration.byte_identical_pr5_path_count == 4
+        and (
+            calibration.byte_identical_pr5_path_count == 4
+            or (calibration.byte_identical_pr5_path_count == 3
+                and calibration.reviewed_workflow_security_update_verified)
+        )
     ):
         raise Stage68CandidateBlocked("upstream offline integration evidence mismatch")
 

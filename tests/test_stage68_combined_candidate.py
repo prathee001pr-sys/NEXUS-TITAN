@@ -41,7 +41,7 @@ def test_current_selected_candidate_has_only_offline_no_go():
     assert report.captured_pr_count == 56
     assert report.captured_changed_file_entry_count == 429
     assert report.independent_root_pr_numbers_at_capture == (1, 3)
-    assert report.source_identical_pr5_file_count == 4
+    assert report.source_identical_pr5_file_count == 3
     assert report.selected_python_modules_parsed == 7
     assert report.selected_ci_steps_present == 3
     assert len(report.external_release_blockers) >= 8
