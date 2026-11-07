@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 
 from nexus_titan.operations.stage67_calibration_reconcile import (
-    PR5_BLOBS, PRIMARY_INIT_BLOB, Stage67LineageError,
+    PR5_BLOBS, PRIMARY_INIT_BLOB, CALIBRATION_WORKFLOW_PATH,
+    REVIEWED_SECURITY_WORKFLOW_BLOB, Stage67LineageError,
     _git_blob_sha, inspect_stage67_calibration_reconciliation,
 )
 
@@ -31,8 +32,12 @@ def test_original_calibration_child_pr_blob_ids_match_complete_candidate():
     report = inspect_stage67_calibration_reconciliation(ROOT)
     assert report.independent_root_pr == 3
     assert report.independent_hardening_pr == 5
-    assert report.byte_identical_pr5_path_count == 4
-    assert report.inspected_git_blob_pairs == PR5_BLOBS
+    assert report.byte_identical_pr5_path_count == 3
+    assert report.historical_pr5_git_blob_pairs == PR5_BLOBS
+    assert report.reviewed_workflow_security_update_verified
+    assert dict(report.inspected_git_blob_pairs)[CALIBRATION_WORKFLOW_PATH] == REVIEWED_SECURITY_WORKFLOW_BLOB
+    for relative, blob in report.inspected_git_blob_pairs:
+        assert _git_blob_sha((ROOT / relative).read_bytes()) == blob
     assert report.expanded_primary_intelligence_exports_retained
     assert report.frozen_source_lineage_check_passed
     assert _git_blob_sha((ROOT / "src/nexus_titan/intelligence/__init__.py").read_bytes()) == PRIMARY_INIT_BLOB
@@ -93,7 +98,8 @@ def test_actual_cli_reports_no_release_permission_even_when_files_match(tmp_path
                           cwd=ROOT, text=True, capture_output=True, check=False)
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
-    assert payload["byte_identical_pr5_path_count"] == 4
+    assert payload["byte_identical_pr5_path_count"] == 3
+    assert payload["reviewed_workflow_security_update_verified"] is True
     assert payload["merge_authorized"] is False
     assert payload["production_ready"] is False
     assert payload["broker_orders_transmitted"] == 0
@@ -105,3 +111,46 @@ def test_actual_cli_reports_no_release_permission_even_when_files_match(tmp_path
     denied = json.loads(bad.stdout)
     assert denied["merge_authorized"] is False
     assert denied["real_money_trading_enabled"] is False
+
+
+def _restore_historical_workflow(raw: bytes) -> bytes:
+    """Independently reverse only the reviewed security delta."""
+    return raw.replace(
+        b"actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4",
+        b"actions/checkout@v4",
+    ).replace(
+        b"        with:\n          persist-credentials: false\n",
+        b"",
+    ).replace(
+        b"actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5",
+        b"actions/setup-python@v5",
+    )
+
+
+def test_workflow_successor_contains_only_the_reviewed_security_changes(tmp_path):
+    home = temp_source(tmp_path)
+    workflow = home / CALIBRATION_WORKFLOW_PATH
+    historical = _restore_historical_workflow(workflow.read_bytes())
+    assert _git_blob_sha(historical) == dict(PR5_BLOBS)[CALIBRATION_WORKFLOW_PATH]
+    workflow.write_bytes(historical)
+    report = inspect_stage67_calibration_reconciliation(home)
+    assert report.byte_identical_pr5_path_count == 4
+    assert report.inspected_git_blob_pairs == PR5_BLOBS
+    assert not report.reviewed_workflow_security_update_verified
+    assert not report.merge_authorized
+    assert not report.real_money_trading_enabled
+
+
+@pytest.mark.parametrize("old,new", [
+    (b"persist-credentials: false", b"persist-credentials: true"),
+    (b"contents: read", b"contents: write"),
+    (b"python -m pytest -q", b"echo skipped"),
+])
+def test_workflow_security_regressions_are_rejected(tmp_path, old, new):
+    home = temp_source(tmp_path)
+    workflow = home / CALIBRATION_WORKFLOW_PATH
+    raw = workflow.read_bytes()
+    assert old in raw
+    workflow.write_bytes(raw.replace(old, new))
+    with pytest.raises(Stage67LineageError, match="PR5 source blob changed"):
+        inspect_stage67_calibration_reconciliation(home)

@@ -1,8 +1,10 @@
 """Stage67 manual PR#3/#5 calibration lineage reconcile — offline source equality.
 
-Four PR#5 files are retained byte-for-byte, while the primary Stage66 branch's
-expanded intelligence exports are preserved. This is a *candidate* resolution,
-not a GitHub current-state attestation, automatic merge authority or real trading.
+The three PR#5 calibration source/test/document files remain byte-identical.
+The original workflow or its exact reviewed security-only successor is accepted,
+with the distinction reported explicitly. The historical hashes and primary
+Stage66 exports are preserved. This is a candidate resolution, not a current
+GitHub attestation, automatic merge authority or real trading.
 """
 from __future__ import annotations
 
@@ -22,6 +24,11 @@ PR5_BLOBS = (
     (".github/workflows/calibration-hardening.yml",
      "46d1d7c95c89a1bc409fd2c00ab51bbea27ff956"),
 )
+# Preserve PR5_BLOBS as historical evidence. This successor changes only the
+# official Action references to verified SHAs and disables checkout credentials.
+# Every other workflow byte remains unchanged; any further drift is rejected.
+CALIBRATION_WORKFLOW_PATH = ".github/workflows/calibration-hardening.yml"
+REVIEWED_SECURITY_WORKFLOW_BLOB = "c376a11142c1b5f00b6cbeb489e9a577beb77f00"
 PRIMARY_INIT_BLOB = "9066f3f9ceecd3e6eeb0b227bf5d97d0b3c59336"
 PR3_HEAD = "fa8c34eba862108d6cd333c59964c4e3cc6e6405"
 PR5_HEAD = "d97b9abef59c479cd7a7c8dfb0ffb0fd44f95148"
@@ -43,6 +50,8 @@ class Stage67CalibrationLineageReport:
     inspected_git_blob_pairs: tuple[tuple[str, str], ...]
     expanded_primary_intelligence_exports_retained: bool
     frozen_source_lineage_check_passed: bool
+    historical_pr5_git_blob_pairs: tuple[tuple[str, str], ...]
+    reviewed_workflow_security_update_verified: bool
     # Ancestry and release claims must be externally rechecked on exact final head.
     current_github_ancestry_verified: bool = False
     complete_integrated_diff_review_verified: bool = False
@@ -72,9 +81,19 @@ def _checked_bytes(root: Path, filename: str) -> bytes:
 
 def inspect_stage67_calibration_reconciliation(repo_root: Path) -> Stage67CalibrationLineageReport:
     root = Path(repo_root)
+    identical_count = 0
+    workflow_security_update = False
+    inspected_pairs: list[tuple[str, str]] = []
     for relative, expected in PR5_BLOBS:
-        if _git_blob_sha(_checked_bytes(root, relative)) != expected:
+        actual = _git_blob_sha(_checked_bytes(root, relative))
+        if actual == expected:
+            identical_count += 1
+        elif (relative == CALIBRATION_WORKFLOW_PATH
+              and actual == REVIEWED_SECURITY_WORKFLOW_BLOB):
+            workflow_security_update = True
+        else:
             raise Stage67LineageError(f"PR5 source blob changed: {relative}")
+        inspected_pairs.append((relative, actual))
     init_source = _checked_bytes(root, "src/nexus_titan/intelligence/__init__.py")
     if _git_blob_sha(init_source) != PRIMARY_INIT_BLOB:
         raise Stage67LineageError("primary intelligence exports have drifted")
@@ -108,8 +127,10 @@ def inspect_stage67_calibration_reconciliation(repo_root: Path) -> Stage67Calibr
         independent_hardening_pr=5,
         independently_staged_pr5_head=PR5_HEAD,
         primary_stage66_head_at_branch_creation=PRIMARY_STAGE66_BASE,
-        byte_identical_pr5_path_count=len(PR5_BLOBS),
-        inspected_git_blob_pairs=PR5_BLOBS,
+        byte_identical_pr5_path_count=identical_count,
+        inspected_git_blob_pairs=tuple(inspected_pairs),
         expanded_primary_intelligence_exports_retained=True,
         frozen_source_lineage_check_passed=True,
+        historical_pr5_git_blob_pairs=PR5_BLOBS,
+        reviewed_workflow_security_update_verified=workflow_security_update,
     )

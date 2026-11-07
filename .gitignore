@@ -151,6 +151,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -158,6 +160,18 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Local trading/research state and private credential files
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.pem
+*.key
+*.p12
+*.pfx
 
 # Spyder project settings
 .spyderproject
