@@ -1,0 +1,5 @@
+# Stage98: Indian/crypto read-only E2E boundary review candidate (NO LIVE)
+
+`read_only_dual_market_review` consumes the separately checked Stage96 F&O report and the independently replay-checked Stage97 crypto account. It rejects wrong market/currency, shared account ID, live flags and invalid conservation/journal identities. INR and USDT remain separate; it **does not** sum P&L or cash across currencies or allow one market's state to change the other. Cross-market review and crypto ledger replay/restart/kill scenarios are included in the added tests.
+
+This is not the complete original historical Stage98 futures-margin delivery. Futures margin and options expiry/settlement remain separate outstanding milestones, as do actual licensed feeds, market authenticity, broker reconciliation, external risk/security review, and real-feed prospective shadow trials. The original roadmap's 97/98 IDs differed; this candidate honors the latest user-approved scope and records that divergence explicitly.
