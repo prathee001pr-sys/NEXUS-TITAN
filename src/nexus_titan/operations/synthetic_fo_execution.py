@@ -58,6 +58,10 @@ class SyntheticFOExecutionGateway:
         self._book = book
         self.snapshot()  # Replay and verify existing journal; no automatic authority.
 
+    @property
+    def boundary_sha256(self):
+        return self._book.selected_fo_boundary_sha256
+
     def snapshot(self):
         return self._book.snapshot_local_synthetic_portfolio()
 
