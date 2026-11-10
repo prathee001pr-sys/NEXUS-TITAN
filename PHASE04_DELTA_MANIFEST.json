@@ -1,0 +1,30 @@
+{
+  "base_phase03_ci_green": true,
+  "base_phase03_github_commit": "77ba2eec628eb5353a46c8d2f8b5eb97191a7a29",
+  "base_phase03_pr": 102,
+  "base_phase03_secret_scan_green": true,
+  "date": "2026-11-10",
+  "focused_tests": "73 passed, 0 failed, -W error",
+  "live_trading_allowed": false,
+  "local_python": "3.13",
+  "market_data": "NOT_VERIFIED",
+  "new_paths_sha256": {
+    "docs/PHASE04_STAGES121_124_IMPLEMENTATION_2026-11-10.md": "c52f8dcd7823f13aaa16a7e730a477c1ba6499d51ed79e5e13289235c222e2a5",
+    "docs/PHASE04_VALIDATION_RECEIPT_2026-11-10.md": "9c755f2891cd2c19ec7930e13d76f199e9c21b72706fe23704184e0e3dd8230e",
+    "scripts/install_phase04_add_only.py": "3e789f2c9012385f393785cb97150f4864409fcd5d622f31d2c9a818d76e7bfe",
+    "scripts/run_phase04_guardian_fault_demo.py": "bdf83c3d6a73aedf29a9b5cd3ba2972bfbeb5e00d013267b18534f3a8160ae49",
+    "scripts/validate_phase04_install.py": "64b47ef69f2c9765dd2051426225de0557ee22ee356db2741a16bd6452810e83",
+    "src/nexus_titan/operations/stage121_research_supervisor.py": "bc5834167bb30c67ea4a68e95c539afd3bbe179839daf8d75c5f0bfaa04916cc",
+    "src/nexus_titan/operations/stage122_verified_recovery.py": "86f5246512ea9829a64737aefb2a70bbe761c15372c00cc9db07dcec11bd7c62",
+    "src/nexus_titan/operations/stage123_recovery_fault_lab.py": "bf21197bce0a34704891184264770cdc7383b3dca5cbb7260afdf1c8d038be0b",
+    "src/nexus_titan/operations/stage124_guardian_release_gate.py": "d0e07f09891b94376f9c1f087032a5351dea5d699fe28464e7cfb702f438e40e",
+    "tests/test_stage121_research_supervisor.py": "9e78ec3b471ab6eb939f04d5be990c44f2dbd81dbad496c1f8e795bbe3bb3da4",
+    "tests/test_stage122_verified_recovery.py": "f83e02c5d7d7656ef1ebbc94af9ae69c0f433d2cf2732044503d35f5dcd2a7a9",
+    "tests/test_stage123_recovery_fault_lab.py": "869eccc48d69e321321166ea8a44025e495d1776ddd3dc8739fb8f065a855f1e",
+    "tests/test_stage124_guardian_release_gate.py": "00ee612936cbe8cbf1f115c8c9c90071a4fb0c3b5a8b319ae0a9d1760b9c717c"
+  },
+  "phase04_github_ci": "PENDING",
+  "phase04_secret_scan": "PENDING",
+  "strategy_promotion_allowed": false,
+  "whole_repo_coverage": "3565 passed in 10 disjoint bounded pytest invocations; 5 subtests passed; 4 existing warnings"
+}
