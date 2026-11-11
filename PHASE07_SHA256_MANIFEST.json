@@ -1,0 +1,12 @@
+{
+  "phase": "07",
+  "base": "Phase06 offline package",
+  "files": {
+    "src/nexus_titan/operations/stage133_fill_simulator.py": "2d6eec6999151fd88343260924f77407cd8031a773bb06583ed9d4cffb044236",
+    "src/nexus_titan/operations/stage134_execution_costs.py": "4952048435908fbe7dec0ade35a124cb47ea0124ab9c950c654767b816a8520d",
+    "src/nexus_titan/operations/stage135_fill_reconciliation.py": "dff7ee9b668c6aff785cbd23d7a64d10aa19c26b74a50a4d868b01ce70294cc4",
+    "src/nexus_titan/operations/stage136_execution_safety_gate.py": "3ef2bf33fa9b459ee0c9b1a3d282cfda44c058d67b52bcdd4550d0805c2beac9",
+    "tests/test_stage133_136_execution_research.py": "21fffc29b589c42aa0e37e5ea8bb6a6b277da227ba230f911b23fabd94431de5",
+    "docs/PHASE07_STAGES133_136_OFFLINE_2026-11-11.md": "3af49ed9b747974457c89c4b0e15c88dbd1820ea293c13f511529822dd7f4184"
+  }
+}
