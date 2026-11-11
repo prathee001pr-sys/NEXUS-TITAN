@@ -1,0 +1,8 @@
+{
+  "src/nexus_titan/operations/stage129_contract_guard.py": "95d8844613d6a4eafda0e29735162f5287f01efd364b82fae5940b93ac9a9c8c",
+  "src/nexus_titan/operations/stage130_greeks_iv.py": "52a59fad33d264abd17fcba3443c246e1cd0e712986f8c8ed6a0f5fdf7eb3f98",
+  "src/nexus_titan/operations/stage131_cost_margin.py": "6a17d13b173b0733290df69a3b78ca8fa1b4c08414bd81576c470a2dd27bea88",
+  "src/nexus_titan/operations/stage132_fo_research_gate.py": "02f2a3aa63f6b289f0b902b726c7a5e5114e11affb3fcbf443b0fb96f4a08e60",
+  "tests/test_stage129_132_fo_research.py": "89a3215e7632e98a3d468a8b7d5b114ade7684b097b72fab3452c0374906da63",
+  "docs/PHASE06_STAGES129_132_OFFLINE_2026-11-11.md": "435acce7e505ce9a8b5eb4a9c453e9bc2942c5b3a82f4bfd6a5c4cce73f393be"
+}
