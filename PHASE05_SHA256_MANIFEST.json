@@ -1,0 +1,23 @@
+{
+  "phase": "05",
+  "stages": [
+    125,
+    126,
+    127,
+    128
+  ],
+  "base_phase04_commit": "2b085facee536fb5f0b3507c54ee453d858677ec",
+  "focused_tests_passed": 24,
+  "full_regression": "TIMED_OUT_NOT_VERIFIED",
+  "github_ci": "NOT_RUN",
+  "files": {
+    "src/nexus_titan/operations/stage125_nse_option_chain_snapshot.py": "b2b2eb44cc802fbb441ec035ee56d1ba72e97b9cf827be5a27dde19f86cff1bd",
+    "src/nexus_titan/operations/stage126_snapshot_provenance.py": "ba3ce5e5c190bf53bc93dabc51c7152592808a27d0a83aad07d0cb69075629ff",
+    "src/nexus_titan/operations/stage127_quote_quality.py": "5c0d6159282d3a2099f94fcac520655c0e5ab2585bbdcc6ed2a11a2ab7a00d34",
+    "src/nexus_titan/operations/stage128_snapshot_acceptance.py": "f0f0655b935a68656161f076b9acc7e0874f8a1a3ba75d0d32cf35632a35940c",
+    "tests/test_stage125_nse_option_chain_snapshot.py": "00c25ef830544370751a2b9542d72983139b112caaf04ed3e52d8fa4b94dda7c",
+    "tests/test_stage126_128_snapshot_pipeline.py": "7d418355fa4117755daaaba36061bf1c2002ee47d88a003d0380f0a3e756978d",
+    "docs/STAGE125_NSE_OPTION_CHAIN_SNAPSHOT_2026-11-11.md": "b37ba1549a77af0b3c2a231a9d441dd36a8f5dd4d908f75ecf69135d3e7185e2",
+    "docs/PHASE05_STAGES125_128_OFFLINE_2026-11-11.md": "b3b80728812be876e1039fe3b5cadc7198935cf4a3e268f0a7068b7e52c444ce"
+  }
+}
