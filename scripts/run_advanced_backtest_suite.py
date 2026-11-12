@@ -282,7 +282,9 @@ def main() -> int:
         manifest_report["file_path"] = csv_path.relative_to(ROOT).as_posix()
     except ValueError:
         manifest_report["file_path"] = csv_path.name
-    candles = load_candles(csv_path, symbol="NIFTY", interval="1d")
+    candles = load_candles(
+        csv_path, symbol="NIFTY", interval="1d", source_timezone=args.source_timezone,
+    )
 
     master = PointInTimeInstrumentMaster()
     lot_2023 = master.resolve_lot_size("BANKNIFTY", "2023-05-15")
