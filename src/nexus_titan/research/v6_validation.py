@@ -165,10 +165,21 @@ def rolling_walk_forward_validation(
         raise ValueError("num_folds must be a positive integer.")
     if window_mode not in ("anchored", "sliding"):
         raise ValueError("window_mode must be 'anchored' or 'sliding'.")
+    if (isinstance(initial_train_ratio, bool)
+            or not isinstance(initial_train_ratio, (int, float))
+            or not math.isfinite(initial_train_ratio)
+            or not 0 < initial_train_ratio < 1):
+        raise ValueError("initial_train_ratio must be finite and between 0 and 1.")
+    if type(warmup_lookback) is not int or warmup_lookback < 1:
+        raise ValueError("warmup_lookback must be a positive integer.")
+    if type(min_trades_gate) is not int or min_trades_gate < 1:
+        raise ValueError("min_trades_gate must be a positive integer.")
 
     folds: list[WalkForwardFoldResult] = []
     oos_results: list[BacktestResult] = []
     fold_bounds = _compute_fold_boundaries(n, num_folds, initial_train_ratio, window_mode)
+    if len(fold_bounds) != num_folds:
+        raise ValueError("Insufficient candles for the requested walk-forward folds.")
 
     compounded_multiplier = 1.0
 
@@ -196,14 +207,17 @@ def rolling_walk_forward_validation(
             instrument_lot_size=instrument_lot_size,
         )
 
-        test_sig = signal_factory(test_data_with_warmup)
+        # Fit a fresh OOS strategy on the training window only. Supplying the
+        # test window here lets factories learn from their future test outcomes.
+        test_sig = signal_factory(train_data)
         test_res = run_backtest(
             test_data_with_warmup,
             starting_capital=starting_capital,
             fee_per_side=fee_per_side,
             slippage_per_side=slippage_per_side,
             signal=test_sig,
-            warmup_bars=actual_warmup_bars,
+            # A decision on the final warm-up candle fills the first OOS open.
+            warmup_bars=actual_warmup_bars - 1,
             stop_loss_pct=stop_loss_pct,
             target_pct=target_pct,
             use_indian_statutory_costs=use_indian_statutory_costs,
@@ -277,7 +291,14 @@ def walk_forward_validation(
     instrument_type: InstrumentType = "EQUITY_DELIVERY",
 ) -> tuple[BacktestResult, BacktestResult, WalkForwardReport]:
     """Single chronological train/test split with strict minimum sample-size gate (NT-P1-03)."""
+    if (isinstance(train_ratio, bool) or not isinstance(train_ratio, (int, float))
+            or not math.isfinite(train_ratio) or not 0 < train_ratio < 1):
+        raise ValueError("train_ratio must be finite and between 0 and 1.")
+    if type(min_trades_gate) is not int or min_trades_gate < 1:
+        raise ValueError("min_trades_gate must be a positive integer.")
     split_idx = int(len(candles) * train_ratio)
+    if split_idx < 2 or len(candles) - split_idx < 2:
+        raise ValueError("At least two candles per train/test window are required.")
     train_data = candles[:split_idx]
     test_data = candles[split_idx:]
 
@@ -292,9 +313,11 @@ def walk_forward_validation(
         instrument_type=instrument_type,
     )
 
-    test_sig = signal_factory(test_data)
+    test_sig = signal_factory(train_data)
     test_res = run_backtest(
-        test_data,
+        # One known training candle provides the decision for the first OOS
+        # open; it is context only, never an in-sample fill.
+        [train_data[-1], *test_data],
         starting_capital=starting_capital,
         fee_per_side=fee_per_side,
         slippage_per_side=slippage_per_side,
@@ -307,7 +330,7 @@ def walk_forward_validation(
         fold_number=1,
         train_bars=len(train_data),
         test_bars=len(test_data),
-        warmup_bars_used=0,
+        warmup_bars_used=1,
         in_sample_return_pct=round(train_res.return_percent, 2),
         out_of_sample_return_pct=round(test_res.return_percent, 2),
         out_of_sample_trades=test_res.total_trades,

@@ -90,9 +90,14 @@ def compute_file_sha256(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def load_candles(path: str | Path, symbol: str = "NIFTY", interval: str = "1d") -> list[dict[str, float]]:
+def load_candles(
+    path: str | Path, symbol: str = "NIFTY", interval: str = "1d",
+    source_timezone: str = "Asia/Kolkata",
+) -> list[dict[str, float]]:
     """Load and strictly validate candles using the canonical data pipeline."""
-    canonical_candles, report = load_canonical_data(path, symbol=symbol, interval=interval)
+    canonical_candles, report = load_canonical_data(
+        path, symbol=symbol, interval=interval, source_timezone=source_timezone,
+    )
     if not report.is_valid:
         error_summary = "; ".join(report.errors)
         raise ValueError(f"Canonical market data validation failed: {error_summary}")
@@ -325,24 +330,14 @@ def run_backtest(
         position = entry_price = active_stop = active_target = 0.0
         position_side = 0
 
-    for index in range(len(candles) - 1):
-        next_candle = candles[index + 1]
+    def resolve_protection(bar_index: int, *, opening_only: bool = False) -> bool:
+        """Resolve opening gaps or a bar's range after its open orders execute."""
+        nonlocal intrabar_stops, intrabar_targets
+        next_candle = candles[bar_index]
         next_open = next_candle["open"]
         next_high = next_candle["high"]
         next_low = next_candle["low"]
-        next_close = next_candle["close"]
-        day_key = str(next_candle.get("date", next_candle.get("timestamp", index + 1)))[:10]
-        new_session = day_key != current_day_key
-        if new_session and current_day_key is not None and position > 0 and instrument_type == "EQUITY_INTRADAY":
-            # Indian cash intraday positions must not be carried across sessions.
-            session_exit_slip = effective_slippage(next_open)
-            session_exit = next_open - session_exit_slip if position_side == 1 else next_open + session_exit_slip
-            close_active_position(max(0.01, session_exit), index + 1, "INTRADAY_SESSION_END")
-        if new_session:
-            current_day_key = day_key
-            daily_pnl = 0.0
-
-        # Resolve ambiguous intrabar touches conservatively: stop-loss before target.
+        # Resolve ambiguous intrabar touches conservatively: stop before target.
         if position > 0:
             exit_reason = None
             fill_price = 0.0
@@ -352,7 +347,7 @@ def run_backtest(
                         exit_reason = "STOP_LOSS_GAP"
                         fill_price = next_open - effective_slippage(next_open)
                         intrabar_stops += 1
-                    elif next_low <= active_stop:
+                    elif not opening_only and next_low <= active_stop:
                         exit_reason = "STOP_LOSS"
                         fill_price = active_stop - effective_slippage(active_stop)
                         intrabar_stops += 1
@@ -361,7 +356,7 @@ def run_backtest(
                         exit_reason = "TARGET_GAP"
                         fill_price = next_open - effective_slippage(next_open)
                         intrabar_targets += 1
-                    elif next_high >= active_target:
+                    elif not opening_only and next_high >= active_target:
                         exit_reason = "TARGET"
                         fill_price = active_target - effective_slippage(active_target)
                         intrabar_targets += 1
@@ -371,7 +366,7 @@ def run_backtest(
                         exit_reason = "STOP_LOSS_GAP"
                         fill_price = next_open + effective_slippage(next_open)
                         intrabar_stops += 1
-                    elif next_high >= active_stop:
+                    elif not opening_only and next_high >= active_stop:
                         exit_reason = "STOP_LOSS"
                         fill_price = active_stop + effective_slippage(active_stop)
                         intrabar_stops += 1
@@ -380,13 +375,35 @@ def run_backtest(
                         exit_reason = "TARGET_GAP"
                         fill_price = next_open + effective_slippage(next_open)
                         intrabar_targets += 1
-                    elif next_low <= active_target:
+                    elif not opening_only and next_low <= active_target:
                         exit_reason = "TARGET"
                         fill_price = active_target + effective_slippage(active_target)
                         intrabar_targets += 1
 
             if exit_reason:
-                close_active_position(fill_price, index + 1, exit_reason)
+                close_active_position(max(0.01, fill_price), bar_index, exit_reason)
+                return True
+        return False
+
+    for index in range(len(candles) - 1):
+        next_candle = candles[index + 1]
+        next_open = next_candle["open"]
+        next_close = next_candle["close"]
+        day_key = str(next_candle.get("date", next_candle.get("timestamp", index + 1)))[:10]
+        new_session = day_key != current_day_key
+        if new_session and current_day_key is not None and position > 0 and instrument_type == "EQUITY_INTRADAY":
+            # Flatten at the preceding session's last available close, never at
+            # the following day's opening price (which includes an overnight gap).
+            session_close = candles[index]["close"]
+            session_exit_slip = effective_slippage(session_close)
+            session_exit = session_close - session_exit_slip if position_side == 1 else session_close + session_exit_slip
+            close_active_position(max(0.01, session_exit), index, "INTRADAY_SESSION_END")
+            equity_curve[-1] = cash
+            peak_equity = max(peak_equity, cash)
+            max_drawdown = max(max_drawdown, (peak_equity - cash) / peak_equity * 100)
+        if new_session:
+            current_day_key = day_key
+            daily_pnl = 0.0
 
         if index < warmup_bars:
             eq = mark_equity(next_close)
@@ -397,10 +414,12 @@ def run_backtest(
         action = signal(index, _CandleHistoryView(candles, index + 1)) if signal else 0
         if isinstance(action, bool) or action not in (-1, 0, 1):
             raise ValueError(f"Strategy signal at index {index} must be exactly -1, 0, or 1.")
-        closed_on_signal = False
+        # Resting opening-gap protection executes first. A decision based on
+        # the preceding close then executes at this open, before its high/low.
+        closed_on_signal = resolve_protection(index + 1, opening_only=True)
 
         # Signal exit when holding an opposite position
-        if position > 0:
+        if position > 0 and not closed_on_signal:
             if (position_side == 1 and action == -1) or (position_side == -1 and action == 1):
                 slip = effective_slippage(next_open)
                 exit_px = next_open - slip if position_side == 1 else next_open + slip
@@ -415,7 +434,18 @@ def run_backtest(
             slip = effective_slippage(next_open)
             exec_entry = next_open + slip if desired_side == 1 else max(0.05, next_open - slip)
 
-            if sizing_mode == "capital_risk":
+            # Circuit breakers apply to both fixed and risk-sized research
+            # orders. Only prices already known at the open may inform entry.
+            drawdown_at_open = max(0.0, (peak_equity - mark_equity(next_open)) / peak_equity * 100.0)
+            circuit_blocked = (
+                max(0.0, -daily_pnl / starting_capital * 100.0) >= risk_engine.config.daily_loss_limit_pct
+                or drawdown_at_open >= risk_engine.config.max_drawdown_limit_pct
+                or _trailing_losses(trade_pnls) >= risk_engine.config.consecutive_loss_limit
+            )
+            if circuit_blocked:
+                trade_qty = 0.0
+                rejected_for_risk += 1
+            elif sizing_mode == "capital_risk":
                 stop_dist = (exec_entry * (stop_loss_pct / 100.0)) if stop_loss_pct else (exec_entry * 0.02)
                 indicative_stop = (
                     max(0.01, exec_entry - stop_dist) if desired_side == 1 else (exec_entry + stop_dist)
@@ -430,7 +460,7 @@ def run_backtest(
                     current_open_positions=0,
                     realized_daily_loss_pct=max(0.0, -daily_pnl / starting_capital * 100.0),
                     consecutive_losses=_trailing_losses(trade_pnls),
-                    current_drawdown_pct=max(0.0, (peak_equity - mark_equity(next_close)) / peak_equity * 100.0),
+                    current_drawdown_pct=drawdown_at_open,
                     slippage_buffer=slip,
                     side=side_str,
                 )
@@ -479,6 +509,10 @@ def run_backtest(
                         )
                 else:
                     rejected_for_risk += 1
+
+        # Entry stops/targets are active on the entry candle itself. Resolving
+        # its range here also prevents re-entering at an already elapsed open.
+        resolve_protection(index + 1)
 
         equity = mark_equity(next_close)
         equity_curve.append(equity)

@@ -172,7 +172,7 @@ def test_existing_strict_account_without_gateway_only_rejected(tmp_path):
     )
     DurableResearchShadowLedger(cfg.research_db_path,account_id="S43",
                                  starting_capital=50000,guarded_paper_mode=True)
-    with pytest.raises(PaperDeploymentBlocked,match="strict\+gateway-only"):
+    with pytest.raises(PaperDeploymentBlocked,match=r"strict\+gateway-only"):
         _open(cfg)
     assert v.durable_store.strict_mode("S43")
     assert not v.durable_store.gateway_only("S43")

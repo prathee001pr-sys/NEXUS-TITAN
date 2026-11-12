@@ -23,6 +23,8 @@ from nexus_titan.research.v6_strategies import AVAILABLE_STRATEGIES
 def main() -> int:
     parser = argparse.ArgumentParser(description="NEXUS TITAN historical Phase 6 backtest")
     parser.add_argument("--csv", required=True, help="Validated OHLCV CSV file")
+    parser.add_argument("--source-timezone", default="Asia/Kolkata",
+                        help="Timezone of naive CSV timestamps (default: Asia/Kolkata).")
     parser.add_argument("--strategy", default="all", choices=[*AVAILABLE_STRATEGIES, "all"])
     parser.add_argument("--capital", type=float, default=50_000.0)
     parser.add_argument("--quantity", type=float, default=1.0)
@@ -39,7 +41,7 @@ def main() -> int:
 
     csv_path = Path(args.csv).resolve()
     try:
-        candles = load_candles(csv_path)
+        candles = load_candles(csv_path, source_timezone=args.source_timezone)
         selected = list(AVAILABLE_STRATEGIES) if args.strategy == "all" else [args.strategy]
         results = []
         for key in selected:
