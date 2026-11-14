@@ -1,0 +1,112 @@
+{
+  "implementation": "CPython",
+  "iterations_per_sample": 5,
+  "live_trading_authorized": false,
+  "note": "Local synthetic journal hashing experiment; environment-dependent descriptive speed only, no latency SLA.",
+  "production_replacement_authorized": false,
+  "python_version": "3.13.5",
+  "real_market_latency_verified": false,
+  "results": [
+    {
+      "baseline_median_ns": 227817,
+      "baseline_samples_ns": [
+        243705,
+        273332,
+        245925,
+        332453,
+        218777,
+        227817,
+        212623,
+        208150,
+        206870
+      ],
+      "candidate_median_ns": 96174,
+      "candidate_samples_ns": [
+        102102,
+        92435,
+        92049,
+        107268,
+        102804,
+        113145,
+        96174,
+        95694,
+        95695
+      ],
+      "case": "offline_journal_30",
+      "equivalent_on_fixed_fixture": true,
+      "event_count": 30,
+      "fixture_digest": "65267fd8eb6f918ff75edf9e7817f096639f888a7c1e82cfe6757c86aac1fcf2",
+      "observed_speedup_ratio": 2.369,
+      "output_digest": "4369c29023af5d48baf71ad52575af267842c447058aa03b674071e8f17e6428"
+    },
+    {
+      "baseline_median_ns": 3335788,
+      "baseline_samples_ns": [
+        3294728,
+        4072261,
+        3699697,
+        3619210,
+        6449335,
+        2716090,
+        2460675,
+        3304645,
+        3335788
+      ],
+      "candidate_median_ns": 1754336,
+      "candidate_samples_ns": [
+        1451626,
+        1890228,
+        1763883,
+        1851405,
+        1754336,
+        1071576,
+        1276801,
+        1148511,
+        1790741
+      ],
+      "case": "offline_journal_300",
+      "equivalent_on_fixed_fixture": true,
+      "event_count": 300,
+      "fixture_digest": "cbbc197ed7c0b75a45aa2a3e91c4b57fc54e5f136b008149f9ad10d474ff76aa",
+      "observed_speedup_ratio": 1.901,
+      "output_digest": "6d37553fce33049442ee8b8a06c3b1f888cf9e5ba9a665a26b32bb1bb63509ce"
+    },
+    {
+      "baseline_median_ns": 10369389,
+      "baseline_samples_ns": [
+        12536129,
+        20034283,
+        14171304,
+        8078276,
+        7930638,
+        13367799,
+        9937824,
+        10369389,
+        8533061
+      ],
+      "candidate_median_ns": 4237372,
+      "candidate_samples_ns": [
+        6264355,
+        6878599,
+        6286400,
+        3765590,
+        3734552,
+        6219019,
+        3700365,
+        3673271,
+        4237372
+      ],
+      "case": "offline_journal_1000",
+      "equivalent_on_fixed_fixture": true,
+      "event_count": 1000,
+      "fixture_digest": "7cbbc952647fda17a525905b2a39d7d12872fd536cca3dc100a85b66afb65cc4",
+      "observed_speedup_ratio": 2.447,
+      "output_digest": "3a3384ffcb03eaeeaf3057a4e3794abf133e121260f6f721ae203f67aca8698d"
+    }
+  ],
+  "rust_rewrite_authorized": false,
+  "samples": 9,
+  "schema": "titan.stage222.offline_python_candidate.v1",
+  "stage217_production_modified": false,
+  "system": "Linux"
+}
