@@ -92,7 +92,7 @@ def supervise_synthetic_research(
             before = jobs.get(job_id)
             env = {"PYTHONPATH": str(Path(__file__).resolve().parents[2]),
                    "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8"}
-            cmd = [sys.executable, "-B", "-m", "nexus_titan.operations.stage121_research_supervisor",
+            cmd = [sys.executable, "-B", "-S", "-m", "nexus_titan.operations.stage121_research_supervisor",
                    "--guardian-child", str(Path(db_path).resolve()), job_id,
                    str(before.checkpoint), str(total_chunks), str(before.attempts),
                    mode, str(memory_mb)]
