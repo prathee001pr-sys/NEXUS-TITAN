@@ -28,6 +28,14 @@ class LLMProviderError(RuntimeError):
     """Raised when an LLM provider cannot return a valid response."""
 
 
+class _NoProviderRedirects(urllib.request.HTTPRedirectHandler):
+    """Never forward provider credentials or prompts to a redirect target."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(
+            req.full_url, code, "LLM endpoint redirects are disabled.", headers, fp)
+
+
 class OpenAICompatibleProvider:
     """Minimal OpenAI-compatible chat provider with bounded requests."""
 
@@ -88,7 +96,8 @@ class OpenAICompatibleProvider:
             self.endpoint, data=json.dumps(payload).encode("utf-8"),
             headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
+            opener = urllib.request.build_opener(_NoProviderRedirects())
+            with opener.open(request, timeout=self.config.timeout_seconds) as response:
                 raw = response.read(self.config.max_response_bytes + 1)
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise LLMProviderError(f"LLM provider request failed: {type(exc).__name__}") from exc
