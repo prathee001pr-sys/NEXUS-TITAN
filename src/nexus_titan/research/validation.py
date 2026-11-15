@@ -70,3 +70,36 @@ def evaluate_out_of_sample(
         raise TypeError("split must be a ChronologicalSplit")
     combined = split.in_sample + split.out_of_sample
     return engine.run(combined, strategy, start_index=len(split.in_sample) - 1)
+
+
+# V6 & Phase 7 compatibility exports.
+from nexus_titan.research.v6_validation import (
+    MonteCarloReport,
+    MultipleComparisonReport,
+    PromotionStage,
+    StrategyPromotionDecision,
+    WalkForwardFoldResult,
+    WalkForwardReport,
+    evaluate_multiple_comparison_bias,
+    evaluate_strategy_promotion,
+    rolling_walk_forward_validation,
+    run_monte_carlo_simulation,
+    walk_forward_validation,
+)
+
+__all__ = [
+    "ChronologicalSplit",
+    "split_chronologically",
+    "evaluate_out_of_sample",
+    "PromotionStage",
+    "WalkForwardFoldResult",
+    "WalkForwardReport",
+    "MonteCarloReport",
+    "MultipleComparisonReport",
+    "StrategyPromotionDecision",
+    "walk_forward_validation",
+    "rolling_walk_forward_validation",
+    "run_monte_carlo_simulation",
+    "evaluate_multiple_comparison_bias",
+    "evaluate_strategy_promotion",
+]

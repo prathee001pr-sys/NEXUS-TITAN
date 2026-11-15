@@ -39,3 +39,31 @@ class MovingAverageCrossover:
         fast_average = sum((candle.close for candle in fast_window), Decimal("0")) / self.fast_period
         slow_average = sum((candle.close for candle in slow_window), Decimal("0")) / self.slow_period
         return Signal(1 if fast_average > slow_average else 0)
+
+
+# V6 & Phase 7 compatibility exports. The original V2 MovingAverageCrossover remains unchanged;
+# these classes operate on the V6 dictionary-candle research interface.
+from nexus_titan.research.v6_strategies import (
+    ATRChannelTrendStrategy,
+    AVAILABLE_STRATEGIES,
+    BollingerBreakoutStrategy,
+    EMACrossoverStrategy,
+    MACDTrendStrategy,
+    RegimeAdaptiveCompositeStrategy,
+    RSIMeanReversionStrategy,
+    RSIMomentumStrategy,
+    SMACrossoverStrategy,
+)
+
+__all__ = [
+    "MovingAverageCrossover",
+    "AVAILABLE_STRATEGIES",
+    "SMACrossoverStrategy",
+    "EMACrossoverStrategy",
+    "RSIMeanReversionStrategy",
+    "RSIMomentumStrategy",
+    "MACDTrendStrategy",
+    "BollingerBreakoutStrategy",
+    "ATRChannelTrendStrategy",
+    "RegimeAdaptiveCompositeStrategy",
+]

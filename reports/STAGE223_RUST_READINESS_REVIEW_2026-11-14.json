@@ -1,0 +1,35 @@
+{
+  "input_report": "STAGE222_LOCAL_PYTHON_AB_2026-11-14.json",
+  "note": "Source hashes are local-byte checks, not provenance or production authorization.",
+  "receipt": {
+    "accepted_for_offline_experiment_review": true,
+    "blockers": [
+      "No independent verification of representative production workloads or latency requirement",
+      "Stage 217 is an offline progress journal, not a live execution hot path",
+      "Local Python improvement makes a Rust rewrite unnecessary on current evidence",
+      "Intermittent Stage 121/123 recovery timing remains unresolved",
+      "No explicit approval to replace production code or introduce Rust integration"
+    ],
+    "independent_market_data_verified": false,
+    "independent_recovery_verified": false,
+    "live_trading_authorized": false,
+    "observed_speedup_by_event_count": [
+      [
+        30,
+        2.369
+      ],
+      [
+        300,
+        1.901
+      ],
+      [
+        1000,
+        2.447
+      ]
+    ],
+    "production_replacement_authorized": false,
+    "report_sha256": "9c36364befa0cecdb25d5fcd7d45a59e74790fd8227ad9f7b6b8d795f70a0173",
+    "rust_integration_justified": false
+  },
+  "schema": "titan.stage223.offline_rust_readiness.v1"
+}

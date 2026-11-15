@@ -1,0 +1,31 @@
+{
+  "live_trading_authorized": false,
+  "production_release": "NO_GO",
+  "receipt": {
+    "accepted_for_offline_evidence_record": true,
+    "authoritative_github_ci_verified": false,
+    "autonomous_execution_authorized": false,
+    "blockers": [
+      "Stage 121/123 intermittent recovery timeout root cause not independently proven",
+      "Historical F&O vendor/source and real-market execution not independently verified",
+      "Local test counts and CI labels are not authenticated GitHub checks",
+      "Rust replacement not justified by representative production-path evidence",
+      "Live trading, autonomous execution and production promotion require separate explicit authorization"
+    ],
+    "broker_orders_authorized": false,
+    "external_market_data_verified": false,
+    "full_regression_verified": false,
+    "independent_recovery_root_cause_verified": false,
+    "live_trading_authorized": false,
+    "local_evidence_digest_sha256": "8e9144c6738f00b212fce71cb5a22891988090c6320a0548502c5c2d827d4ee8",
+    "parent_sources_pinned_locally": true,
+    "production_replacement_authorized": false,
+    "risk_controls_change_authorized": false,
+    "rust_integration_justified": false,
+    "stage223_consistency_verified_locally": true
+  },
+  "rust_integration": "NO_GO",
+  "schema": "titan.stage224.final_offline_review.v1",
+  "stage222_source": "STAGE222_LOCAL_PYTHON_AB_2026-11-14.json",
+  "test_data_origin": "caller-supplied-local-observation-not-independent-attestation"
+}

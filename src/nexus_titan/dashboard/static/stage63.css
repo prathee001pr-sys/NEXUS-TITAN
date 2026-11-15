@@ -1,0 +1,29 @@
+/* Stage63 extends, never replaces, the locked Stage51 TITAN theme.
+ * Deliberately no external fonts, images, remote imports or generated face.
+ */
+.operator-intro{margin-bottom:10px}
+.operator-warning{margin:0 0 16px;font-weight:700;letter-spacing:.35px}
+.operator-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.operator-card-grid .card{min-width:0}
+.mini-upload{margin:0 0 17px;padding:12px;background:#0e141b;flex-wrap:wrap}
+.mini-upload strong{font-size:11px}
+.mini-upload p{max-width:540px}
+.operator-evidence{margin-bottom:17px}
+.operator-markets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.operator-markets .mini-metric{padding:15px;min-width:0}
+.operator-markets .mini-metric strong{font-size:28px}
+.operator-markets .mini-metric .data-line strong{font-size:12px}
+.operator-blockers{max-height:280px}
+.operator-markets .fine{margin:2px 0 10px}
+.operator-evidence .fine{max-width:900px}
+@media(max-width:1250px){
+  .operator-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:800px){
+  .operator-markets{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .operator-card-grid{grid-template-columns:1fr}
+  .mini-upload{padding:12px}
+  .operator-evidence{padding:16px}
+}

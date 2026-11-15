@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "source": "GitHub REST open PR list plus paginated changed-file lists; operator snapshot, unsigned and non-atomic",
+  "captured_at_utc": "2026-11-03T13:18:42.839Z",
+  "expected_open_count": 56,
+  "part": 5,
+  "parts": 6,
+  "pull_requests": [
+    {
+      "number": 42,
+      "head_ref": "feature/stage50-readonly-paper-dashboard-2026-11-03",
+      "base_ref": "feature/stage49-durable-paper-entry-fence-2026-11-03",
+      "head_sha": "74b2133d21f6b8d0f159a58a9d742ac9db3052ce",
+      "base_sha": "9c74e2f1630e7eca4032891c27f6fb97c0e6a25b",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE50_READONLY_PAPER_DASHBOARD_2026-11-03.md",
+        "scripts/run_stage50_paper_dashboard_smoke.py",
+        "src/nexus_titan/dashboard/api_service.py",
+        "src/nexus_titan/dashboard/paper_read_model.py",
+        "tests/test_stage50_paper_dashboard_read_model.py"
+      ]
+    },
+    {
+      "number": 43,
+      "head_ref": "feature/stage51-offline-visual-paper-dashboard-2026-11-03",
+      "base_ref": "feature/stage50-readonly-paper-dashboard-2026-11-03",
+      "head_sha": "422b76685b0e8024c0e34c9000891e3e6e664c8e",
+      "base_sha": "74b2133d21f6b8d0f159a58a9d742ac9db3052ce",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE51_VISUAL_OFFLINE_DASHBOARD_AND_SECURITY_REVIEW_2026-11-03.md",
+        "scripts/run_stage51_visual_dashboard_demo.py",
+        "src/nexus_titan/dashboard/static/stage51.css",
+        "src/nexus_titan/dashboard/static/stage51.html",
+        "src/nexus_titan/dashboard/static/stage51.js",
+        "tests/helpers/stage51_browser_harness.cjs",
+        "tests/test_stage51_visual_dashboard.py"
+      ]
+    },
+    {
+      "number": 44,
+      "head_ref": "feature/stage52-security-release-readiness-audit-2026-11-03",
+      "base_ref": "feature/stage51-offline-visual-paper-dashboard-2026-11-03",
+      "head_sha": "37b98eeda09a0b6bec75ca9cb104944f254c9630",
+      "base_sha": "422b76685b0e8024c0e34c9000891e3e6e664c8e",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE52_SECURITY_HARDENING_RELEASE_AUDIT_2026-11-03.md",
+        "scripts/run_stage52_security_audit.py",
+        "src/nexus_titan/dashboard/static/stage51.js",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/helpers/stage51_browser_harness.cjs",
+        "tests/test_stage52_release_security_audit.py"
+      ]
+    },
+    {
+      "number": 45,
+      "head_ref": "feature/stage53-synthetic-capital-authority-2026-11-03",
+      "base_ref": "feature/stage52-security-release-readiness-audit-2026-11-03",
+      "head_sha": "eca466d49025b5819475cf6c275d4f2d88c209fc",
+      "base_sha": "37b98eeda09a0b6bec75ca9cb104944f254c9630",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE53_SYNTHETIC_SINGLE_DB_CAPITAL_AUTHORITY_2026-11-03.md",
+        "scripts/run_stage53_capital_authority_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/synthetic_capital_authority.py",
+        "tests/test_stage53_synthetic_capital_authority.py"
+      ]
+    },
+    {
+      "number": 46,
+      "head_ref": "feature/stage54-multi-ledger-recovery-audit-2026-11-03",
+      "base_ref": "feature/stage53-synthetic-capital-authority-2026-11-03",
+      "head_sha": "800a22c3a0d65d3fbdc6a3a751993b9260b1d2ce",
+      "base_sha": "eca466d49025b5819475cf6c275d4f2d88c209fc",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE54_MULTI_LEDGER_RECONCILIATION_RECOVERY_2026-11-03.md",
+        "scripts/run_stage54_multiledger_recovery_smoke.py",
+        "src/nexus_titan/operations/multi_ledger_recovery_audit.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage54_multi_ledger_recovery_audit.py"
+      ]
+    },
+    {
+      "number": 47,
+      "head_ref": "feature/stage55-single-db-synthetic-reserve-settle-2026-11-03",
+      "base_ref": "feature/stage54-multi-ledger-recovery-audit-2026-11-03",
+      "head_sha": "38fcd8df544823042ae0040ed61a3f9151f49eff",
+      "base_sha": "800a22c3a0d65d3fbdc6a3a751993b9260b1d2ce",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE55_SINGLE_DB_SYNTHETIC_CAPITAL_LIFECYCLE_2026-11-03.md",
+        "scripts/run_stage55_atomic_book_smoke.py",
+        "src/nexus_titan/operations/isolated_atomic_execution_book.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage55_isolated_atomic_execution_book.py"
+      ]
+    },
+    {
+      "number": 48,
+      "head_ref": "feature/stage56-brokerless-risk-veto-boundary-2026-11-03",
+      "base_ref": "feature/stage55-single-db-synthetic-reserve-settle-2026-11-03",
+      "head_sha": "c226827e0cd2c1348c173f2074f2e73309f4bf81",
+      "base_sha": "38fcd8df544823042ae0040ed61a3f9151f49eff",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE56_BROKERLESS_RISK_VETO_BOUNDARY_2026-11-03.md",
+        "scripts/run_stage56_brokerless_risk_gate.py",
+        "scripts/run_stage56_risk_veto_smoke.py",
+        "src/nexus_titan/operations/brokerless_risk_veto.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/operations/risk_boundary_inventory.py",
+        "tests/test_stage56_brokerless_risk_veto.py"
+      ]
+    },
+    {
+      "number": 49,
+      "head_ref": "feature/stage57-durable-paper-approval-revocation-2026-11-03",
+      "base_ref": "feature/stage56-brokerless-risk-veto-boundary-2026-11-03",
+      "head_sha": "c93c9fffd3573e8f13adb3d02afd1ce3b720b8cf",
+      "base_sha": "c226827e0cd2c1348c173f2074f2e73309f4bf81",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE57_DURABLE_APPROVAL_REVOCATION_AND_RISK_REVIEW_2026-11-03.md",
+        "scripts/run_stage57_approval_revocation_smoke.py",
+        "src/nexus_titan/core/security_gates.py",
+        "src/nexus_titan/operations/local_approval_risk_review.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage57_approval_revocation_risk_binding.py"
+      ]
+    },
+    {
+      "number": 50,
+      "head_ref": "feature/stage58-synthetic-execution-stress-2026-11-03",
+      "base_ref": "feature/stage57-durable-paper-approval-revocation-2026-11-03",
+      "head_sha": "8457d417aae5fcd407a0833fc570cd448f4d1792",
+      "base_sha": "c93c9fffd3573e8f13adb3d02afd1ce3b720b8cf",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE58_ADVANCED_SYNTHETIC_EXECUTION_STRESS_2026-11-03.md",
+        "scripts/run_stage58_execution_stress_smoke.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "src/nexus_titan/simulation/stage58_execution_stress.py",
+        "tests/test_stage58_execution_stress.py"
+      ]
+    },
+    {
+      "number": 51,
+      "head_ref": "feature/stage59-futures-history-quality-preflight-2026-11-03",
+      "base_ref": "feature/stage58-synthetic-execution-stress-2026-11-03",
+      "head_sha": "6ff296c5ebef60872004722214fb97dc8b6247c5",
+      "base_sha": "8457d417aae5fcd407a0833fc570cd448f4d1792",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE59_FUTURES_HISTORY_QUALITY_AND_PROVIDER_ADAPTER_2026-11-03.md",
+        "scripts/run_stage59_futures_history_smoke.py",
+        "src/nexus_titan/data/stage59_futures_history.py",
+        "src/nexus_titan/operations/release_security_audit.py",
+        "tests/test_stage59_futures_history.py"
+      ]
+    }
+  ]
+}

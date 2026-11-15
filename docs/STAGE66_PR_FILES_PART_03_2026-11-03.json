@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "repository": "prathee001pr-sys/NEXUS-TITAN",
+  "source": "GitHub REST open PR list plus paginated changed-file lists; operator snapshot, unsigned and non-atomic",
+  "captured_at_utc": "2026-11-03T13:17:53.952Z",
+  "expected_open_count": 56,
+  "part": 3,
+  "parts": 6,
+  "pull_requests": [
+    {
+      "number": 22,
+      "head_ref": "feature/stage30-kill-switch-fill-finality-2026-11-02",
+      "base_ref": "feature/stage29-emergency-exit-admission-2026-11-02",
+      "head_sha": "6087ff81d81bff832f2194272dfe368daa74d28a",
+      "base_sha": "a70b3c1711a33b7bf0aad97bce829caf60977b8a",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage30_kill_switch_fill_finality.py"
+      ]
+    },
+    {
+      "number": 23,
+      "head_ref": "feature/stage31-manual-paper-mode-escalation-2026-11-02",
+      "base_ref": "feature/stage30-kill-switch-fill-finality-2026-11-02",
+      "head_sha": "af744889d810b95d2241ad1956c6d6316df83d62",
+      "base_sha": "6087ff81d81bff832f2194272dfe368daa74d28a",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage31_manual_paper_mode_escalation.py"
+      ]
+    },
+    {
+      "number": 24,
+      "head_ref": "feature/stage32-unified-paper-safety-preflight-2026-11-02",
+      "base_ref": "feature/stage31-manual-paper-mode-escalation-2026-11-02",
+      "head_sha": "7cbc158af1a0c318c18812dc957179aaca4f130a",
+      "base_sha": "af744889d810b95d2241ad1956c6d6316df83d62",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGES29_32_BATCH_SAFETY_REVIEW_2026-11-02.md",
+        "scripts/run_stage32_paper_safety_smoke.py",
+        "src/nexus_titan/shadow/paper_safety_preflight.py",
+        "tests/test_stage32_paper_safety_preflight.py"
+      ]
+    },
+    {
+      "number": 25,
+      "head_ref": "feature/stage33-paper-intent-gateway-2026-11-02",
+      "base_ref": "feature/stage32-unified-paper-safety-preflight-2026-11-02",
+      "head_sha": "e7d807ce3ffff2e6341cb413f91d4427a2ce5d53",
+      "base_sha": "7cbc158af1a0c318c18812dc957179aaca4f130a",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/shadow/paper_intent_gateway.py",
+        "tests/test_stage33_paper_intent_gateway.py"
+      ]
+    },
+    {
+      "number": 26,
+      "head_ref": "feature/stage34-guarded-options-exit-admission-2026-11-02",
+      "base_ref": "feature/stage33-paper-intent-gateway-2026-11-02",
+      "head_sha": "f5f678a0503c21c888672a0a9a04771de863ce32",
+      "base_sha": "e7d807ce3ffff2e6341cb413f91d4427a2ce5d53",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/shadow/long_option_exit_research.py",
+        "tests/test_stage34_guarded_options_exit_atomic.py"
+      ]
+    },
+    {
+      "number": 27,
+      "head_ref": "feature/stage35-paper-intent-evidence-2026-11-02",
+      "base_ref": "feature/stage34-guarded-options-exit-admission-2026-11-02",
+      "head_sha": "3a592525f88758d7e1b0b6e7faa77574ba342dde",
+      "base_sha": "f5f678a0503c21c888672a0a9a04771de863ce32",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "src/nexus_titan/shadow/paper_intent_evidence.py",
+        "tests/test_stage35_paper_intent_evidence.py"
+      ]
+    },
+    {
+      "number": 28,
+      "head_ref": "feature/stage36-synthetic-e2e-recovery-audit-2026-11-02",
+      "base_ref": "feature/stage35-paper-intent-evidence-2026-11-02",
+      "head_sha": "c1ebcec83cb2604b0dc27f230b032354eb3dd775",
+      "base_sha": "3a592525f88758d7e1b0b6e7faa77574ba342dde",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGES33_36_BATCH_ENGINEERING_REVIEW_2026-11-02.md",
+        "scripts/run_stage36_synthetic_paper_e2e.py",
+        "tests/test_stage36_synthetic_paper_e2e.py"
+      ]
+    },
+    {
+      "number": 29,
+      "head_ref": "feature/stage37-strict-durable-paper-account-2026-11-02",
+      "base_ref": "feature/stage36-synthetic-e2e-recovery-audit-2026-11-02",
+      "head_sha": "b2e654f4edaf6b3dfdfd2cc6f676f83d13fb16f7",
+      "base_sha": "c1ebcec83cb2604b0dc27f230b032354eb3dd775",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE37_STRICT_DURABLE_PAPER_ACCOUNT_2026-11-02.md",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage37_strict_paper_account.py"
+      ]
+    },
+    {
+      "number": 30,
+      "head_ref": "feature/stage38-durable-account-cas-recovery-2026-11-02",
+      "base_ref": "feature/stage37-strict-durable-paper-account-2026-11-02",
+      "head_sha": "6311b1124f151d8c15329ea863ec2fcbe53e1ed8",
+      "base_sha": "b2e654f4edaf6b3dfdfd2cc6f676f83d13fb16f7",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGE38_DURABLE_ACCOUNT_CAS_RECOVERY_2026-11-02.md",
+        "src/nexus_titan/virtual/durable_store.py",
+        "src/nexus_titan/virtual/order_manager.py",
+        "tests/test_stage38_durable_account_cas.py"
+      ]
+    },
+    {
+      "number": 31,
+      "head_ref": "feature/stage39-strict-paper-adversarial-e2e-2026-11-02",
+      "base_ref": "feature/stage38-durable-account-cas-recovery-2026-11-02",
+      "head_sha": "2434c20e07fc047dab19d58b3f4b078450ee8aba",
+      "base_sha": "6311b1124f151d8c15329ea863ec2fcbe53e1ed8",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "changed_paths_complete": true,
+      "changed_paths": [
+        "docs/STAGES37_39_STRICT_PAPER_SAFETY_REVIEW_2026-11-02.md",
+        "scripts/run_stage39_strict_paper_adversarial_audit.py",
+        "tests/test_stage39_strict_paper_adversarial_audit.py"
+      ]
+    }
+  ]
+}

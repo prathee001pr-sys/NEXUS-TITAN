@@ -1,0 +1,296 @@
+{
+  "live_trading_authorized": false,
+  "notes": "cProfile is intrusive: CPU attribution only; do not compare these times to latency/SLA results.",
+  "rust_rewrite_authorized": false,
+  "schema": "titan.stage221.synthetic_hotspots.v1",
+  "targets": [
+    {
+      "iterations": 5,
+      "live_trading_authorized": false,
+      "real_market_latency_verified": false,
+      "target": "depth_10_levels_each_side",
+      "top_self_cpu_functions": [
+        {
+          "calls": 5,
+          "cumulative_ms": 0.8593,
+          "function": "audit_depth_snapshot",
+          "line": 60,
+          "module_file": "stage206_depth_snapshot.py",
+          "self_ms": 0.3318
+        },
+        {
+          "calls": 105,
+          "cumulative_ms": 0.1908,
+          "function": "parse_amount",
+          "line": 16,
+          "module_file": "stage176_quote_sanity.py",
+          "self_ms": 0.1009
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.0748,
+          "function": "iterencode",
+          "line": 205,
+          "module_file": "encoder.py",
+          "self_ms": 0.0748
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.8812,
+          "function": "depth_op",
+          "line": 81,
+          "module_file": "stage221_profile.py",
+          "self_ms": 0.0219
+        },
+        {
+          "calls": 15,
+          "cumulative_ms": 0.0507,
+          "function": "_utc",
+          "line": 54,
+          "module_file": "stage206_depth_snapshot.py",
+          "self_ms": 0.0175
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.1123,
+          "function": "dumps",
+          "line": 183,
+          "module_file": "__init__.py",
+          "self_ms": 0.0166
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.0149,
+          "function": "__init__",
+          "line": 2,
+          "module_file": "<string>",
+          "self_ms": 0.0149
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.0921,
+          "function": "encode",
+          "line": 183,
+          "module_file": "encoder.py",
+          "self_ms": 0.0136
+        }
+      ]
+    },
+    {
+      "iterations": 5,
+      "live_trading_authorized": false,
+      "real_market_latency_verified": false,
+      "target": "synthetic_partial_fill_10_levels",
+      "top_self_cpu_functions": [
+        {
+          "calls": 145,
+          "cumulative_ms": 2.3417,
+          "function": "parse_amount",
+          "line": 16,
+          "module_file": "stage176_quote_sanity.py",
+          "self_ms": 2.2231
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 2.8875,
+          "function": "audit_depth_snapshot",
+          "line": 60,
+          "module_file": "stage206_depth_snapshot.py",
+          "self_ms": 0.2694
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 3.3094,
+          "function": "audit_liquidity_fill",
+          "line": 33,
+          "module_file": "stage207_liquidity_fill.py",
+          "self_ms": 0.2082
+        },
+        {
+          "calls": 10,
+          "cumulative_ms": 0.1146,
+          "function": "iterencode",
+          "line": 205,
+          "module_file": "encoder.py",
+          "self_ms": 0.1146
+        },
+        {
+          "calls": 10,
+          "cumulative_ms": 0.2071,
+          "function": "dumps",
+          "line": 183,
+          "module_file": "__init__.py",
+          "self_ms": 0.0588
+        },
+        {
+          "calls": 10,
+          "cumulative_ms": 0.1423,
+          "function": "encode",
+          "line": 183,
+          "module_file": "encoder.py",
+          "self_ms": 0.0209
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 3.3275,
+          "function": "fill_op",
+          "line": 87,
+          "module_file": "stage221_profile.py",
+          "self_ms": 0.0181
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.0168,
+          "function": "__init__",
+          "line": 2,
+          "module_file": "<string>",
+          "self_ms": 0.0168
+        }
+      ]
+    },
+    {
+      "iterations": 5,
+      "live_trading_authorized": false,
+      "real_market_latency_verified": false,
+      "target": "synthetic_closed_trades_1000",
+      "top_self_cpu_functions": [
+        {
+          "calls": 5,
+          "cumulative_ms": 119.8847,
+          "function": "audit_portfolio_replay_ledger",
+          "line": 49,
+          "module_file": "stage191_portfolio_replay_ledger.py",
+          "self_ms": 31.868
+        },
+        {
+          "calls": 10000,
+          "cumulative_ms": 40.5682,
+          "function": "_safe_pnl",
+          "line": 44,
+          "module_file": "stage191_portfolio_replay_ledger.py",
+          "self_ms": 20.0054
+        },
+        {
+          "calls": 5000,
+          "cumulative_ms": 11.7386,
+          "function": "_as_utc",
+          "line": 38,
+          "module_file": "stage191_portfolio_replay_ledger.py",
+          "self_ms": 6.2188
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 4.0723,
+          "function": "iterencode",
+          "line": 205,
+          "module_file": "encoder.py",
+          "self_ms": 4.0723
+        },
+        {
+          "calls": 10000,
+          "cumulative_ms": 4.2892,
+          "function": "<lambda>",
+          "line": 1,
+          "module_file": "<string>",
+          "self_ms": 2.6379
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 120.1763,
+          "function": "ledger_op",
+          "line": 102,
+          "module_file": "stage221_profile.py",
+          "self_ms": 0.2916
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 4.1397,
+          "function": "dumps",
+          "line": 183,
+          "module_file": "__init__.py",
+          "self_ms": 0.0306
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 0.0218,
+          "function": "__init__",
+          "line": 2,
+          "module_file": "<string>",
+          "self_ms": 0.0218
+        }
+      ]
+    },
+    {
+      "iterations": 5,
+      "live_trading_authorized": false,
+      "real_market_latency_verified": false,
+      "target": "offline_progress_journal_300",
+      "top_self_cpu_functions": [
+        {
+          "calls": 1500,
+          "cumulative_ms": 26.6259,
+          "function": "make_progress_event",
+          "line": 35,
+          "module_file": "stage217_progress_journal.py",
+          "self_ms": 5.9778
+        },
+        {
+          "calls": 1500,
+          "cumulative_ms": 3.8068,
+          "function": "iterencode",
+          "line": 205,
+          "module_file": "encoder.py",
+          "self_ms": 3.8068
+        },
+        {
+          "calls": 1500,
+          "cumulative_ms": 8.2415,
+          "function": "encode",
+          "line": 183,
+          "module_file": "encoder.py",
+          "self_ms": 3.7357
+        },
+        {
+          "calls": 1500,
+          "cumulative_ms": 15.385,
+          "function": "canonical_digest",
+          "line": 19,
+          "module_file": "stage216_progress_evidence.py",
+          "self_ms": 2.949
+        },
+        {
+          "calls": 5,
+          "cumulative_ms": 29.8462,
+          "function": "audit_progress_journal",
+          "line": 47,
+          "module_file": "stage217_progress_journal.py",
+          "self_ms": 2.5141
+        },
+        {
+          "calls": 1500,
+          "cumulative_ms": 10.2751,
+          "function": "dumps",
+          "line": 183,
+          "module_file": "__init__.py",
+          "self_ms": 1.6557
+        },
+        {
+          "calls": 3000,
+          "cumulative_ms": 3.7593,
+          "function": "sha_ok",
+          "line": 24,
+          "module_file": "stage216_progress_evidence.py",
+          "self_ms": 1.3575
+        },
+        {
+          "calls": 1500,
+          "cumulative_ms": 0.6939,
+          "function": "__eq__",
+          "line": 12,
+          "module_file": "<string>",
+          "self_ms": 0.6939
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "base_archive": "NEXUS_TITAN_PHASE02_STAGES112_116_FULL_OFFLINE_2026-11-10.zip",
+  "base_archive_sha256": "01a6e1bd95cf85f05e5486cbdb3de562e1ab15306eb129fbc0c5d7e0f798cc5b",
+  "base_phase02_github_ci_verified": true,
+  "date": "2026-11-10",
+  "local_full_regression_python": "3.13",
+  "local_full_regression_summary": "3491 passed, 1 skipped, 1 warning, 5 subtests passed in Replit",
+  "new_paths_sha256": {
+    "PHASE03_README_FIRST_HINGLISH.md": "da5d3547d90ea33fa91567ad51f2a1970572666b5fbc0682c0bd46bb582ea982",
+    "docs/PHASE03_GUARDIAN_LEARN_ADVISOR_2026-11-10.md": "747e5ce224d63e46ce2ca508acd4d81576dae3a4f620f86679873c0fd549e1f9",
+    "scripts/install_phase03_add_only.py": "7b9ed18626bd3ea72c97a5ca57694013bb521bffbbef89036a4820ad294dabd8",
+    "scripts/run_titan_advisor_demo.py": "82127b2a27e9fe265f167ada8f34317880d57e47eb829eecb832337d04782fee",
+    "scripts/validate_phase03_install.py": "891e2928d1cafbab814cf59e7baf581e34dfcf4efad05c49c3ac8e0a4391bbc5",
+    "src/nexus_titan/operations/stage117_guardian_jobs.py": "91767943565bb57b6863f7a0d61b0d3f4cd7d573e76c852abe3300ef12f142e2",
+    "src/nexus_titan/operations/stage118_titan_learn.py": "1c040734369585fab9e986b9600b47fe5c3be2b6b08c09113895df6046362e76",
+    "src/nexus_titan/operations/stage119_titan_advisor.py": "8d585e3e924bcd3674cb9530ea8ee6cfbe3471e59302e7cb0ee304fb3eed7809",
+    "src/nexus_titan/operations/stage120_governed_learning_advisor.py": "8047cc5ef0d59590900537020d59d0c02b9f77723ae3f96697acc8f0e56f1c69",
+    "tests/test_stage117_guardian_jobs.py": "b0410239fe8b1e67f44ca90f82093e0997e8176bb9ceb718b7db78b6a2a0b195",
+    "tests/test_stage118_titan_learn.py": "c4e21c706957388e195764567f4efa3e04e1903182a75e680c1f7053c9ca2a82",
+    "tests/test_stage119_titan_advisor.py": "03a04bb8bec0e74ee7bb5cf141afc889b2d13067dde0730d3194353670fb7e05",
+    "tests/test_stage120_governed_learning_advisor.py": "63f1da6bf9240c0d321686292afa254376cbd811393301f8724cc53312062825"
+  },
+  "new_test_cases": 41,
+  "no_prior_files_modified": true,
+  "note": "Offline add-only. Full ZIP for review only; delta must be safely installed after Phase02 SHA check. No GitHub writes or market-data claims.",
+  "phase": "03",
+  "phase03_github_ci_verified": false,
+  "project": "NEXUS TITAN",
+  "read_only_no_live": true,
+  "stages": [
+    117,
+    118,
+    119,
+    120
+  ]
+}

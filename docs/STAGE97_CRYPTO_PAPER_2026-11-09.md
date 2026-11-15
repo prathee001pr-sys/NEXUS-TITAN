@@ -1,0 +1,7 @@
+# Stage97: Separate BTC-USDT synthetic spot paper candidate (NO LIVE)
+
+Adds one strictly brokerless, long-spot-only crypto account with its own SQLite DB, account/immutable risk-config scope, local HMAC test permits, 1-microcoin integer quantities, USDT cents, bounded execution assumptions, minimum 1 USDT trade notional, conservative per-fill fees, risk/position/cash limits and one-way emergency stop. Approved SAFE/RISKY flags are local test instructions, **not authenticated human identity**. No API keys, live connectors, market-authenticated quotes, leverage, shorts, real-time exchange feeds or external transactions.
+
+Each recorded command is serialized in a SQLite transaction and replayed from a local SHA-256 hash chain. A stale risk permit is checked again at the atomic append boundary, protecting against concurrent distinct commands. Exact signed duplicate response acknowledgments do not mutate the ledger. Complete tamper evidence and rollback prevention require off-host anchors; a malicious writer able to rebuild the DB's whole hash chain may still fool this local test model. Risk limits are intentionally lifetime-conservative; there is no unsafe automatic daily reset.
+
+Crypto budget and realized P&L **never** draw from Indian INR capital. Experimental USDT equity marks are synthetic, not independently verified. This is engineering infrastructure, not a production exchange system.

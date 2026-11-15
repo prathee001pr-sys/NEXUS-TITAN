@@ -36,6 +36,7 @@ class DataQualityReport:
     missing_intervals: tuple[tuple[datetime, datetime], ...]
     outside_query: tuple[datetime, ...]
     identity_mismatches: tuple[int, ...]
+    outside_session: tuple[datetime, ...] = ()
 
     @property
     def is_valid(self) -> bool:
@@ -45,6 +46,7 @@ class DataQualityReport:
             self.missing_intervals,
             self.outside_query,
             self.identity_mismatches,
+            self.outside_session,
         ))
 
 
@@ -69,6 +71,7 @@ def inspect_candle_batch(
     gaps: list[tuple[datetime, datetime]] = []
     outside: list[datetime] = []
     mismatches: list[int] = []
+    outside_session: list[datetime] = []
 
     def next_expected_timestamp(previous_timestamp: datetime) -> datetime | None:
         if calendar is None:
@@ -96,6 +99,8 @@ def inspect_candle_batch(
             mismatches.append(index)
         if item.timestamp < query.start or item.timestamp >= query.end:
             outside.append(item.timestamp)
+        if calendar is not None and not calendar.is_open(item.timestamp):
+            outside_session.append(item.timestamp)
         if item.timestamp in seen and item.timestamp not in duplicates:
             duplicates.append(item.timestamp)
         seen.add(item.timestamp)
@@ -119,4 +124,5 @@ def inspect_candle_batch(
         missing_intervals=tuple(gaps),
         outside_query=tuple(outside),
         identity_mismatches=tuple(mismatches),
+        outside_session=tuple(outside_session),
     )

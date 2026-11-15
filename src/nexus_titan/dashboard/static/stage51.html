@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>NEXUS TITAN | Offline Paper Safety</title>
+  <link rel="stylesheet" href="stage51.css">
+  <script defer src="stage51.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="TITAN areas">
+      <div class="brand"><div class="mark">N</div><div><strong>NEXUS <span>TITAN</span></strong><small>TRADING INTELLIGENCE</small></div></div>
+      <div class="side-label">SYSTEM</div>
+      <div class="side-item current">◈ &nbsp; Overview</div>
+      <div class="side-item">▤ &nbsp; Paper capital</div>
+      <div class="side-item">◇ &nbsp; Risk &amp; veto</div>
+      <div class="side-item">⌑ &nbsp; Approval audit</div>
+      <div class="sidebar-foot"><span class="small-dot"></span> OFFLINE VIEWER<br><small>No broker / no live data</small></div>
+    </aside>
+    <main id="dashboard">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">TITAN COMMAND CENTER / PAPER RESEARCH</div>
+          <h1>System overview</h1>
+          <p class="lead">Read-only local snapshot · no trading authority</p>
+        </div>
+        <div class="top-right">
+          <span class="pill muted">RESEARCH ONLY</span>
+          <span class="pill neutral">OFFLINE</span>
+        </div>
+      </header>
+      <div id="error" class="error" role="alert" hidden></div>
+      <section class="upload-row" aria-label="Load local Stage50 snapshot">
+        <div><strong>Local paper-safety snapshot</strong><p>Load a Stage50 JSON export. Files stay in this browser; this viewer has no network connection.</p></div>
+        <div class="actions">
+          <label for="snapshotFile" class="file-label">Choose JSON file</label>
+          <input id="snapshotFile" type="file" accept=".json,application/json" aria-label="Choose Stage50 paper-safety JSON snapshot">
+          <button type="button" id="clearSnapshot" class="quiet">Clear</button>
+        </div>
+      </section>
+      <div class="statusline">
+        <span class="status-symbol" aria-hidden="true">●</span>
+        <span id="snapshotStatus">NO SNAPSHOT ATTACHED</span>
+        <span class="small" id="observedAt">Last observed: —</span>
+      </div>
+      <section class="hero-grid" aria-label="Core TITAN status">
+        <article class="hero">
+          <div class="section-overline">TITAN / CORE IDENTITY</div>
+          <div class="face-frame" role="img" aria-label="Reserved area for the previously approved TITAN face artwork; original not yet provided">
+            <div class="face-orbit"><span class="face-text">APPROVED TITAN FACE<br>ASSET NOT CONNECTED</span></div>
+          </div>
+          <div class="hero-caption"><strong>NEXUS TITAN</strong><span>Risk-first · Human-governed · Paper-only</span></div>
+          <p class="fine">Official approved artwork is intentionally not substituted. Original image integration pending.</p>
+        </article>
+        <article class="primary-panel">
+          <div class="section-overline">PAPER CAPITAL / SEPARATE BOOKS</div>
+          <h2>Account overview</h2>
+          <div class="metric-main"><span class="metric-label">Starting virtual capital</span><div id="initialCapital" class="big-number">—</div></div>
+          <div class="two-cols">
+            <div class="mini-metric"><span>Virtual book cash</span><strong id="virtualCash">—</strong></div>
+            <div class="mini-metric"><span>Research book cash</span><strong id="researchCash">—</strong></div>
+          </div>
+          <div class="data-line"><span>Cash consistency</span><strong id="cashMatch">NOT VERIFIED</strong></div>
+          <div class="data-line"><span>Account ID</span><strong id="accountId">—</strong></div>
+          <div class="warning-copy">These are separate SQLite books. Amounts are never added together as usable capital.</div>
+        </article>
+      </section>
+      <section class="card-grid" aria-label="Paper order and safety monitors">
+        <article class="card">
+          <div class="section-overline">EXECUTION / SIMULATION</div><h2>Paper orders</h2>
+          <div class="triple">
+            <div><strong id="pending">—</strong><span>Pending</span></div>
+            <div><strong id="accepted">—</strong><span>Accepted</span></div>
+            <div><strong id="fills">—</strong><span>Fill fragments</span></div>
+          </div>
+          <div class="data-line"><span>Broker connectivity</span><b class="critical">DISABLED</b></div>
+        </article>
+        <article class="card">
+          <div class="section-overline">ADMISSION / SAFETY</div><h2>Risk &amp; veto</h2>
+          <div class="data-line"><span>Risk configuration</span><strong id="riskGuard">—</strong></div>
+          <div class="data-line"><span>Daily loss limit</span><strong id="dailyLossLimit">—</strong></div>
+          <div class="data-line"><span>Drawdown limit</span><strong id="drawdownLimit">—</strong></div>
+          <div class="data-line"><span>Kill switch</span><strong id="killSwitch">—</strong></div>
+          <p class="fine">No fresh quote: no new-order risk approval is claimed.</p>
+        </article>
+        <article class="card">
+          <div class="section-overline">GOVERNANCE / APPROVAL</div><h2>Security gates</h2>
+          <div class="data-line"><span>Local signed callback</span><strong id="signedGate">—</strong></div>
+          <div class="data-line"><span>Verified human identity</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Cross-ledger atomicity</span><b class="critical">NOT VERIFIED</b></div>
+          <div class="data-line"><span>Global risk enforcement</span><b class="critical">NOT VERIFIED</b></div>
+        </article>
+        <article class="card">
+          <div class="section-overline">STAGE 49 / DURABLE ENTRY</div><h2>Admission fence</h2>
+          <div class="data-line"><span>Recorded attempts</span><strong id="attemptCount">—</strong></div>
+          <div class="data-line"><span>Latest state</span><strong id="attemptState">—</strong></div>
+          <div class="data-line"><span>First paper entry preflight</span><strong id="firstEntry">—</strong></div>
+          <p class="fine">Crash markers require manual review. This is not a single atomic capital ledger.</p>
+        </article>
+      </section>
+      <section class="bottom-grid">
+        <article class="card"><div class="section-overline">MARKET INTELLIGENCE</div><h2>Market feeds</h2>
+          <div class="empty-chart" aria-label="No authenticated price or chart data">
+            <div class="chart-cross">＋</div><strong>AWAITING VERIFIED DATA</strong>
+            <small>NIFTY / BANKNIFTY F&amp;O and crypto feeds not connected</small>
+          </div>
+        </article>
+        <article class="card">
+          <div class="section-overline">SAFETY EVENT REGISTER</div><h2>Review blockers</h2>
+          <ul id="blockers" class="blockers"><li>No snapshot attached. Nothing has been verified.</li></ul>
+          <p class="fine">A clean local snapshot never means release-ready or safe-to-trade.</p>
+        </article>
+      </section>
+      <footer>STAGE 51 · LOCAL READ-ONLY VISUAL · NO LIVE PRICE · NO SIGNING · NO ORDERS · NOT PRODUCTION READY</footer>
+    </main>
+  </div>
+</body>
+</html>

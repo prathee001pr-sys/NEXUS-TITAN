@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-01T10:13:59.130515+00:00",
+  "source_sha256": "2c1edf4d3ffa39ab6482a0e8457855bc6c931425fd55a1782d6df1f007c5eb73",
+  "test_validation": {
+    "attempted": true,
+    "success": true,
+    "return_code": 0,
+    "output": "+ /opt/pyvenv/bin/python -m compileall -q src scripts\n+ /opt/pyvenv/bin/python -m pytest -q\n........................................................................ [ 18%]\n........................................................................ [ 36%]\n................................................................... [ 53%]\n........................................................................ [ 72%]\n........................................................................ [ 90%]\n....................................                                     [100%]\nOffline validation completed successfully.\n"
+  },
+  "secret_scan": {
+    "finding_count": 0,
+    "findings": []
+  },
+  "external_release_evidence": {
+    "licensed_market_data": "NOT_VERIFIED",
+    "independent_security_assessment": "NOT_VERIFIED",
+    "operations_recovery_drill": "NOT_VERIFIED",
+    "multi_day_shadow_evidence": "NOT_VERIFIED",
+    "owner_signoff": "NOT_VERIFIED"
+  },
+  "release_decision": "BLOCKED_EXTERNAL_EVIDENCE",
+  "live_trading_enabled": false,
+  "note": "This preflight is not a penetration test, data licence check, or production authorization."
+}
