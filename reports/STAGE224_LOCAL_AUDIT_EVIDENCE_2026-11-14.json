@@ -1,0 +1,16 @@
+{
+  "authoritative_ci_proof_supplied": false,
+  "broker_orders_sent": 0,
+  "external_market_data_verified": false,
+  "full_suite_run_completed": true,
+  "live_trading_enabled": false,
+  "local_pytest_failed": 0,
+  "local_pytest_passed": 4804,
+  "local_pytest_skipped": 0,
+  "recovery_root_cause_proven": false,
+  "recovery_runs": 3,
+  "recovery_unexpected": 0,
+  "risk_controls_changed": false,
+  "run_scope": "BOUNDED_FULL",
+  "schema": "titan.stage224.local_audit_evidence.v1"
+}
