@@ -1,0 +1,26 @@
+{
+  "authenticated_human_authority_verified": false,
+  "explicit_crypto_apply_calls": [
+    {
+      "call": "book.apply",
+      "disposition": "KNOWN_OPT_IN_REVIEWED_WRAPPER",
+      "file": "src/nexus_titan/operations/crypto_spot_reviewed_paper.py",
+      "line": 83,
+      "scope": "submit_reviewed_synthetic_paper"
+    }
+  ],
+  "gateway_sha": "43fc5a77e0ca908ba409116634519fbe4046acb3",
+  "inventory_scope": "static_source_only",
+  "live_trading_authorized": false,
+  "main_merge_authorized": false,
+  "mandatory_all_path_independent_risk_verified": false,
+  "opt_in_review_before_apply": true,
+  "pinned_source_match": true,
+  "production_ready": false,
+  "public_stage97_apply": true,
+  "runtime_reflection_or_external_imports_ruled_out": false,
+  "source_parse_ok": true,
+  "stage97_sha": "0c1600848c8095e05581531e4e04f3acc7265bd7",
+  "unknown_crypto_apply_calls": [],
+  "verdict": "BLOCKED_PUBLIC_DIRECT_STAGE97_APPLY"
+}

@@ -1,0 +1,1 @@
+NEXUS TITAN Stage97 execution-surface NO-GO audit, research-only. Parent PR #140. To publish exact candidate: retrieve SHA-verified package from GitHub detached blob, then bash scripts/titan_stage97_entrypoint_audit_push.sh ZIP. No merge or permission change. Full details in docs/STAGE97_EXECUTION_SURFACE_NOGO_2026-11-16.md.
