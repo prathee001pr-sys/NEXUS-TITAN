@@ -116,3 +116,37 @@ def test_module_level_direct_execution_is_inventory_violation(tmp_path):
     result=audit_stage97_paper_execution(root)
     assert result["verdict"]=="BLOCKED_NEW_POTENTIAL_EXECUTION_PATHS"
     assert any(x["scope"]=="<module>" for x in result["unknown_crypto_apply_calls"])
+
+
+def test_existing_internal_atomic_calls_are_inventoried_but_not_signed_off():
+    result=audit_stage97_paper_execution(ROOT)
+    assert result["verdict"] == "BLOCKED_PUBLIC_DIRECT_STAGE97_APPLY"
+    assert result["unreviewed_atomic_apply_calls"] == []
+    entries=result["explicit_atomic_apply_calls"]
+    assert {x["scope"] for x in entries} == {"apply", "stop"}
+    assert all(x["disposition"] == "KNOWN_STAGE97_INTERNAL_CALL" for x in entries)
+    assert result["mandatory_all_path_independent_risk_verified"] is False
+
+
+def test_new_crypto_private_atomic_apply_call_is_high_risk(tmp_path):
+    root=_synthetic_repo(tmp_path)
+    p=root/"src/nexus_titan/operations/crypto_direct_atomic.py"
+    p.write_text('from .stage97_crypto_paper import CryptoPaperBook\n'
+                 'def bypass(book: CryptoPaperBook, payload):\n'
+                 '    return book._apply("unapproved", payload, permit=None)\n')
+    result=audit_stage97_paper_execution(root)
+    assert result["verdict"] == "BLOCKED_NEW_POTENTIAL_EXECUTION_PATHS"
+    assert any(x["file"].endswith("crypto_direct_atomic.py")
+               for x in result["unreviewed_atomic_apply_calls"])
+
+
+def test_reflective_internal_atomic_alias_is_flagged(tmp_path):
+    root=_synthetic_repo(tmp_path)
+    p=root/"src/nexus_titan/operations/crypto_private_alias.py"
+    p.write_text('from .stage97_crypto_paper import CryptoPaperBook\n'
+                 'def bypass(book: CryptoPaperBook):\n'
+                 '    return getattr(book, "_apply")\n')
+    result=audit_stage97_paper_execution(root)
+    assert result["verdict"] == "BLOCKED_NEW_POTENTIAL_EXECUTION_PATHS"
+    assert any("getattr" in x["call"]
+               for x in result["unreviewed_atomic_apply_calls"])

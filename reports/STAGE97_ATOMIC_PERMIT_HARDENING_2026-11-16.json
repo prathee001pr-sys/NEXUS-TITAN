@@ -1,0 +1,63 @@
+{
+  "authenticated_human_authority_verified": false,
+  "baseline_parent_pr": 141,
+  "baseline_parent_sha": "1c757b636a7e0de68b82c8f668f5fe34727dbef5",
+  "ci_at_new_head_ran": false,
+  "code_review_date": "2026-11-16",
+  "explicit_atomic_apply_calls": [
+    {
+      "call": "self._apply",
+      "disposition": "KNOWN_STAGE97_INTERNAL_CALL",
+      "file": "src/nexus_titan/operations/stage97_crypto_paper.py",
+      "line": 397,
+      "scope": "apply"
+    },
+    {
+      "call": "self._apply",
+      "disposition": "KNOWN_STAGE97_INTERNAL_CALL",
+      "file": "src/nexus_titan/operations/stage97_crypto_paper.py",
+      "line": 403,
+      "scope": "stop"
+    }
+  ],
+  "explicit_crypto_apply_calls": [
+    {
+      "call": "book.apply",
+      "disposition": "KNOWN_OPT_IN_REVIEWED_WRAPPER",
+      "file": "src/nexus_titan/operations/crypto_spot_reviewed_paper.py",
+      "line": 83,
+      "scope": "submit_reviewed_synthetic_paper"
+    }
+  ],
+  "external_human_identity_verified": false,
+  "full_regression_failures": 0,
+  "full_regression_passed": 4967,
+  "full_regression_reconstructed_python": "3.13.5",
+  "full_regression_seconds": 152.54,
+  "full_regression_subtests_passed": 5,
+  "full_regression_warnings": 4,
+  "gateway_sha": "43fc5a77e0ca908ba409116634519fbe4046acb3",
+  "inventory_scope": "static_source_only",
+  "live_order_paths_enabled": false,
+  "live_trading_authorized": false,
+  "main_merge_authorized": false,
+  "mandatory_all_path_independent_risk_verified": false,
+  "new_stage97_git_blob": "af3b87dbbfc718bc3ac2d46da1eb546c4b440de0",
+  "old_stage97_git_blob": "0c1600848c8095e05581531e4e04f3acc7265bd7",
+  "opt_in_review_before_apply": true,
+  "pinned_source_match": true,
+  "postpatch_forced_human_approval_or_policy_authority_verified": false,
+  "postpatch_unsigned_atomic_trade_blocked_in_tests": true,
+  "prepatch_unauthorized_synthetic_write_reproduced": true,
+  "production_authorized": false,
+  "production_ready": false,
+  "public_stage97_apply": true,
+  "runtime_reflection_or_external_imports_ruled_out": false,
+  "schema": "titan.synthetic_stage97_atomic_permit_guard.v1",
+  "source_parse_ok": true,
+  "stage97_sha": "af3b87dbbfc718bc3ac2d46da1eb546c4b440de0",
+  "synthetic_test_permit_only": true,
+  "unknown_crypto_apply_calls": [],
+  "unreviewed_atomic_apply_calls": [],
+  "verdict": "BLOCKED_PUBLIC_DIRECT_STAGE97_APPLY"
+}

@@ -15,7 +15,7 @@ from typing import Any
 
 
 # Pinned exact pre-audit GitHub PR #140 source identities; not provenance proof.
-STAGE97_BASELINE_GIT_BLOB = "0c1600848c8095e05581531e4e04f3acc7265bd7"
+STAGE97_BASELINE_GIT_BLOB = "af3b87dbbfc718bc3ac2d46da1eb546c4b440de0"
 REVIEWED_GATEWAY_BASELINE_GIT_BLOB = "43fc5a77e0ca908ba409116634519fbe4046acb3"
 
 
@@ -82,6 +82,36 @@ def _calls_in_functions(tree: ast.AST, rel: str) -> tuple[Stage97ApplySurface, .
     return tuple(sorted(out,key=lambda s:(s.file,s.line,s.scope)))
 
 
+def _atomic_apply_inventory(tree: ast.AST, rel: str) -> tuple[dict[str, Any], ...]:
+    """Inventory explicit private _apply callsites; never claim runtime completeness."""
+    found=[]
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        call = node.func
+        direct = isinstance(call, ast.Attribute) and call.attr == "_apply"
+        reflected = (isinstance(call, ast.Name) and call.id == "getattr" and
+                     len(node.args) >= 2 and isinstance(node.args[1], ast.Constant)
+                     and node.args[1].value == "_apply")
+        if not (direct or reflected):
+            continue
+        enclosing = None
+        for function in ast.walk(tree):
+            if isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)) and (
+                    function.lineno <= node.lineno <= getattr(function, "end_lineno", function.lineno)):
+                if enclosing is None or function.lineno > enclosing.lineno:
+                    enclosing = function
+        scope = enclosing.name if enclosing is not None else "<module>"
+        expression = ast.unparse(call if direct else node)
+        allowed = (rel == "src/nexus_titan/operations/stage97_crypto_paper.py" and
+                   direct and expression == "self._apply" and scope in ("apply", "stop"))
+        found.append({"file": rel, "scope": scope, "line": node.lineno,
+                      "call": expression,
+                      "disposition": "KNOWN_STAGE97_INTERNAL_CALL" if allowed else
+                                     "UNREVIEWED_ATOMIC_MUTATION_PATH"})
+    return tuple(found)
+
+
 def audit_stage97_paper_execution(root: str | Path) -> dict[str, Any]:
     """Return a diagnostic that can NEVER grant a permit or production signoff."""
     root=Path(root).resolve()
@@ -91,7 +121,8 @@ def audit_stage97_paper_execution(root: str | Path) -> dict[str, Any]:
     state={"stage97_sha":None,"gateway_sha":None,"pinned_source_match":False,
            "source_parse_ok":False,"public_stage97_apply":False,
            "opt_in_review_before_apply":False,"unknown_crypto_apply_calls":[],
-           "explicit_crypto_apply_calls":[],"inventory_scope":"static_source_only",
+           "explicit_crypto_apply_calls":[],
+           "explicit_atomic_apply_calls":[],"unreviewed_atomic_apply_calls":[],"inventory_scope":"static_source_only",
            "runtime_reflection_or_external_imports_ruled_out":False,
            "mandatory_all_path_independent_risk_verified":False,
            "authenticated_human_authority_verified":False,
@@ -140,13 +171,19 @@ def audit_stage97_paper_execution(root: str | Path) -> dict[str, Any]:
     surfaces.sort(key=lambda x:(x.file,x.line,x.scope))
     state["explicit_crypto_apply_calls"]=[asdict(s) for s in surfaces]
     state["unknown_crypto_apply_calls"]=[asdict(s) for s in surfaces if s.disposition!="KNOWN_OPT_IN_REVIEWED_WRAPPER"]
+    atomic=[]
+    for rel, tree in sources.items():
+        atomic.extend(_atomic_apply_inventory(tree, rel))
+    atomic.sort(key=lambda v: (v["file"],v["line"],v["scope"]))
+    state["explicit_atomic_apply_calls"]=atomic
+    state["unreviewed_atomic_apply_calls"]=[v for v in atomic if v["disposition"]=="UNREVIEWED_ATOMIC_MUTATION_PATH"]
     # Structural diagnostics may pass while mandatory all-path enforcement is
     # still categorically unproven: public Stage97.apply remains importable.
     if not state["pinned_source_match"] or not state["source_parse_ok"]:
         state["verdict"]="BLOCKED_SOURCE_DRIFT"
     elif not state["public_stage97_apply"] or not state["opt_in_review_before_apply"]:
         state["verdict"]="BLOCKED_REVIEW_GATE_STRUCTURE"
-    elif state["unknown_crypto_apply_calls"]:
+    elif state["unknown_crypto_apply_calls"] or state["unreviewed_atomic_apply_calls"]:
         state["verdict"]="BLOCKED_NEW_POTENTIAL_EXECUTION_PATHS"
     else:
         state["verdict"]="BLOCKED_PUBLIC_DIRECT_STAGE97_APPLY"
