@@ -42,8 +42,10 @@ def test_fail_closed_on_invalid_indian_authority(tmp_path,field,value):
 def test_broken_crypto_replay_blocks_cross_market_report(tmp_path):
     import sqlite3
     i,b=setup(tmp_path)
-    with sqlite3.connect(b.path) as db:
-        db.execute("UPDATE crypto_meta SET settings_sha='forged'")
+    from contextlib import closing
+    with closing(sqlite3.connect(b.path)) as db:
+        with db:
+            db.execute("UPDATE crypto_meta SET settings_sha='forged'")
     with pytest.raises(CryptoPaperBlocked):read_only_dual_market_review(i,b)
 
 
