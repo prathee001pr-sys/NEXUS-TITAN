@@ -6,6 +6,7 @@ import hmac
 import json
 import runpy
 import sqlite3
+from contextlib import closing
 
 import pytest
 
@@ -155,7 +156,7 @@ def test_missing_or_corrupted_risk_journal_fails_closed(tmp_path, damage):
     env = environment(tmp_path)
     op = opening(env)
     execute(env, op, issue(env, op))
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         if damage == 'delete-proof':
             db.execute('DELETE FROM execution_fo_permits')
         elif damage == 'delete-marker':
