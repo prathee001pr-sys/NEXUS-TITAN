@@ -87,8 +87,10 @@ def test_separate_ledger_and_policy_immutability(tmp_path):
 def test_tamper_detected(tmp_path):
     b=book(tmp_path)
     trade(b,'BUY',10000,'entry')
-    with sqlite3.connect(tmp_path/'crypto.sqlite') as db:
-        db.execute("UPDATE crypto_events SET payload='{}' WHERE seq=1")
+    from contextlib import closing
+    with closing(sqlite3.connect(tmp_path/'crypto.sqlite')) as db:
+        with db:
+            db.execute("UPDATE crypto_events SET payload='{}' WHERE seq=1")
     with pytest.raises(CryptoPaperBlocked):b.snapshot()
 
 
