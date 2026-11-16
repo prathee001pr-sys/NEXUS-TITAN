@@ -251,20 +251,93 @@ class CryptoPaperBook:
         with self._connect() as db:
             return self._replay(db)
 
-    def _apply(self,operation_id,payload,*,permit=None):
+    def _assert_atomic_trade_authority(self, operation_id, payload, permit, *,
+                                       now_epoch, human_approved, autonomous,
+                                       before, prior):
+        """Reverify TEST permit and paper policy at the actual SQLite write boundary.
+
+        The underscore-prefixed _apply method is callable by Python clients:
+        checks in public apply() alone are insufficient. This is still only
+        local synthetic paper authorization, NOT authenticated human identity.
+        """
+        if (not isinstance(permit, CryptoPaperPermit) or
+                type(now_epoch) is not int or not 0 <= now_epoch <= _MAX or
+                type(human_approved) is not bool or type(autonomous) is not bool or
+                not self.limits.paper_enabled):
+            raise CryptoPaperBlocked('Atomic trade requires signed TEST permit and paper policy')
+        try:
+            intent = CryptoPaperIntent(**payload['intent'])
+            amount = _notional(intent)
+            fee = (amount*self.limits.fee_bps+9999)//10000
+            expected_event = {'kind':'TRADE','operation_id':operation_id,
+                              'intent':asdict(intent),'notional_cents':amount,
+                              'fee_cents':fee}
+        except (KeyError, TypeError, ValueError, OverflowError) as exc:
+            raise CryptoPaperBlocked('Invalid atomic trade payload') from exc
+        if (payload != expected_event or intent.operation_id != operation_id
+                or intent.observed_epoch > now_epoch or
+                (autonomous and (self.limits.mode != 'RISKY' or
+                                 not self.limits.autonomy_enabled)) or
+                (intent.side == 'BUY' and not autonomous and human_approved is not True)):
+            raise CryptoPaperBlocked('Atomic paper authorization or exact intent mismatch')
+        if (permit.account_id != self.account_id or
+                type(permit.expected_revision) is not int or
+                not 0 <= permit.expected_revision <= _MAX or
+                permit.intent_sha256 != _hash(asdict(intent)) or
+                type(permit.expires_epoch) is not int or
+                not 0 <= permit.expires_epoch <= _MAX or
+                not isinstance(permit.expected_tip, str) or
+                not _SCOPE.fullmatch(permit.expected_tip)):
+            raise CryptoPaperBlocked('Invalid atomic signed TEST permit')
+        if prior is None:
+            if (permit.expected_revision != before.journal_revision or
+                    permit.expected_tip != before.journal_tip):
+                raise CryptoPaperBlocked('Stale signed risk permit at atomic commit boundary')
+            if (now_epoch-intent.observed_epoch > self.limits.max_quote_age_seconds or
+                    now_epoch > permit.expires_epoch or
+                    permit.expires_epoch > now_epoch+300):
+                raise CryptoPaperBlocked('Expired, future or stale atomic TEST permit')
+        else:
+            seq, prior_payload, prior_tip = prior
+            if (prior_payload != _json(payload) or
+                    permit.expected_revision != seq-1 or
+                    permit.expected_tip != prior_tip):
+                raise CryptoPaperBlocked('Conflicting replay or mismatched original TEST permit')
+        signature_payload = [permit.account_id,permit.expected_revision,
+                             permit.expected_tip,permit.intent_sha256,permit.expires_epoch]
+        expected = hmac.new(self._key,
+            _json(['CRYPTO_TEST_PERMIT_V1',signature_payload]).encode(),
+            hashlib.sha256).hexdigest()
+        if (not isinstance(permit.signature_hex, str) or
+                not hmac.compare_digest(permit.signature_hex,expected)):
+            raise CryptoPaperBlocked('Invalid atomic signed TEST permit signature')
+
+    def _apply(self,operation_id,payload,*,permit=None,now_epoch=None,
+               human_approved=False,autonomous=False):
+        """Atomic journal append, independently enforcing paper TRADE admission."""
         _id(operation_id)
+        if not isinstance(payload,dict) or payload.get('kind') not in ('TRADE','KILL'):
+            raise CryptoPaperBlocked('Unsupported atomic event kind')
         with self._connect() as db:
             try:
                 db.execute('BEGIN IMMEDIATE')
                 before=self._replay(db)
-                old=db.execute('SELECT payload FROM crypto_events WHERE operation_id=?',(operation_id,)).fetchone()
-                if old:
-                    if old[0]!=_json(payload):raise CryptoPaperBlocked('Conflicting reused operation id')
+                prior=db.execute('SELECT seq,payload,prior_tip FROM crypto_events WHERE operation_id=?',
+                                 (operation_id,)).fetchone()
+                if payload['kind']=='TRADE':
+                    self._assert_atomic_trade_authority(
+                        operation_id,payload,permit,now_epoch=now_epoch,
+                        human_approved=human_approved,autonomous=autonomous,
+                        before=before,prior=prior)
+                elif (permit is not None or now_epoch is not None or
+                      human_approved is not False or autonomous is not False or
+                      payload != {'kind':'KILL','operation_id':operation_id}):
+                    raise CryptoPaperBlocked('Emergency stop must be an exact KILL event')
+                if prior:
+                    if prior[1]!=_json(payload):
+                        raise CryptoPaperBlocked('Conflicting reused operation id')
                     db.execute('COMMIT')
                     return before,True
-                if permit is not None and (permit.expected_revision!=before.journal_revision
-                                           or permit.expected_tip!=before.journal_tip):
-                    raise CryptoPaperBlocked('Stale signed risk permit at atomic commit boundary')
                 after=self._transition(before,payload)
                 seq=before.journal_revision+1
                 tip=_hash(['CRYPTO_PAPER_EVENT_V1',seq,operation_id,payload,before.journal_tip])
@@ -321,7 +394,9 @@ class CryptoPaperBook:
         fee=(notional*self.limits.fee_bps+9999)//10000
         event={'kind':'TRADE','operation_id':intent.operation_id,
                'intent':asdict(intent),'notional_cents':notional,'fee_cents':fee}
-        return self._apply(intent.operation_id,event,permit=permit)
+        return self._apply(intent.operation_id,event,permit=permit,
+                           now_epoch=now_epoch,human_approved=human_approved,
+                           autonomous=autonomous)
 
     def stop(self,operation_id:str):
         """One-way emergency stop. No silent rearm API exists."""

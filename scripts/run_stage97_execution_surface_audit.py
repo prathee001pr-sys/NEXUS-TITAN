@@ -15,5 +15,6 @@ if __name__=="__main__":
     print(f"Receipt: {out.relative_to(root)}")
     # A documented missing mandatory gate is a successful diagnostic; that
     # must NEVER be confused with green release/production permission.
-    if not report['source_parse_ok'] or not report['pinned_source_match'] or report['unknown_crypto_apply_calls']:
+    if (not report['source_parse_ok'] or not report['pinned_source_match'] or
+            report['unknown_crypto_apply_calls'] or report.get('unreviewed_atomic_apply_calls')):
         raise SystemExit(1)
