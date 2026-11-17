@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import secrets
 import sqlite3
+from contextlib import closing
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
@@ -115,7 +116,7 @@ def _risk_evidence(order_id, *, account_id=_ACCOUNT, time_at=None):
 
 def test_revocation_tables_created_without_touching_existing_replay_table(tmp_path):
     verifier = _verifier(tmp_path)
-    with sqlite3.connect(verifier.db_path) as db:
+    with closing(sqlite3.connect(verifier.db_path)) as db, db:
         names = {x[0] for x in db.execute(
             "SELECT name FROM sqlite_master WHERE type='table'"
         )}
@@ -135,7 +136,7 @@ def test_token_revocation_blocks_valid_unused_signed_token(tmp_path):
     assert v.local_revocation_status(
         token_id=token.token_id, actor=token.actor,
     )["token_revoked"]
-    with sqlite3.connect(v.db_path) as db:
+    with closing(sqlite3.connect(v.db_path)) as db, db:
         assert db.execute("SELECT COUNT(*) FROM consumed_approval_tokens").fetchone()[0] == 0
 
 
@@ -188,7 +189,7 @@ def test_revocations_are_idempotent_and_do_not_restore_subject(tmp_path, actor, 
     assert v.revoke_actor(actor, now_epoch=20)
     assert v.revoke_token(token_id, now_epoch=10)
     assert v.revoke_token(token_id, now_epoch=20)
-    with sqlite3.connect(v.db_path) as db:
+    with closing(sqlite3.connect(v.db_path)) as db, db:
         assert db.execute(
             "SELECT revoked_at_epoch FROM revoked_approval_actors WHERE actor=?", (actor,)
         ).fetchone()[0] == 10
@@ -213,7 +214,7 @@ def test_invalid_revocation_times_rejected_without_rows(tmp_path, bad):
         v.revoke_token("T", now_epoch=bad)
     with pytest.raises(PermissionError):
         v.revoke_actor("A", now_epoch=bad)
-    with sqlite3.connect(v.db_path) as db:
+    with closing(sqlite3.connect(v.db_path)) as db, db:
         assert db.execute("SELECT COUNT(*) FROM revoked_approval_tokens").fetchone()[0] == 0
         assert db.execute("SELECT COUNT(*) FROM revoked_approval_actors").fetchone()[0] == 0
 
@@ -224,7 +225,7 @@ def test_revocation_does_not_remove_prior_consumed_token_or_reverse_approval(tmp
     assert _consume(v, token)
     assert v.revoke_token(token.token_id)
     assert v.revoke_actor(token.actor)
-    with sqlite3.connect(v.db_path) as db:
+    with closing(sqlite3.connect(v.db_path)) as db, db:
         assert db.execute("SELECT COUNT(*) FROM consumed_approval_tokens").fetchone()[0] == 1
     with pytest.raises(PermissionError, match="revoked"):
         _consume(v, token)
@@ -319,7 +320,7 @@ def test_revocation_and_verification_share_single_sqlite_transaction_lock(tmp_pa
         b = ex.submit(revoke)
         results = a.result(), b.result()
     assert results[1] is True
-    with sqlite3.connect(v1.db_path) as db:
+    with closing(sqlite3.connect(v1.db_path)) as db, db:
         consumed_count = db.execute(
             "SELECT COUNT(*) FROM consumed_approval_tokens WHERE token_id=?",
             (token.token_id,),
@@ -344,7 +345,7 @@ def test_replay_of_revoked_token_after_crash_remains_denied(tmp_path):
     for _ in range(2):
         with pytest.raises(PermissionError, match="revoked"):
             _consume(reopened, token)
-    with sqlite3.connect(reopened.db_path) as db:
+    with closing(sqlite3.connect(reopened.db_path)) as db, db:
         assert db.execute("SELECT COUNT(*) FROM consumed_approval_tokens").fetchone()[0] == 0
 
 
@@ -497,7 +498,7 @@ def test_local_binding_is_read_only_no_token_or_virtual_approval_mutation(tmp_pa
     assert session._deployment.virtual_account._snapshot_revision == revision
     assert order.state is OrderState.PENDING_APPROVAL
     assert order.approval is None and not order.fills
-    with sqlite3.connect(verifier.db_path) as db:
+    with closing(sqlite3.connect(verifier.db_path)) as db, db:
         assert db.execute("SELECT COUNT(*) FROM consumed_approval_tokens").fetchone()[0] == 0
 
 

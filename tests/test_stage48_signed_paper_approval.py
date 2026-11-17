@@ -9,6 +9,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 import secrets
 import sqlite3
+from contextlib import closing
 import time
 
 import pytest
@@ -256,7 +257,7 @@ def test_replay_db_survives_restart_and_blocks_old_pending_approval(tmp_path):
     with pytest.raises(Stage48ApprovalBlocked, match="provenance"):
         opened_again.approve_pending_buy(order_id=first, token=token)
     assert verifier.db_path.exists()
-    with sqlite3.connect(verifier.db_path) as db:
+    with closing(sqlite3.connect(verifier.db_path)) as db, db:
         consumed = db.execute(
             "SELECT COUNT(*) FROM consumed_approval_tokens WHERE token_id=?",
             ("PERSISTENT-NONCE",),

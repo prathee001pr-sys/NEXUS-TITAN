@@ -6,6 +6,7 @@ import hmac
 import json
 import os
 import sqlite3
+from contextlib import closing
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -48,7 +49,7 @@ class CryptographicApprovalVerifier:
         self.allowed_roles = set(roles)
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as db:
+        with closing(self._connect()) as db, db:
             db.execute("""CREATE TABLE IF NOT EXISTS consumed_approval_tokens (
                 token_id TEXT PRIMARY KEY,
                 actor TEXT NOT NULL,

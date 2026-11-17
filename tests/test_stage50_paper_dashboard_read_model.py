@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import secrets
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 
 import pytest
@@ -110,7 +111,7 @@ def test_read_only_snapshot_does_not_mutate_revision_or_markers(tmp_path):
     assert v._snapshot_revision == revision
     assert v.cash_balance == original_cash
     assert not v.orders
-    with sqlite3.connect(tmp_path / "coordinator.sqlite3") as db:
+    with closing(sqlite3.connect(tmp_path / "coordinator.sqlite3")) as db, db:
         assert db.execute("SELECT COUNT(*) FROM admission_attempts").fetchone()[0] == 0
 
 
@@ -157,7 +158,7 @@ def test_signed_local_approval_display_never_implies_fill_or_verified_person(tmp
 
 def test_coordinator_preparing_marker_remains_an_unresolved_alert(tmp_path):
     session, fence, view = _fixture(tmp_path)
-    with sqlite3.connect(tmp_path / "coordinator.sqlite3") as db:
+    with closing(sqlite3.connect(tmp_path / "coordinator.sqlite3")) as db, db:
         db.execute(
             "INSERT INTO admission_attempts VALUES (?,?,?,?,?,?,?,?)",
             ("S50-CRASH", "S50", "PREPARING", 10000, "0" * 64,
@@ -196,7 +197,7 @@ def test_kill_switch_is_reflected_but_not_toggled_by_read(tmp_path):
 
 def test_corrupted_coordinator_is_not_treated_as_operational(tmp_path):
     session, fence, view = _fixture(tmp_path)
-    with sqlite3.connect(tmp_path / "coordinator.sqlite3") as db:
+    with closing(sqlite3.connect(tmp_path / "coordinator.sqlite3")) as db, db:
         db.execute("UPDATE coordinator_scope SET scope_hash = 'corrupt'")
     report = view.snapshot()
     assert report["status"] == "LOCAL_REVIEW_REQUIRED"
