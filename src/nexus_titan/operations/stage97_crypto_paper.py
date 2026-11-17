@@ -140,12 +140,27 @@ def _notional(intent):
 
 class CryptoPaperBook:
     def __init__(self, *, path, account_id, limits: CryptoPaperLimits,
-                 verification_key:bytes, indian_book_path=None):
+                 verification_key:bytes, indian_book_path=None,
+                 atomic_review_policy=None):
         _id(account_id)
         if not isinstance(limits,CryptoPaperLimits) or not isinstance(verification_key,bytes) or len(verification_key)<32:
             raise CryptoPaperBlocked('Explicit config and local verifier key required')
         if indian_book_path is not None and Path(indian_book_path).resolve()==Path(path).resolve():
             raise CryptoPaperBlocked('Crypto and Indian books must use separate physical ledgers')
+        # Optional new-account research fence. Legacy V1 accounts retain their
+        # exact historical metadata and are NOT silently promoted.
+        if atomic_review_policy is not None:
+            from nexus_titan.operations.crypto_spot_independent_review import (
+                CryptoSpotReviewPolicy,
+            )
+            if type(atomic_review_policy) is not CryptoSpotReviewPolicy:
+                raise CryptoPaperBlocked('Atomic review policy must be explicit and typed')
+            if (atomic_review_policy.max_order_cents > limits.max_order_cents
+                    or atomic_review_policy.max_total_exposure_cents > limits.max_exposure_cents
+                    or atomic_review_policy.max_lifetime_realized_loss_cents > limits.max_session_loss_cents
+                    or atomic_review_policy.max_quote_age_seconds > limits.max_quote_age_seconds):
+                raise CryptoPaperBlocked('Atomic review policy cannot relax local book limits')
+        self._atomic_review_policy = atomic_review_policy
         self.path=Path(path).resolve()
         self.account_id=account_id
         self.limits=limits
@@ -157,7 +172,7 @@ class CryptoPaperBook:
                 raise CryptoPaperBlocked('Non-crypto or unexpected schema in proposed ledger')
             db.execute('CREATE TABLE IF NOT EXISTS crypto_meta (account TEXT PRIMARY KEY, settings_sha TEXT NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS crypto_events (seq INTEGER PRIMARY KEY, operation_id TEXT UNIQUE NOT NULL, payload TEXT NOT NULL, prior_tip TEXT NOT NULL, tip TEXT NOT NULL)')
-            setting=_hash([account_id,asdict(limits),'CRYPTO_PAPER_SCHEMA_V1'])
+            setting=self._settings_sha()
             row=db.execute('SELECT account,settings_sha FROM crypto_meta').fetchall()
             if not row:
                 db.execute('INSERT INTO crypto_meta VALUES (?,?)',(account_id,setting))
@@ -180,8 +195,14 @@ class CryptoPaperBook:
                                 self.limits.initial_cash_cents,self.limits.initial_cash_cents,
                                 0,0,0,0,False,0)
 
+    def _settings_sha(self):
+        base=[self.account_id,asdict(self.limits),'CRYPTO_PAPER_SCHEMA_V1']
+        if self._atomic_review_policy is not None:
+            base.extend(['ATOMIC_REVIEW_POLICY_V1',asdict(self._atomic_review_policy)])
+        return _hash(base)
+
     def _replay(self,db):
-        settings=_hash([self.account_id,asdict(self.limits),'CRYPTO_PAPER_SCHEMA_V1'])
+        settings=self._settings_sha()
         if db.execute('SELECT account,settings_sha FROM crypto_meta').fetchall()!=[(self.account_id,settings)]:
             raise CryptoPaperBlocked('Crypto account metadata changed')
         s=self._initial()
@@ -311,6 +332,19 @@ class CryptoPaperBook:
         if (not isinstance(permit.signature_hex, str) or
                 not hmac.compare_digest(permit.signature_hex,expected)):
             raise CryptoPaperBlocked('Invalid atomic signed TEST permit signature')
+        # This extra cap is checked INSIDE BEGIN IMMEDIATE on every new TRADE,
+        # including calls into the underscore-prefixed _apply entrypoint.
+        # SELL can remain a signed protective exit after KILL.
+        p=self._atomic_review_policy
+        if p is not None and prior is None:
+            if now_epoch-intent.observed_epoch > p.max_quote_age_seconds:
+                raise CryptoPaperBlocked('Atomic independent quote-age veto')
+            if intent.side == 'BUY':
+                if (amount > p.max_order_cents or
+                        before.remaining_cost_basis_cents+amount+fee > p.max_total_exposure_cents or
+                        before.realized_net_pnl_cents <= -p.max_lifetime_realized_loss_cents or
+                        self.limits.fee_bps > p.max_fee_bps):
+                    raise CryptoPaperBlocked('Atomic independent capital or risk veto')
 
     def _apply(self,operation_id,payload,*,permit=None,now_epoch=None,
                human_approved=False,autonomous=False):
