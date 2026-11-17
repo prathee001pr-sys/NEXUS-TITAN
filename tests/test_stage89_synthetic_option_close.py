@@ -407,6 +407,10 @@ def test_close_transaction_rollback_keeps_cash_holdings_pnl_and_proofs_unchanged
 @pytest.mark.skipif(not hasattr(os,'fork'),reason='Abrupt process death requires POSIX')
 @pytest.mark.parametrize('point',['before-commit','after-commit-before-response'])
 def test_real_process_death_and_restart_never_duplicate_close_proceeds(tmp_path,point):
+    runpy.run_path(str(ROOT / "tests/helpers/isolated_fo_crash_runner.py"))["launch"]("stage89",point,tmp_path)
+
+
+def _isolated_stage89_crash_drill(tmp_path,point):
     env=setup(tmp_path)
     oid=enter(env)
     r=request(env,oid); a=authorize(env,r)
