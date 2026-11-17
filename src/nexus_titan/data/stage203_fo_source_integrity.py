@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import hashlib
 import hmac
 import json
+import os
 from pathlib import Path
 import re
 import stat
@@ -61,17 +62,45 @@ def audit_fo_source_files(root: str | Path, files: tuple[FOSourceFile, ...], *, 
         try:
             if path.is_symlink() or not path.is_file() or path.resolve(strict=True).parent != base:
                 raise ValueError('unsafe source path')
-            pre = path.stat()
+            # File paths can be replaced between the early path check and open().
+            # Use a no-follow descriptor, compare its identity with the path
+            # both before and after hashing, and reject in-place mutation.
+            pre = path.lstat()
             if not stat.S_ISREG(pre.st_mode) or pre.st_size != item.byte_count:
                 raise ValueError('byte size mismatch')
+            if not hasattr(os, 'O_NOFOLLOW'):
+                raise ValueError('safe no-follow open unavailable')
+            flags = os.O_RDONLY | os.O_NOFOLLOW | getattr(os, 'O_CLOEXEC', 0)
+            flags |= getattr(os, 'O_NONBLOCK', 0)
+            fd = os.open(path, flags)
+            try:
+                handle = os.fdopen(fd, 'rb')
+            except BaseException:
+                os.close(fd)
+                raise
             hasher = hashlib.sha256()
-            with path.open('rb') as handle:
+            with handle:
+                opened = os.fstat(handle.fileno())
+                if (not stat.S_ISREG(opened.st_mode)
+                        or (opened.st_dev, opened.st_ino) != (pre.st_dev, pre.st_ino)
+                        or opened.st_size != pre.st_size):
+                    raise ValueError('source changed before descriptor open')
                 while True:
                     chunk = handle.read(64*1024)
-                    if not chunk: break
+                    if not chunk:
+                        break
                     hasher.update(chunk)
-            post = path.stat()
-            if (post.st_size != pre.st_size or post.st_mtime_ns != pre.st_mtime_ns
+                read_end = os.fstat(handle.fileno())
+            post = path.lstat()
+            if (not stat.S_ISREG(post.st_mode)
+                    or (post.st_dev, post.st_ino) != (pre.st_dev, pre.st_ino)
+                    or (read_end.st_dev, read_end.st_ino) != (pre.st_dev, pre.st_ino)
+                    or read_end.st_size != pre.st_size
+                    or post.st_size != pre.st_size
+                    or read_end.st_mtime_ns != pre.st_mtime_ns
+                    or post.st_mtime_ns != pre.st_mtime_ns
+                    or read_end.st_ctime_ns != pre.st_ctime_ns
+                    or post.st_ctime_ns != pre.st_ctime_ns
                     or not hmac.compare_digest(hasher.hexdigest(), item.sha256)):
                 raise ValueError('content hash or file stability mismatch')
             records.append({'id':item.dataset_id, 'file':item.filename, 'sha256':item.sha256, 'bytes':item.byte_count})
