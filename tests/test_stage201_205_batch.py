@@ -247,3 +247,85 @@ def test_205_rejects_invalid_window_string(tmp_path):
     args=valid_receipts(tmp_path)
     args['inventory']=replace(args['inventory'],observation_windows=(('fixture1','bad','bad'),))
     assert not evaluate_fo_data_readiness(**args).eligible_for_internal_manual_dataset_review
+
+
+# Data-intake hardening: fabricated receipts must not exploit mapping
+# de-duplication or impersonate an independently authenticated vendor.
+def test_205_duplicate_dataset_windows_do_not_silently_collapse(tmp_path):
+    args = valid_receipts(tmp_path)
+    ids = ('fixture1', 'fixture1')
+    inv = args['inventory']
+    temp = args['temporal']
+    args['inventory'] = replace(
+        inv, dataset_ids=ids,
+        observation_windows=inv.observation_windows * 2,
+    )
+    args['sources'] = replace(args['sources'], dataset_ids=ids)
+    args['temporal'] = replace(
+        temp, dataset_ids=ids,
+        observation_windows=temp.observation_windows * 2,
+    )
+    receipt = evaluate_fo_data_readiness(**args)
+    assert not receipt.eligible_for_internal_manual_dataset_review
+    assert 'unique source and holdout dataset identities' in receipt.blockers
+    assert receipt.linked_evidence_sha256 == ''
+    assert receipt.live_trading_authorized is False
+
+
+@pytest.mark.parametrize('source,field', [
+    ('inventory', 'external_market_source_verified'),
+    ('inventory', 'historical_coverage_verified'),
+    ('contracts', 'official_exchange_circulars_authenticated'),
+    ('sources', 'licensed_vendor_authenticated'),
+    ('sources', 'exchange_source_authenticated'),
+    ('temporal', 'upstream_feature_leakage_audited'),
+])
+def test_205_caller_cannot_self_attest_external_certification(tmp_path, source, field):
+    args = valid_receipts(tmp_path)
+    args[source] = replace(args[source], **{field: True})
+    result = evaluate_fo_data_readiness(**args)
+    assert result.eligible_for_internal_manual_dataset_review is False
+    assert 'external verification flags cannot be self-attested' in result.blockers
+    assert result.linked_evidence_sha256 == ''
+    assert not result.live_trading_authorized
+
+
+@pytest.mark.parametrize('source,field', [
+    ('inventory', 'snapshot_count'),
+    ('sources', 'file_count'),
+    ('temporal', 'train_count'),
+    ('temporal', 'holdout_count'),
+])
+def test_205_boolean_counts_never_count_as_valid_integers(tmp_path, source, field):
+    args = valid_receipts(tmp_path)
+    args[source] = replace(args[source], **{field: True})
+    result = evaluate_fo_data_readiness(**args)
+    assert not result.eligible_for_internal_manual_dataset_review
+    assert 'bounded typed data counts' in result.blockers
+
+
+def test_205_source_window_id_set_must_match_declared_dataset(tmp_path):
+    args = valid_receipts(tmp_path)
+    inv = args['inventory']
+    args['inventory'] = replace(
+        inv, observation_windows=(
+            ('different-dataset', inv.observation_windows[0][1],
+             inv.observation_windows[0][2]),
+        ),
+    )
+    result = evaluate_fo_data_readiness(**args)
+    assert not result.eligible_for_internal_manual_dataset_review
+    assert 'unique source and holdout dataset identities' in result.blockers
+
+
+def test_205_clean_internal_manual_receipt_is_stable_after_hardening(tmp_path):
+    args = valid_receipts(tmp_path)
+    one = evaluate_fo_data_readiness(**args)
+    two = evaluate_fo_data_readiness(**args)
+    assert one == two
+    assert one.eligible_for_internal_manual_dataset_review
+    assert len(one.linked_evidence_sha256) == 64
+    assert not one.real_historical_data_verified
+    assert not one.real_market_backtest_verified
+    assert not one.live_trading_authorized
+    assert not one.strategy_promotion_authorized

@@ -45,7 +45,55 @@ def evaluate_fo_data_readiness(
     def digest(s: object) -> bool:
         return isinstance(s, str) and bool(_HEX.fullmatch(s))
 
+    # Dataclass receipts are caller-provided and may be forged.  Dict-based
+    # time-window pairing must never silently discard duplicate dataset keys.
+    def unique_ids(ids: object) -> bool:
+        return (type(ids) is tuple and 1 <= len(ids) <= 128
+                and all(type(x) is str and
+                        re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,95}', x)
+                        for x in ids)
+                and len(set(ids)) == len(ids))
+
+    def unique_windows(ids: object, windows: object) -> bool:
+        if (not unique_ids(ids) or type(windows) is not tuple
+                or len(windows) != len(ids)
+                or any(type(w) is not tuple or len(w) != 3
+                       or type(w[0]) is not str or type(w[1]) is not str
+                       or type(w[2]) is not str for w in windows)):
+            return False
+        names = [w[0] for w in windows]
+        return len(set(names)) == len(names) and set(names) == set(ids)
+
     checks = {
+        'unique source and holdout dataset identities':
+            type(inventory) is FOCatalogInventoryReceipt
+            and type(sources) is FOSourceIntegrityReceipt
+            and type(temporal) is FOTemporalEmbargoReceipt
+            and unique_ids(sources.dataset_ids)
+            and unique_windows(inventory.dataset_ids, inventory.observation_windows)
+            and unique_windows(temporal.dataset_ids, temporal.observation_windows),
+        'bounded typed data counts':
+            type(inventory) is FOCatalogInventoryReceipt
+            and type(sources) is FOSourceIntegrityReceipt
+            and type(temporal) is FOTemporalEmbargoReceipt
+            and type(inventory.snapshot_count) is int
+            and 1 <= inventory.snapshot_count <= 20_000
+            and type(sources.file_count) is int
+            and 1 <= sources.file_count <= 128
+            and type(temporal.train_count) is int
+            and type(temporal.holdout_count) is int
+            and temporal.train_count >= 2 and temporal.holdout_count >= 2,
+        'external verification flags cannot be self-attested':
+            type(inventory) is FOCatalogInventoryReceipt
+            and type(contracts) is FOContractMasterReceipt
+            and type(sources) is FOSourceIntegrityReceipt
+            and type(temporal) is FOTemporalEmbargoReceipt
+            and inventory.external_market_source_verified is False
+            and inventory.historical_coverage_verified is False
+            and contracts.official_exchange_circulars_authenticated is False
+            and sources.licensed_vendor_authenticated is False
+            and sources.exchange_source_authenticated is False
+            and temporal.upstream_feature_leakage_audited is False,
         'linked Stage201 catalog': type(inventory) is FOCatalogInventoryReceipt
             and inventory.accepted_structurally is True and not inventory.blockers
             and digest(inventory.inventory_sha256) and inventory.snapshot_count > 0
