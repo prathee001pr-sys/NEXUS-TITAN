@@ -14,8 +14,12 @@ from pathlib import Path
 from typing import Any
 
 
-# Pinned exact pre-audit GitHub PR #140 source identities; not provenance proof.
-STAGE97_BASELINE_GIT_BLOB = "af3b87dbbfc718bc3ac2d46da1eb546c4b440de0"
+# Exact source identities independently re-reviewed for the Stage147 optional
+# synthetic risk-cap candidate. This pin ONLY permits static source inventory
+# diagnostics to run; it is not a production risk approval or provenance proof.
+# Prior Stage97 identity is retained so source changes remain auditable.
+STAGE97_PRE147_GIT_BLOB = "af3b87dbbfc718bc3ac2d46da1eb546c4b440de0"
+STAGE97_BASELINE_GIT_BLOB = "ce6d362d1f6f1b18ec17402cded64db8b08444b6"
 REVIEWED_GATEWAY_BASELINE_GIT_BLOB = "43fc5a77e0ca908ba409116634519fbe4046acb3"
 
 
