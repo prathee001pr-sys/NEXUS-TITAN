@@ -48,3 +48,23 @@ regexes = [
   '''^\s*q=replace\(q,signature_hex=_mac\(key,'STAGE89_QUOTE_V1',q\.payload\(\)\)\)\s*$''',
   '''^\s*a=replace\(a,signature_hex=_mac\(key,'STAGE89_CLOSE_V1',a\.payload\(\)\)\)\s*$''',
 ]
+
+# Stage153: reviewed public Git blob SHA pins, never auth tokens.
+# Each entry requires both exact file AND exact full line. No rule is disabled.
+[[rules.allowlists]]
+description = "Stage153 verified public Git blob SHA of reviewed CI workflow"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^src/nexus_titan/dashboard/github_ci_evidence\.py$''']
+regexes = [
+  '''^\s*"\.github/workflows/ci\.yml": "72233c01d390f62238bd723d4eb7a80c6547955e",\s*$''',
+]
+
+[[rules.allowlists]]
+description = "Stage153 verified public Git blob SHA of reviewed Secret Scan workflow"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^src/nexus_titan/dashboard/github_ci_evidence\.py$''']
+regexes = [
+  '''^\s*"\.github/workflows/secret-scan\.yml": "6257dfd768f1d12c768982350c340568ad51c0d9",\s*$''',
+]
