@@ -9,6 +9,7 @@ import json
 import os
 import runpy
 import sqlite3
+from contextlib import closing
 
 import pytest
 
@@ -396,7 +397,7 @@ def test_close_transaction_rollback_keeps_cash_holdings_pnl_and_proofs_unchanged
     monkeypatch.undo()
     env['book']=reopen(env)
     assert gateway(env).snapshot()==before
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         assert db.execute("SELECT count(*) FROM execution_events WHERE kind='CLOSE'").fetchone()[0]==0
         assert db.execute('SELECT count(*) FROM execution_fo_permits').fetchone()[0]==2
     gateway(env).close_position(r,authorization=a)
@@ -438,7 +439,7 @@ def test_corrupted_close_journal_or_rewritten_economics_fail_replay(tmp_path,dam
     env=setup(tmp_path)
     oid=enter(env)
     close(env,request(env,oid))
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         if damage=='rehash-price':
             row=list(db.execute("SELECT * FROM execution_events WHERE kind='CLOSE'").fetchone())
             row[6]+=5
@@ -461,7 +462,7 @@ def test_verified_stage88_schema_upgrade_preserves_history_and_is_atomic(tmp_pat
     env=setup(tmp_path)
     oid=enter(env)
     before=gateway(env).snapshot()
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         schema=db.execute("SELECT sql FROM sqlite_master WHERE name='execution_events'").fetchone()[0]
         old=schema.replace('execution_events','old_events_stage88',1).replace(",'CLOSE'",'')
         db.execute(old)
@@ -474,7 +475,7 @@ def test_verified_stage88_schema_upgrade_preserves_history_and_is_atomic(tmp_pat
         monkeypatch.setattr(cls,'_upgrade_close_schema',fail)
         with pytest.raises(RuntimeError): reopen(env)
         monkeypatch.undo()
-        with sqlite3.connect(env['path']) as db:
+        with closing(sqlite3.connect(env['path'])) as db, db:
             assert "'CLOSE'" not in db.execute("SELECT sql FROM sqlite_master WHERE name='execution_events'").fetchone()[0]
     env['book']=reopen(env)
     assert gateway(env).snapshot()==before
@@ -538,7 +539,7 @@ def test_fresh_authorization_cannot_relabel_an_old_quote_as_fresh(tmp_path):
 def test_custom_legacy_indexes_are_not_silently_destroyed_by_schema_upgrade(tmp_path):
     env=setup(tmp_path)
     enter(env)
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         schema=db.execute("SELECT sql FROM sqlite_master WHERE name='execution_events'").fetchone()[0]
         db.execute(schema.replace('execution_events','old_stage88',1).replace(",'CLOSE'",''))
         db.execute('INSERT INTO old_stage88 SELECT * FROM execution_events')
@@ -547,6 +548,6 @@ def test_custom_legacy_indexes_are_not_silently_destroyed_by_schema_upgrade(tmp_
         db.execute('CREATE INDEX external_review_index ON execution_events(symbol)')
     with pytest.raises(Stage55SyntheticBookBlocked,match='reviewed migration'):
         reopen(env)
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         assert db.execute("SELECT name FROM sqlite_master WHERE name='external_review_index'").fetchone()
         assert db.execute('SELECT revision FROM execution_head').fetchone()[0]==2
