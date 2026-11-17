@@ -6,6 +6,7 @@ import hashlib
 import os
 import runpy
 import sqlite3
+from contextlib import closing
 
 import pytest
 
@@ -181,7 +182,7 @@ def test_real_process_death_recovery_keeps_event_proof_and_capital_atomic(tmp_pa
     expected = 0 if crash=='uncommitted' else 1
     assert snap.journal_revision == expected
     assert snap.reserved_cents == expected*13761
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         assert db.execute('SELECT count(*) FROM execution_fo_permits').fetchone()[0] == expected
     receipt = recovered.apply(op,risk_permit=permit)
     assert receipt.replayed is (crash=='committed-response-lost')
@@ -193,7 +194,7 @@ def test_rewritten_unkeyed_event_and_head_still_fail_risk_signature_binding(tmp_
     gateway = SyntheticFOExecutionGateway(env['book'])
     op=opening(env)
     gateway.apply_assessed_open(op,assessment=assessment(env,'NIFTY'),risk_permit=issue(env,op))
-    with sqlite3.connect(env['path']) as db:
+    with closing(sqlite3.connect(env['path'])) as db, db:
         event=list(db.execute('SELECT * FROM execution_events').fetchone())
         event[5]=24
         digest=_hash_event(tuple(event[:-1]))
