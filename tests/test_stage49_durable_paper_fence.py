@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import secrets
 import sqlite3
+from contextlib import closing
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -191,7 +192,7 @@ def test_committed_preparing_marker_survives_simulated_crash(tmp_path):
     session, fence = _new(tmp_path)
     # Directly emulate a subprocess terminated after its marker commit
     # but before writing any VirtualAccount order. Do not retry implicitly.
-    with sqlite3.connect(tmp_path / "coordinator.sqlite3") as db:
+    with closing(sqlite3.connect(tmp_path / "coordinator.sqlite3")) as db, db:
         db.execute(
             "INSERT INTO admission_attempts VALUES (?,?,?,?,?,?,?,?)",
             ("CRASH-OUTCOME", "STAGE49-LOCAL", "PREPARING", 10000,
@@ -308,7 +309,7 @@ def test_read_only_inspection_does_not_create_paper_orders_or_change_revision(tm
 
 def test_corrupted_scope_fails_closed_on_read_and_admission(tmp_path):
     session, fence = _new(tmp_path)
-    with sqlite3.connect(tmp_path / "coordinator.sqlite3") as db:
+    with closing(sqlite3.connect(tmp_path / "coordinator.sqlite3")) as db, db:
         db.execute("UPDATE coordinator_scope SET scope_hash=?", ("0" * 64,))
     assert not fence.inspect().coordinator_bound
     assert not fence.inspect().can_request_first_synthetic_buy

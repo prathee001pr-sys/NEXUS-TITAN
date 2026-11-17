@@ -16,6 +16,7 @@ from decimal import Decimal
 from typing import Callable
 import math
 import sqlite3
+from contextlib import closing
 
 from nexus_titan.shadow.paper_intent_gateway import (
     PaperIntentDenied, PaperIntentGateway, PaperIntentResult,
@@ -105,7 +106,7 @@ def _check_existing_virtual(db: Path, account_id: str, capital: float) -> None:
     if not db.is_file():
         raise PaperDeploymentBlocked("Durable account path is not a file")
     try:
-        with sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True) as con:
+        with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as con, con:
             row = con.execute(
                 "SELECT strict_paper_mode, gateway_only_mode, initial_capital "
                 "FROM account_state WHERE account_id=?", (account_id,),
