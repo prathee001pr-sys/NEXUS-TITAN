@@ -158,6 +158,10 @@ def test_corrupted_csvs_are_rejected_by_actual_importers_before_account_creation
 @pytest.mark.skipif(not hasattr(os,'fork'),reason='Abrupt process-death drill requires POSIX fork')
 @pytest.mark.parametrize('crash',['uncommitted','committed-response-lost'])
 def test_real_process_death_recovery_keeps_event_proof_and_capital_atomic(tmp_path,crash):
+    runpy.run_path(str(ROOT / "tests/helpers/isolated_fo_crash_runner.py"))["launch"]("stage88",crash,tmp_path)
+
+
+def _isolated_stage88_crash_drill(tmp_path,crash):
     env = warm_env(tmp_path)
     gateway = SyntheticFOExecutionGateway(env['book'])
     op,permit = opening(env),issue(env,opening(env))
