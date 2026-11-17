@@ -329,3 +329,68 @@ def test_205_clean_internal_manual_receipt_is_stable_after_hardening(tmp_path):
     assert not one.real_market_backtest_verified
     assert not one.live_trading_authorized
     assert not one.strategy_promotion_authorized
+
+
+def test_203_rejects_symlink_swap_at_descriptor_open(tmp_path, monkeypatch):
+    """TOCTOU substitution after path checks must fail closed."""
+    from nexus_titan.data import stage203_fo_source_integrity as src
+    _, files = make_data(tmp_path)
+    target = tmp_path / "sample.csv"
+    outside = tmp_path.parent / "untrusted-extra.csv"
+    outside.write_bytes(target.read_bytes())
+    original_open = src.os.open
+    did_swap = False
+
+    def swapped_open(path, flags, *args, **kwargs):
+        nonlocal did_swap
+        if Path(path) == target and not did_swap:
+            did_swap = True
+            target.unlink()
+            target.symlink_to(outside)
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(src.os, "open", swapped_open)
+    result = audit_fo_source_files(tmp_path, files)
+    assert did_swap
+    assert not result.accepted_byte_integrity
+    assert result.blockers
+    assert result.source_sha256 == ''
+    assert result.live_trading_authorized is False
+
+
+def test_203_rejects_regular_file_replacement_after_descriptor_open(tmp_path, monkeypatch):
+    """Replacing a path with identical bytes still breaks source identity."""
+    from nexus_titan.data import stage203_fo_source_integrity as src
+    _, files = make_data(tmp_path)
+    target = tmp_path / "sample.csv"
+    contents = target.read_bytes()
+    original_open = src.os.open
+    swapped = False
+
+    def replaced_open(path, flags, *args, **kwargs):
+        nonlocal swapped
+        fd = original_open(path, flags, *args, **kwargs)
+        if Path(path) == target and not swapped:
+            swapped = True
+            target.rename(tmp_path / "old-file.csv")
+            target.write_bytes(contents)
+        return fd
+
+    monkeypatch.setattr(src.os, "open", replaced_open)
+    result = audit_fo_source_files(tmp_path, files)
+    assert swapped
+    assert not result.accepted_byte_integrity
+    assert result.blockers
+    assert result.source_sha256 == ''
+    assert not result.exchange_source_authenticated
+
+
+def test_203_clean_descriptor_hash_still_accepts_manual_qa(tmp_path):
+    sha, files = make_data(tmp_path)
+    result = audit_fo_source_files(tmp_path, files)
+    assert result.accepted_byte_integrity
+    assert result.file_count == 1
+    assert result.dataset_ids == ('fixture1',)
+    assert len(result.source_sha256) == 64
+    assert result.live_trading_authorized is False
+    assert not result.licensed_vendor_authenticated
