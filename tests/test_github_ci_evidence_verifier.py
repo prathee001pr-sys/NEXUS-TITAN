@@ -24,7 +24,7 @@ def make_pr():
         "merged_at": None,
         "head": {"sha": SHA, "ref": "feature/pwa-private-snapshot-atomic-bridge-2026-11-17", "repo": {"full_name": REPO}},
         "base": {"ref": "feature/pwa-readonly-research-evidence-contract-2026-11-17",
-                 "repo": {"full_name": REPO}},
+                 "sha": "a"*40, "repo": {"full_name": REPO}},
     }
 
 
@@ -42,15 +42,17 @@ def make_runs():
 
 
 def install(monkeypatch, pr=None, runs=None, workflow_overrides=None,
-            run_overrides=None):
+            run_overrides=None, final_pr=None):
     raw_pr = make_pr() if pr is None else pr
     raw_runs = make_runs() if runs is None else runs
     workflow_overrides = workflow_overrides or {}
     run_overrides = run_overrides or {}
     pinned = dict(proof._WORKFLOW_BLOBS)
     requests = []
+    pr_reads = 0
 
     def github(path, token):
+        nonlocal pr_reads
         assert token == TOKEN
         assert path.startswith("/repos/" + REPO + "/")
         requests.append(path)
@@ -75,6 +77,9 @@ def install(monkeypatch, pr=None, runs=None, workflow_overrides=None,
             name=path.split("/contents/", 1)[1].split("?", 1)[0]
             return {"path": name, "type": "file",
                     "sha": workflow_overrides.get(name,pinned[name])}
+        pr_reads += 1
+        if pr_reads > 1 and final_pr is not None:
+            return copy.deepcopy(final_pr)
         return copy.deepcopy(raw_pr)
     monkeypatch.setattr(proof, "_get_github_json", github)
     return requests
@@ -96,6 +101,7 @@ def test_exact_head_authenticated_api_checks_allow_display_only(monkeypatch):
         f"/repos/{REPO}/commits/{SHA}/check-runs?per_page=100",
         f"/repos/{REPO}/actions/runs/44111903255",
         f"/repos/{REPO}/actions/runs/44111903333",
+        f"/repos/{REPO}/pulls/{PR}",
     ]
     assert result.repository == REPO
     assert result.head_sha == SHA and result.pr_number == PR
@@ -332,3 +338,74 @@ def test_https_response_host_mismatch_does_not_consume_untrusted_json(monkeypatc
     monkeypatch.setattr(proof.urllib.request,"build_opener",lambda *a: Opener())
     with pytest.raises(GitHubEvidenceBlocked, match="response origin"):
         proof._get_github_json(f"/repos/{REPO}/pulls/{PR}", TOKEN)
+
+
+@pytest.mark.parametrize("change", [
+    "head_sha", "head_ref", "base_sha", "base_ref",
+    "head_repo", "base_repo", "closed", "merged", "not_draft", "pr_number",
+])
+def test_pr_changed_during_checks_is_rejected_at_final_read(monkeypatch, change):
+    final=make_pr()
+    if change=="head_sha":
+        final["head"]["sha"]="f"*40
+    elif change=="head_ref":
+        final["head"]["ref"]="feature/replaced"
+    elif change=="base_sha":
+        final["base"]["sha"]="b"*40
+    elif change=="base_ref":
+        final["base"]["ref"]="feature/new-base"
+    elif change=="head_repo":
+        final["head"]["repo"]["full_name"]="unknown/fork"
+    elif change=="base_repo":
+        final["base"]["repo"]["full_name"]="unknown/fork"
+    elif change=="closed":
+        final["state"]="closed"
+    elif change=="merged":
+        final["merged_at"]="2026-11-17T20:00:00Z"
+    elif change=="not_draft":
+        final["draft"]=False
+    elif change=="pr_number":
+        final["number"]=153
+    requests=install(monkeypatch,final_pr=final)
+    with pytest.raises(GitHubEvidenceBlocked,match="PR revision changed"):
+        verify()
+    assert requests.count(f"/repos/{REPO}/pulls/{PR}") == 2
+
+
+@pytest.mark.parametrize("change", [
+    "missing_sha", "bad_sha", "bool_sha", "missing_head_ref",
+    "missing_base_ref", "wrong_head_ref_type", "wrong_base_ref_type",
+])
+def test_initial_pr_revision_identity_must_be_complete(monkeypatch, change):
+    initial=make_pr()
+    if change=="missing_sha":
+        initial["base"].pop("sha")
+    elif change=="bad_sha":
+        initial["base"]["sha"]="missing"
+    elif change=="bool_sha":
+        initial["base"]["sha"]=True
+    elif change=="missing_head_ref":
+        initial["head"]["ref"]=""
+    elif change=="missing_base_ref":
+        initial["base"]["ref"]=""
+    elif change=="wrong_head_ref_type":
+        initial["head"]["ref"]=4
+    elif change=="wrong_base_ref_type":
+        initial["base"]["ref"]=[]
+    requests=install(monkeypatch,pr=initial)
+    with pytest.raises(GitHubEvidenceBlocked,match="exact-head"):
+        verify()
+    assert len(requests)==1
+
+
+def test_stable_pr_is_read_twice_and_result_is_still_display_only(monkeypatch):
+    first=make_pr()
+    last=copy.deepcopy(first)
+    requests=install(monkeypatch, pr=first, final_pr=last)
+    evidence=verify()
+    assert requests[0]==requests[-1]==f"/repos/{REPO}/pulls/{PR}"
+    assert evidence.head_sha==SHA
+    assert evidence.owner_pwa_session_authenticated is False
+    assert evidence.global_independent_risk_veto_verified is False
+    assert evidence.production_ready is False
+    assert evidence.live_trading_authorized is False
