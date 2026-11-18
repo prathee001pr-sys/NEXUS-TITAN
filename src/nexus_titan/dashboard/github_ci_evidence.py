@@ -138,8 +138,15 @@ def verify_github_draft_pr_ci(*, pr_number: int, head_sha: str,
             or type(h.get("repo")) is not dict
             or h["repo"].get("full_name") != _REPO
             or type(b.get("repo")) is not dict
-            or b["repo"].get("full_name") != _REPO):
+            or b["repo"].get("full_name") != _REPO
+            or type(h.get("ref")) is not str or not h["ref"]
+            or type(b.get("ref")) is not str or not b["ref"]
+            or type(b.get("sha")) is not str
+            or re.fullmatch(r"[0-9a-f]{40}", b["sha"]) is None):
         raise GitHubEvidenceBlocked("PR is not an exact-head open internal Draft")
+    # Record a complete source revision identity at the beginning. PR base
+    # and head are mutable while the several GitHub API calls below execute.
+    initial_identity = (h["sha"], h["ref"], b["sha"], b["ref"])
     # Pin the workflow content at the PR's exact commit before trusting
     # GitHub Actions green labels; callers may not replace a workflow with
     # an empty 'success' job on their feature branch.
@@ -218,6 +225,27 @@ def verify_github_draft_pr_ci(*, pr_number: int, head_sha: str,
                 or type(workflow_data.get("head_repository")) is not dict
                 or workflow_data["head_repository"].get("full_name") != _REPO):
             raise GitHubEvidenceBlocked("Unverified GitHub workflow run identity")
+    # Re-read the actual PR AFTER all workflow/API calls. Do not accept
+    # green evidence if its head, base, Draft status or repository identity
+    # moved during verification (time-of-check/time-of-use protection).
+    latest = _get_github_json(
+        f"/repos/{_REPO}/pulls/{pr_number}", backend_github_token,
+    )
+    latest_head = latest.get("head")
+    latest_base = latest.get("base")
+    if (type(latest.get("number")) is not int
+            or latest["number"] != pr_number
+            or latest.get("state") != "open"
+            or latest.get("draft") is not True
+            or latest.get("merged_at") is not None
+            or type(latest_head) is not dict or type(latest_base) is not dict
+            or type(latest_head.get("repo")) is not dict
+            or latest_head["repo"].get("full_name") != _REPO
+            or type(latest_base.get("repo")) is not dict
+            or latest_base["repo"].get("full_name") != _REPO
+            or (latest_head.get("sha"), latest_head.get("ref"),
+                latest_base.get("sha"), latest_base.get("ref")) != initial_identity):
+        raise GitHubEvidenceBlocked("PR revision changed during CI verification")
     return GitHubPRCIEvidence(
         repository=_REPO, pr_number=pr_number, head_sha=head_sha,
         checks_verified=_REQUIRED, github_actions_check_count=len(result),
